@@ -8,8 +8,6 @@ const connectDB = async () => {
             dbName: env.dbName,
             retryWrites: true,
             w: 'majority',
-            // useNewUrlParser: true,
-            // useUnifiedTopology: true,
         });
         console.log("MongoDB connected successfully...");
     }
