@@ -4,6 +4,7 @@ import {
 
 export const chatWithClaude = async (req, res) => {
     try {
+        console.log(req.body);
         const { message } = req.body;
         if (!message || !message.trim()) {
             return res.status(400).json({

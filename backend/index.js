@@ -7,9 +7,9 @@ import connectDB from "./config/dbcon.js";
 import chatRouter from "./routes/chat.route.js";
 
 const allowedOrigins = {
-    production: ['http://localhost:3000', 'https://shyamsahyak.shyamgroup.com'],
-    quality: ['http://localhost:3001', 'https://shyamsahyak-qas.shyamgroup.com'],
-    development: ['http://localhost:3002'],
+    production: ['http://localhost:3060', 'https://shyamsahyak.shyamgroup.com'],
+    quality: ['http://localhost:3061', 'https://shyamsahyak-qas.shyamgroup.com'],
+    development: ['http://localhost:3062'],
 }
 
 const app = express();
