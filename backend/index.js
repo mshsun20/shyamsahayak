@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import env from "./config/env.js";
 import connectDB from "./config/dbcon.js";
+import accountRouter from "./routes/account.route.js";
 import chatRouter from "./routes/chat.route.js";
 
 const allowedOrigins = {
@@ -28,6 +29,8 @@ app.use(cookieParser());
 app.use(bodyParser.json({ limit: "10000mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "10000mb" }));
 
+// All routes
+app.use("/api/accounts", accountRouter);
 app.use("/api/chats", chatRouter);
 
 app.get("/", (req, res) => {

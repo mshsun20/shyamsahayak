@@ -10,8 +10,11 @@ export const performanceTool = {
     properties: {
       month: {
         type: "string",
-        description:
-          "Performance month in YYYY-MM format. If the user provides only a month name, use the current calendar year.",
+        description: "Performance month in MM format. If the user provides only a month name, use the current calendar year.",
+      },
+      year: {
+        type: "string",
+        description: "Performance month in YYYY format. If the user provides only a month name, use the current calendar year.",
       },
     },
     required: ["month"],
@@ -19,16 +22,18 @@ export const performanceTool = {
 };
 
 export const getPerformanceStatistics = async (input) => {
-  const { month, user } = input;
+  const { month, year, user } = input;
 
   console.log("Executing get_performance tool");
   console.log("Authenticated user:", user);
   console.log("Requested month:", month);
+  console.log("Requested month:", year);
 
   // Temporary dummy data
   return {
     employeeId: user?.employeeId || "DUMMY-EMP-001",
     month,
+    year,
     target: 100,
     achievement: 87,
     achievementPercentage: 87,

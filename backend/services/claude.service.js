@@ -6,6 +6,8 @@ import {
 } from "../ai/tools.registry.js";
 import SYSTEM_PROMPT from "../ai/prompts/system.prompt.js";
 
+const MAX_TOOL_ITERATIONS = 10;
+
 export const sendMessageToClaude = async ({
     message,
     user,
@@ -20,7 +22,7 @@ export const sendMessageToClaude = async ({
         { role: "user", content: message },
     ];
 
-    while(true) {
+    for(let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
         const response = await anthropicClient.messages.create({
             model: env.claudeModel || "claude-sonnet-5",
             max_tokens: env.claudeMaxTokens ? parseInt(env.claudeMaxTokens, 10) : 1000,
