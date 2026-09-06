@@ -10,10 +10,10 @@
 
 .login-shell {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     flex-direction: column;
-    width: min(100%, 428px);
+    width: min(100%, var(--mobile-screen-standard));
     height: auto;
     min-height: 100svh;
     background: #fff;
@@ -37,7 +37,7 @@
 
 .brand-logo {
     position: absolute;
-    top: 15%;
+    top: 5%;
     left: 15%;
     width: 70%;
     height: auto;

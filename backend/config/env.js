@@ -9,6 +9,9 @@ const requiredEnvVariables = [
     "APP_URL_PRD",
     "APP_URL_QAS",
     "APP_URL_DEV",
+    "ADMIN_URL_PRD",
+    "ADMIN_URL_QAS",
+    "ADMIN_URL_DEV",
     "API_URL_PRD",
     "API_URL_QAS",
     "API_URL_DEV",
@@ -43,6 +46,12 @@ const appUrl = nodeEnv === "production"
 ? process.env.APP_URL_QAS
 : process.env.APP_URL_DEV;
 
+const adminUrl = nodeEnv === "production"
+? process.env.ADMIN_URL_PRD
+: nodeEnv === "quality"
+? process.env.ADMIN_URL_QAS
+: process.env.ADMIN_URL_DEV;
+
 const apiUrl = nodeEnv === "production"
 ? process.env.API_URL_PRD
 : nodeEnv === "quality"
@@ -64,6 +73,7 @@ const dbUrl = nodeEnv === "production"
 const env = {
     nodeEnv: nodeEnv,
     appUrl: appUrl,
+    adminUrl: adminUrl,
     apiUrl: apiUrl,
     port: defaultPort,
     dbName: dbName,

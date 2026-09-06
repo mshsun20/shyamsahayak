@@ -1,7 +1,27 @@
 import mongoose from "mongoose";
-const { Schema, model } = mongoose;
+const { Schema, model, Types } = mongoose;
 
-const AccountSchema = new Schema({}, { timestamps: true });
+const AccountSchema = new Schema({
+    userId: { type: String, required: true, trim: true },
+    fullName: { type: String, required: true, trim: true },
+    role: { type: Types.ObjectId, ref: "Role", required: true },
+    email: { type: String, trim: true },
+    phone: { type: String, trim: true },
+    employeeId: { type: String, trim: true },
+    username: { type: String, trim: true },
+    password: { type: String, required: true, trim: true },
+    passwordBackup: { type: String, required: true, trim: true },
+    passwordChangeFlag: { type: Boolean, default: false },
+    reportingDetails: [{
+        reportingManager: { type: Types.ObjectId, ref: "Account" },
+        territory: { type: Types.ObjectId, ref: "Territory" },
+        district: { type: Types.ObjectId, ref: "District" },
+    }],
+    remarks: { type: String, trim: true },
+    status: { type: String, required: true, enum: ["Active", "Inactive"], default: "Active" },
+    createdBy: { type: Types.ObjectId, ref: "Account" },
+    updatedBy: { type: Types.ObjectId, ref: "Account" },
+}, { timestamps: true });
 
 const Account = model("Account", AccountSchema);
 

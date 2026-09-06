@@ -1,0 +1,9 @@
+.app-layout {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100svw;
+    height: auto;
+    min-height: 100svh;
+}
