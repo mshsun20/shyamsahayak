@@ -9,6 +9,9 @@ const Topbar = () => {
         setActiveId(id)
     }
 
+    const user = "User"
+    const userAvatar = String(user)?.split(" ").map((w, i) => i<2 ? w[0] : "").join("");
+
   return (
     <div className="nav-topbar">
         <div className="nav-top-wrapper">
@@ -25,9 +28,12 @@ const Topbar = () => {
                         onClick={() => handleNavItem(item.id)}
                         title={item.label}
                     >
-                        {item.icon ? <item.icon /> : ""}
+                        {item.icon ? <item.icon className="nav-top-icon" /> : ""}
                     </NavLink>
                 ))}
+                <div className="nav-top-item-avatar">
+                    <NavLink to={"/profile"} className="avatar-icon">{userAvatar}</NavLink>
+                </div>
             </div>
         </div>
     </div>

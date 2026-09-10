@@ -6,9 +6,9 @@ import Bottombar from "./Bottombar";
 const Navbar = ({ children }) => {
   return (
     <div className="nav-layout">
-        <Topbar />
-        <div className="nav-container">{children}</div>
-        <Bottombar />
+      <Topbar />
+      <div className="nav-container">{children}</div>
+      <Bottombar />
     </div>
   )
 }

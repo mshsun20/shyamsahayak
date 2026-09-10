@@ -9,6 +9,7 @@ import env from "./config/env.js";
 import connectDB from "./config/dbcon.js";
 import accountRouter from "./routes/account.route.js";
 import roleRouter from "./routes/role.route.js";
+import districtRouter from "./routes/location/district.route.js";
 import chatRouter from "./routes/chat.route.js";
 
 
@@ -53,6 +54,7 @@ app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 // All routes
 app.use("/api/accounts", accountRouter);
 app.use("/api/roles", roleRouter);
+app.use("/api/districts", districtRouter);
 app.use("/api/chats", chatRouter);
 
 // ping

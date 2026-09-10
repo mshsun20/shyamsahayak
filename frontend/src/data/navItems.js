@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 
 export const topNavItems = [
-  { id: "notification", label: "Notification", url: "/notification", level: 0, icon: BellDot },
+  { id: "notification", label: "Notification", url: "#", level: 0, icon: BellDot },
   { id: "profile", label: "Profile", url: "/profile", level: 0 },
 ]
 
