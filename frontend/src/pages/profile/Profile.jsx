@@ -48,7 +48,7 @@ const Profile = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-dvh px-4 pt-6 pb-10">
+        <div className="px-4 py-6">
             {/* Header */}
             <div className="flex items-center gap-3 mb-5">
                 <button onClick={() => navigate(-1)} className="shrink-0">
