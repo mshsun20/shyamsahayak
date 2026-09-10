@@ -6,7 +6,7 @@ import {
     updateFunction,
     removeFunction
 } from "../services/role.service.js";
-import { mapValidObjectId } from "../utils/objectValidation.utils.js";
+import { mapValidObjectId } from "../utils/objectValidation.util.js";
 
 const create = async (req, res) => {
     try {

@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import env from "./config/env.js";
 import connectDB from "./config/dbcon.js";
+import authRouter from "./routes/auth.route.js";
 import accountRouter from "./routes/account.route.js";
 import roleRouter from "./routes/role.route.js";
 import districtRouter from "./routes/location/district.route.js";
@@ -52,6 +53,7 @@ app.use(bodyParser.urlencoded({ extended: true, limit: "10000mb" }));
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 // All routes
+app.use("/api/auth", authRouter);
 app.use("/api/accounts", accountRouter);
 app.use("/api/roles", roleRouter);
 app.use("/api/districts", districtRouter);
