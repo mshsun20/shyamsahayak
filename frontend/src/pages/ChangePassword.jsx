@@ -1,5 +1,8 @@
 import React from 'react'
 import { Lock, Eye, EyeOff, CheckCircle2, ChevronLeft } from "lucide-react";
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from "../redux/slices/authSlice";
+import { NavLink } from 'react-router';
 
 const PinField = React.memo(function PinField({ label, hint, value, onChange }) {
     const [visible, setVisible] = React.useState(false);
@@ -29,9 +32,12 @@ const PinField = React.memo(function PinField({ label, hint, value, onChange }) 
 })
 
 const ChangePassword = () => {
+    const dispatch = useDispatch();
     const [current, setCurrent] = React.useState("");
     const [next, setNext] = React.useState("");
     const [confirm, setConfirm] = React.useState("");
+    const { user } = useSelector(state => state.auth);
+    const userPassChangeFlag = user?.passwordChangeFlag
 
     const rules = [
         "4 digits",
@@ -39,6 +45,15 @@ const ChangePassword = () => {
         "Not same as old PIN",
         "Not in sequence",
     ];
+
+    const handleLogout = React.useCallback(async () => {
+        try {
+            await dispatch(logout());
+            
+        } catch (error) {
+            console.error(error.message);
+        }
+    }, [])
 
     return (
         <div className="min-h-dvh px-4 pt-6 pb-10">
@@ -87,10 +102,22 @@ const ChangePassword = () => {
             >
                 Update PIN
             </button>
-            <button className="w-full mt-4 flex items-center justify-center gap-1 text-brand font-semibold text-[14px]">
+
+            {userPassChangeFlag
+            ? <button
+                onClick={handleLogout}
+                className="w-full mt-4 flex items-center justify-center gap-1 text-brand font-semibold text-[14px]"
+            >
                 <ChevronLeft size={16} />
                 Back to Login
             </button>
+            : <NavLink
+                to={"/dashboard"}
+                className="w-full mt-4 flex items-center justify-center gap-1 text-brand font-semibold border border-b-brand text-[14px]"
+            >
+                <ChevronLeft size={16} />
+                Back to Home
+            </NavLink>}
         </div>
     )
 }
