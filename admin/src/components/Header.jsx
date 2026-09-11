@@ -1,4 +1,4 @@
-import { Search, Bell, ChevronDown, LogOut } from "lucide-react";
+import { Search, Bell, ChevronDown, LogOut, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,11 @@ export default function Header({ title }) {
             className="pl-9 pr-4 py-2 w-64 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
           />
         </div>
+
+        <button className="hidden sm:flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700">
+          <HelpCircle size={16} />
+          Help
+        </button>
 
         <button className="relative text-gray-500 hover:text-gray-700">
           <Bell size={19} />
