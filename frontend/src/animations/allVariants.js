@@ -10,7 +10,7 @@ export const container = {
 };
 
 export const fadeLeft = {
-    hidden: { opacity: 0, x: -40 },
+    hidden: { opacity: 1, x: -40 },
     show: {
         opacity: 1,
         x: 0,
@@ -29,7 +29,7 @@ export const fadeLeft = {
 };
 
 export const fadeRight = {
-    hidden: { opacity: 0, x: 40 },
+    hidden: { opacity: 1, x: 40 },
     show: {
         opacity: 1,
         x: 0,
@@ -48,7 +48,7 @@ export const fadeRight = {
 };
 
 export const fadeTop = {
-    hidden: { opacity: 0, y: -25 },
+    hidden: { opacity: 1, y: -25 },
     show: {
         opacity: 1,
         y: 0,
@@ -67,7 +67,7 @@ export const fadeTop = {
 };
 
 export const fadeBottom = {
-    hidden: { opacity: 0, y: 25 },
+    hidden: { opacity: 1, y: 25 },
     show: {
         opacity: 1,
         y: 0,

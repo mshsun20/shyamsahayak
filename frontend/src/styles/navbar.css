@@ -1,9 +1,14 @@
 .nav-layout {
+    position: absolute;
+    left: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
     width: min(100%, var(--mobile-screen-standard));
+    height: 100svh;
+    /* min-height: 100svh; */
+    transform: translate(-50%);
 }
 
 
@@ -23,7 +28,7 @@
     padding: 0.35rem;
     background: #ffffff;
     border-top: 1px solid #f0f1f3;
-    box-shadow: 0 -2px 9px rgba(16, 24, 40, 0.035);
+    box-shadow: 0 0 0.2rem rgba(16, 24, 40, 0.212);
 }
 
 .nav-top-wrapper {
@@ -64,8 +69,36 @@
 }
 
 .nav-top-item {}
-
 .nav-top-item.active {}
+
+.nav-top-icon {
+    background: transparent;
+    color: #f26625;
+}
+
+.nav-top-item-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: auto;
+    height: auto;
+    padding: 0.2rem 0.5rem;
+}
+.nav-top-item-avatar .avatar-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 2.1rem;
+    height: auto;
+    /* aspect-ratio: 1/1; */
+    background: #f8e6ce;
+    padding: 0.35rem;
+    color: #f26625;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 0.1rem solid #fed8aa;
+    border-radius: 50%;
+}
 
 
 /* -------------------------------------------------------------------------------------------------------------- */
@@ -83,25 +116,25 @@
     padding: 0.35rem;
     background: #ffffff;
     border-top: 1px solid #f0f1f3;
-    box-shadow: 0 -2px 9px rgba(16, 24, 40, 0.035);
+    box-shadow: 0.2rem 0.2rem 0.5rem rgba(16, 24, 40, 0.305);
 }
 
 .nav-bottom-items {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     width: 100%;
-    height: 100%;
+    height: auto;
 }
 
 .nav-bottom-item {
     position: relative;
     min-width: 0;
-    height: 68px;
+    height: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    gap: 3px;
+    gap: 0.1rem;
     padding: 0;
     border: 0;
     outline: 0;
@@ -167,12 +200,25 @@
 
 .nav-container {
     position: absolute;
-    top: var(--nv-top-height);
+    top: calc(var(--nv-top-height) - 0.15rem);
+    left: 50%;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     flex-direction: column;
-    width: var(--mobile-screen-standard);
+    /* background: #ffffff; */
+    width: min(100%, var(--mobile-screen-standard));
+    padding: 0.05rem 0;
     height: auto;
-    min-height: calc(100svh - (var(--nv-top-height) + var(--nv-bottom-height)));
+    max-height: calc(100svh - (var(--nv-top-height) + var(--nv-bottom-height) - 0.3rem));
+    transform: translate(-50%);
+    overflow-y: hidden;
+}
+
+.nav-content {
+    width: 100%;
+    height: 100%;
+    min-height: calc(100svh - (var(--nv-top-height) + var(--nv-bottom-height) - 0.3rem));
+    background: #f8f8f7;
+    overflow-y: auto;
 }

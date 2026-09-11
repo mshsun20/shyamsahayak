@@ -3,6 +3,7 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+import tailwindcss from "@tailwindcss/vite";
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -21,6 +22,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      tailwindcss(),
       babel({ presets: [reactCompilerPreset()] })
     ],
     server: {
