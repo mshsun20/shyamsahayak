@@ -1,5 +1,5 @@
 import React from 'react'
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import {
     ArrowLeft,
     Globe,
@@ -51,6 +51,27 @@ const Profile = () => {
     const { user } = useSelector(state => state.auth);
     const navigate = useNavigate();
 
+    const handleLogout = React.useCallback(async () => {
+        try {
+            await dispatch(logout());
+        } catch (error) {
+            console.error(error.message);
+        }
+    }, [])
+
+    const handleSettings = async (key) => {
+        switch (key) {
+            case "pin":
+                navigate("/change-password");
+                break;
+            case "logout":
+                handleLogout();
+                break;
+            default:
+                break;
+        }
+    }
+
     return (
         <div className="px-4 py-6">
             {/* Header */}
@@ -84,7 +105,7 @@ const Profile = () => {
                     <button
                         key={s.key}
                         className="w-full flex items-center gap-3 p-4 text-left"
-                        onClick={s.key==="logout" && (async () => await dispatch(logout()))}
+                        onClick={() => handleSettings(s.key)}
                     >
                         <div
                             className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${s.iconBg}`}

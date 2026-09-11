@@ -21,7 +21,7 @@ import {
 import {
   dirname
 } from 'path'
-// import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from "@tailwindcss/vite";
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
-      // tailwindcss(),
+      tailwindcss(),
       babel({
         presets: [reactCompilerPreset()]
       })

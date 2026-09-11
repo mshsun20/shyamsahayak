@@ -14,6 +14,7 @@ import companyLogo from "../assets/logos/company-logo.png";
 import axiosInstance from "../config/axiosInstance";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../redux/slices/authSlice";
+import { NavLink } from "react-router";
 
 const DEMO_USER = {
     employeeId: "EMP001",
@@ -192,14 +193,9 @@ const Login = () => {
                         <button
                             className="modal-close"
                             onClick={() => setShowForgot(false)}
-                        >
-                            <X size={20} />
-                        </button>
+                        ><X size={20} /></button>
                         <h2>Forgot PIN?</h2>
-                        <p>
-                            Please contact your administrator or support team to reset your
-                            employee PIN.
-                        </p>
+                        <p>Please contact your administrator or support team to reset your employee PIN.</p>
                         <button
                             className="modal-primary"
                             onClick={() => setShowForgot(false)}
@@ -219,26 +215,19 @@ const Login = () => {
                         <button
                             className="modal-close"
                             onClick={() => setShowSupport(false)}
-                        >
-                            <X size={20} />
-                        </button>
+                        ><X size={20} /></button>
                         <h2>Contact Support</h2>
-                        <p>
-                            For login assistance, please contact the Seltiger Sahayak support
-                            team.
-                        </p>
+                        <p>For login assistance, please contact the Seltiger Sahayak support team.</p>
                         <div className="support-details">
                             <strong>Support hours</strong>
-                            <span>Monday – Saturday, 9:00 AM – 6:00 PM</span>
+                            <span>Monday - Saturday, 9:00 AM - 6:00 PM</span>
                             <strong>Email</strong>
                             <span>support@example.com</span>
                         </div>
                         <button
                             className="modal-primary"
                             onClick={() => setShowSupport(false)}
-                        >
-                            Close
-                        </button>
+                        >Close</button>
                     </div>
                 </div>
             )}

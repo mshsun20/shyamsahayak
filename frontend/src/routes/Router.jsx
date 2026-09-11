@@ -6,6 +6,7 @@ import ProtectedRoute from "./ProtectedRoute";
 const Loader = React.lazy(() => import("../components/Loader"));
 const Layout = React.lazy(() => import("../components/Layout"));
 const Login = React.lazy(() => import("../pages/Login"));
+const ChangePassword = React.lazy(() => import("../pages/ChangePassword"));
 const Profile = React.lazy(() => import("../pages/profile/Profile"));
 const Dashboard = React.lazy(() => import("../pages/Dashboard"));
 const ChatScreen = React.lazy(() => import("../pages/ChatScreen"));
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
         children: [
             { index: true, element: <Navigate to="/dashboard" replace /> },
             { path: "/profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
+            { path: "/change-password", element: <ProtectedRoute><ChangePassword /></ProtectedRoute> },
             { path: "/dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
             { path: "/chat", element: <ProtectedRoute><ChatScreen /></ProtectedRoute> },
             { path: "/recent-conversations", element: <ProtectedRoute><RecentConversationsScreen /></ProtectedRoute> },
