@@ -35,9 +35,9 @@ const recentActivity = [
 
 const quickActions = [
   { label: "Add User", desc: "Create a new user account", icon: UserPlus, path: "/users/add" },
-  { label: "Add Product", desc: "Add a new product", icon: Package, path: "/content" },
-  { label: "Add Scheme", desc: "Create a new scheme / offer", icon: Gift, path: "/content" },
-  { label: "Add Article", desc: "Add knowledge base article", icon: BookOpen, path: "/content" },
+  { label: "Add Product", desc: "Add a new product", icon: Package, path: "/content/products/add" },
+  { label: "Add Scheme", desc: "Create a new scheme / offer", icon: Gift, path: "/content/schemes" },
+  { label: "Add Article", desc: "Add knowledge base article", icon: BookOpen, path: "/content/knowledge-base" },
 ];
 
 export default function Dashboard() {

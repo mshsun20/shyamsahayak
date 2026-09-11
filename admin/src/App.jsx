@@ -3,6 +3,19 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import AddUser from "./pages/AddUser";
+import ContentManagement from "./pages/ContentManagement";
+import Products from "./pages/Products";
+import ProductForm from "./pages/ProductForm";
+import Schemes from "./pages/Schemes";
+import SchemeForm from "./pages/SchemeForm";
+import KnowledgeBase from "./pages/KnowledgeBase";
+import ArticleForm from "./pages/ArticleForm";
+import DistrictMaster from "./pages/DistrictMaster";
+import AddDistrictMapping from "./pages/AddDistrictMapping";
+import StoreTypeBreakup from "./pages/StoreTypeBreakup";
+import UniverseMaster from "./pages/UniverseMaster";
+import RetailerProfiler from "./pages/RetailerProfiler";
+import FabricatorTracker from "./pages/FabricatorTracker";
 import Profile from "./pages/Profile";
 import Placeholder from "./pages/Placeholder";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -51,7 +64,79 @@ export default function App() {
         path="/content"
         element={
           <ProtectedRoute>
-            <Placeholder title="Content Management" />
+            <ContentManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content/products"
+        element={
+          <ProtectedRoute>
+            <Products />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content/products/add"
+        element={
+          <ProtectedRoute>
+            <ProductForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content/products/edit/:id"
+        element={
+          <ProtectedRoute>
+            <ProductForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content/schemes"
+        element={
+          <ProtectedRoute>
+            <Schemes />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content/schemes/add"
+        element={
+          <ProtectedRoute>
+            <SchemeForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content/schemes/edit/:id"
+        element={
+          <ProtectedRoute>
+            <SchemeForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content/knowledge-base"
+        element={
+          <ProtectedRoute>
+            <KnowledgeBase />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content/knowledge-base/add"
+        element={
+          <ProtectedRoute>
+            <ArticleForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/content/knowledge-base/edit/:id"
+        element={
+          <ProtectedRoute>
+            <ArticleForm />
           </ProtectedRoute>
         }
       />
@@ -67,7 +152,23 @@ export default function App() {
         path="/district-master"
         element={
           <ProtectedRoute>
-            <Placeholder title="District Master" />
+            <DistrictMaster />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/district-master/add"
+        element={
+          <ProtectedRoute>
+            <AddDistrictMapping />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/district-master/edit/:id"
+        element={
+          <ProtectedRoute>
+            <AddDistrictMapping />
           </ProtectedRoute>
         }
       />
@@ -75,7 +176,7 @@ export default function App() {
         path="/store-type-breakup"
         element={
           <ProtectedRoute>
-            <Placeholder title="Store Type Breakup" />
+            <StoreTypeBreakup />
           </ProtectedRoute>
         }
       />
@@ -83,7 +184,7 @@ export default function App() {
         path="/universe-master"
         element={
           <ProtectedRoute>
-            <Placeholder title="Universe Master" />
+            <UniverseMaster />
           </ProtectedRoute>
         }
       />
@@ -99,7 +200,7 @@ export default function App() {
         path="/retailer-profiler"
         element={
           <ProtectedRoute>
-            <Placeholder title="Retailer + Profiler" />
+            <RetailerProfiler />
           </ProtectedRoute>
         }
       />
@@ -107,7 +208,7 @@ export default function App() {
         path="/fabricator"
         element={
           <ProtectedRoute>
-            <Placeholder title="Fabricator" />
+            <FabricatorTracker />
           </ProtectedRoute>
         }
       />
