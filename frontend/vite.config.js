@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   // Load .env files based on the current `mode`
   const env = loadEnv(mode, __dirname, '')
 
-  const appenv = env.VITE_APP_ENV || 'dev'
+  const appenv = env.VITE_APP_ENV || 'development'
 
   const portDetails = {
     production: Number(env.VITE_APP_PORT_PRD) || 3060,
