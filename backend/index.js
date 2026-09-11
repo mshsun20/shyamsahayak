@@ -9,6 +9,7 @@ import env from "./config/env.js";
 import connectDB from "./config/dbcon.js";
 import authRouter from "./routes/auth.route.js";
 import accountRouter from "./routes/account.route.js";
+import privilegeRouter from "./routes/privilege.route.js";
 import roleRouter from "./routes/role.route.js";
 import districtRouter from "./routes/location/district.route.js";
 import chatRouter from "./routes/chat.route.js";
@@ -39,7 +40,7 @@ app.get("/api/debug/ip", (req, res) => {
 app.use(cors({
     origin: allowedOrigins, // Allow all origins
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'Authorization'],
     credentials: true,
     optionsSuccessStatus: 200, // For legacy browser support
 }));
@@ -55,6 +56,7 @@ app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 // All routes
 app.use("/api/auth", authRouter);
 app.use("/api/accounts", accountRouter);
+app.use("/api/privileges", privilegeRouter);
 app.use("/api/roles", roleRouter);
 app.use("/api/districts", districtRouter);
 app.use("/api/chats", chatRouter);

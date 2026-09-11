@@ -92,7 +92,7 @@ const update = async (req, res) => {
         const existingState = await readByIdFunction(id);
         if (!existingState) return res.status(404).json({ success: false, message: "State doesn't exist" });
 
-        const items = ["_id", "username"]
+        const items = ["_id", "code"]
         for (const key of items) {
             delete statePayload[key]
         }

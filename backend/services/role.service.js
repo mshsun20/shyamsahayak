@@ -14,7 +14,7 @@ export const readByIdFunction = async (id) => {
 }
 
 export const readByUniqueKeyFunction = async (uniqueKey) => {
-    return Role.findOne({ name: uniqueKey }).populate("createdBy updatedBy");
+    return Role.findOne({ code: uniqueKey }).populate("createdBy updatedBy");
 }
 
 export const updateFunction = async (id, payload) => {

@@ -23,6 +23,7 @@ import {
     Truck,
     Sparkles,
 } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 /**
  * Sahayak AI — mobile demo
@@ -546,7 +547,72 @@ const RECENT_PREVIEW = [
 ];
 
 function HomeScreen({ onOpenChat, onOpenHistory }) {
+    const { user } = useSelector(state => state.auth);
     const [input, setInput] = useState('');
+    // const [question, setQuestion] = React.useState("");
+    const [popularQuestions, setPopularQuestions] = React.useState(POPULAR_QUESTIONS);
+    const [recentConversations, setRecentConversations] = React.useState(RECENT_PREVIEW);
+    // const [showAllPopular, setShowAllPopular] = React.useState(false);
+    // const [showAllRecent, setShowAllRecent] = React.useState(false);
+    // const [selectedConversation, setSelectedConversation] = React.useState(null);
+    // const [showAssistantInfo, setShowAssistantInfo] = React.useState(false);
+    const [isListening, setIsListening] = React.useState(false);
+    const recognitionRef = React.useRef(null);
+
+    const userFirstName = String(user?.fullName).split(" ")[0];
+
+
+    /* =======================================================
+        VOICE SEARCH
+    ======================================================= */
+    const handleVoiceSearch = () => {
+        if (isListening) {
+            recognitionRef.current?.stop();
+            setIsListening(false);
+            return;
+        }
+
+        const SpeechRecognition = Window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Voice recognition is not supported in this browser. Please use Chrome or Edge.");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-IN";
+        recognition.interimResults = false;
+        recognition.continuous = true;
+
+        recognition.onstart = () => {
+            setIsListening(true);
+        };
+
+        recognition.onresult = (event) => {
+            console.log(event.results);
+            const transcript = event.results[0][0].transcript;
+            setInput(transcript);
+            if (!transcript.trim()) return;
+            onOpenChat(transcript.trim());
+            setInput('');
+        };
+
+        recognition.onerror = () => {
+            setIsListening(false);
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+
+        recognition.start();
+    };
+    React.useEffect(() => {
+        return () => {
+            recognitionRef.current?.stop();
+        };
+    }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -559,7 +625,7 @@ function HomeScreen({ onOpenChat, onOpenHistory }) {
         <div className="w-full min-h-screen bg-white flex flex-col">
             <style>{`.no-scrollbar::-webkit-scrollbar { display: none; }`}</style>
             <div className="flex-1 overflow-y-auto px-5 pt-6 pb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Hi Raj! 👋</h1>
+                <h1 className="text-2xl font-bold capitalize text-gray-900">Hi {userFirstName}! 👋</h1>
                 <p className="text-gray-500 mt-1">How can I help you today?</p>
 
                 <form onSubmit={handleSubmit} className="mt-5 border border-gray-100 rounded-2xl p-2 bg-white shadow-sm">
@@ -571,16 +637,29 @@ function HomeScreen({ onOpenChat, onOpenHistory }) {
                             placeholder="Ask anything..."
                             className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
                         />
-                        <button type="button" className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 shrink-0" aria-label="Voice input">
+                        <button
+                            type="button"
+                            className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 shrink-0"
+                            aria-label="Voice input"
+                            title="Voice Search"
+                            onClick={handleVoiceSearch}
+                        >
                             <Mic className="w-4 h-4" />
                         </button>
-                        <button type="submit" className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-white shrink-0 hover:bg-orange-600 transition-colors" aria-label="Send message">
+                        <button
+                            type="submit"
+                            className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-white shrink-0 hover:bg-orange-600 transition-colors"
+                            aria-label="Send message"
+                            title="Send Message"
+                        >
                             <Send className="w-4 h-4" />
                         </button>
                     </div>
                 </form>
                 <p className="text-xs text-gray-400 mt-2">
-                    Type your question or use <span className="text-orange-500 font-medium">voice to ask</span> Sahayak AI
+                    <span>Type your question or use </span>
+                    <span className="text-orange-500 font-medium cursor-pointer" onClick={handleVoiceSearch}>Voice to ask</span>
+                    <span> Sahayak AI</span>
                 </p>
 
                 <div className="flex items-center justify-between mt-7">
@@ -588,7 +667,7 @@ function HomeScreen({ onOpenChat, onOpenHistory }) {
                     <span className="text-orange-500 text-sm font-medium">View all</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-3">
-                    {POPULAR_QUESTIONS.map((q) => {
+                    {popularQuestions?.map((q) => {
                         const Icon = q.icon;
                         return (
                             <button
@@ -613,7 +692,7 @@ function HomeScreen({ onOpenChat, onOpenHistory }) {
                     </button>
                 </div>
                 <div className="flex flex-col gap-3 mt-3">
-                    {RECENT_PREVIEW.map((r) => (
+                    {recentConversations?.map((r) => (
                         <button
                             key={r.title}
                             onClick={() => onOpenChat(r.title)}

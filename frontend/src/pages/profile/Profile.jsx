@@ -8,6 +8,8 @@ import {
     LogOut,
     ChevronRight,
 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../redux/slices/authSlice";
 
 const SETTINGS = [
     {
@@ -45,6 +47,8 @@ const SETTINGS = [
 ];
 
 const Profile = () => {
+    const dispatch = useDispatch();
+    const { user } = useSelector(state => state.auth);
     const navigate = useNavigate();
 
     return (
@@ -65,9 +69,9 @@ const Profile = () => {
                     className="w-16 h-16 rounded-full object-cover shrink-0"
                 />
                 <div className="min-w-0">
-                    <p className="text-[16px] font-bold text-neutral-900">Raj Kumar</p>
-                    <p className="text-[13px] font-semibold text-brand mt-0.5">DGO</p>
-                    <p className="text-[12px] text-neutral-400 mt-0.5">EMP-10245</p>
+                    <p className="text-[16px] font-bold text-neutral-900">{user?.fullName}</p>
+                    <p className="text-[13px] capitalize font-semibold text-brand mt-0.5">{user?.role?.name}</p>
+                    <p className="text-[12px] text-neutral-400 mt-0.5">{user?.employeeId}</p>
                 </div>
             </div>
 
@@ -80,6 +84,7 @@ const Profile = () => {
                     <button
                         key={s.key}
                         className="w-full flex items-center gap-3 p-4 text-left"
+                        onClick={s.key==="logout" && (async () => await dispatch(logout()))}
                     >
                         <div
                             className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${s.iconBg}`}

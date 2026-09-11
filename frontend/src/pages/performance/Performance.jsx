@@ -2,14 +2,15 @@ import React from 'react'
 import { useNavigate } from 'react-router';
 import { Calendar, ChevronDown, ChevronRight, Users, MapPin } from 'lucide-react'
 import EntityIcon from '../../components/EntityIcon';
-import { user, summary, recentActivity } from '../../data/mockData';
+import { summary, recentActivity } from '../../data/mockData';
+import { useSelector } from 'react-redux';
 
 
 const SummaryCard = ({ icon, iconBg, value, label, onViewAll }) => {
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-4">
       <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${iconBg}`}>{icon}</div>
-      <p className="mt-4 text-[28px] font-bold leading-none text-ink-900">{value}</p>
+      <p className="mt-4 text-[28px] font-semibold leading-none text-ink-900">{value}</p>
       <div className="mt-3 flex items-center justify-between">
         <span className="text-sm font-medium text-ink-500">{label}</span>
         <button
@@ -47,6 +48,8 @@ const iconToneFor = (type) => {
 }
 
 const Performance = () => {
+  const { user } = useSelector(state => state.auth);
+  console.log(user);
   const navigate = useNavigate();
 
   return (
@@ -55,11 +58,14 @@ const Performance = () => {
       <div className="bg-white px-5 pb-5 pt-7">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-[22px] font-bold leading-tight text-ink-900">
-              Good Morning, {user.name}
+            <h1 className="text-[22px] font-semibold leading-tight text-ink-900">
+              Good Morning, {user?.fullName}
             </h1>
             <p className="mt-1 text-[15px] text-ink-400">
-              {user.role} &bull; {user.territory}
+              {user?.role?.name} &bull;
+              {user?.reportingDetails?.map((itm, i) => <span key={i}>
+                {itm?.territory}
+              </span>)}
             </p>
           </div>
           <button
@@ -74,7 +80,7 @@ const Performance = () => {
       </div>
 
       <div className="px-5">
-        <h2 className="mb-3 mt-6 text-[19px] font-bold text-ink-900">Performance Summary</h2>
+        <h2 className="mb-3 mt-6 text-[19px] font-semibold text-ink-900">Performance Summary</h2>
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 gap-3">
@@ -101,8 +107,8 @@ const Performance = () => {
           className="tap-highlight-none mt-4 flex w-full items-center justify-between gap-3 rounded-2xl bg-brand-50 px-4 py-4 text-left active:bg-brand-100"
         >
           <div className="min-w-0">
-            <p className="text-xs font-bold tracking-wide text-brand-500">PRIORITY ACTION</p>
-            <p className="mt-1 text-[15px] font-bold leading-snug text-ink-900">
+            <p className="text-xs font-semibold tracking-wide text-brand-500">PRIORITY ACTION</p>
+            <p className="mt-1 text-[15px] font-semibold leading-snug text-ink-900">
               {summary.priorityAction}
             </p>
           </div>
@@ -112,7 +118,7 @@ const Performance = () => {
         {/* Recent activity */}
         <div className="mt-6 rounded-2xl border border-ink-100 bg-white">
           <div className="flex items-center justify-between px-4 pt-4">
-            <h3 className="text-[17px] font-bold text-ink-900">Recent Activity</h3>
+            <h3 className="text-[17px] font-semibold text-ink-900">Recent Activity</h3>
             <button
               type="button"
               onClick={() => navigate('/visits')}

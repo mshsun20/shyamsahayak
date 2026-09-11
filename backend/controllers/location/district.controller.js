@@ -92,7 +92,7 @@ const update = async (req, res) => {
         const existingDistrict = await readByIdFunction(id);
         if (!existingDistrict) return res.status(404).json({ success: false, message: "District doesn't exist" });
 
-        const items = ["_id", "username"]
+        const items = ["_id", "code"]
         for (const key of items) {
             delete districtPayload[key]
         }

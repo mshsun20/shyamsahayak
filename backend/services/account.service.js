@@ -6,15 +6,31 @@ export const createFunction = async (payload) => {
 }
 
 export const readFunction = async () => {
-    return Account.find().populate("role createdBy updatedBy").lean();
+    return Account.find()
+    .select("-password -passwordBackup")
+    .populate("privilege role")
+    .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+    .populate({ path: "createdBy", select: "-password -passwordBackup" })
+    .populate({ path: "updatedBy", select: "-password -passwordBackup" })
+    .lean();
 }
 
 export const readByIdFunction = async (id) => {
-    return Account.findById(id).populate("role createdBy updatedBy");
+    return Account.findById(id)
+    .select("-password -passwordBackup")
+    .populate("privilege role")
+    .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+    .populate({ path: "createdBy", select: "-password -passwordBackup" })
+    .populate({ path: "updatedBy", select: "-password -passwordBackup" });
 }
 
 export const readByUniqueKeyFunction = async (uniqueKey) => {
-    return Account.findOne({ username: uniqueKey }).populate("role createdBy updatedBy");
+    return Account.findOne({ userId: uniqueKey })
+    .select("-password -passwordBackup")
+    .populate("privilege role")
+    .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+    .populate({ path: "createdBy", select: "-password -passwordBackup" })
+    .populate({ path: "updatedBy", select: "-password -passwordBackup" });
 }
 
 export const updateFunction = async (id, payload) => {

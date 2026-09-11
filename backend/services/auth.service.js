@@ -1,11 +1,14 @@
-import Account from "../models/account.model.js";
-import Session from "../models/session.model.js";
 import {
     generateAccessToken,
     generateRefreshToken,
     verifyAccessToken,
     verifyRefreshToken
 } from "../utils/tokenGenerator.util.js";
+import Account from "../models/account.model.js";
+import {
+    readByIdFunction
+} from "../services/account.service.js";
+import Session from "../models/session.model.js";
 import {
     comparePassword
 } from "../utils/passwordHash.util.js";
@@ -48,14 +51,17 @@ export const generateSession = async (account, device, location, userAgent, ipAd
     });
     const accountDetails = {
         _id: account?._id,
+        userId: account?.userId,
         username: account?.username,
+        employeeId: account?.employeeId,
+        passwordChangeFlag: account?.passwordChangeFlag,
+        reportingDetails: account?.reportingDetails?.map(arep => arep),
         email: account?.email,
         phone: account?.phone,
         fullName: account?.fullName,
         role: account?.role,
-        isCreator: account?.isCreator,
-        isApprover: account?.isApprover,
-        status: account?.status
+        remarks: account?.remarks,
+        status: account?.status,
     }
 
     return {
@@ -68,31 +74,29 @@ export const generateSession = async (account, device, location, userAgent, ipAd
 
 // handler functions
 export const loginUser = async (accountInfo) => {
-    const {
-        username,
-        password,
-        device,
-        location,
-        userAgent,
-        ipAddress
-    } = accountInfo;
+    let userId
+    const { password, device, location, userAgent, ipAddress } = accountInfo;
+    if (accountInfo.username) {
+        userId = accountInfo.username;
+    }
+    else {
+        userId = accountInfo.employeeId;
+    }
+    // console.log(userId);
+    const accountDetails = await Account.findOne({ userId })
+    .populate("privilege role")
+    .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+    .populate({ path: "createdBy", select: "-password -passwordBackup" })
+    .populate({ path: "updatedBy", select: "-password -passwordBackup" });
 
-    const accountDetails = await Account.findOne({
-            username
-        })
-        .populate(['role', 'createdBy', 'updatedBy'])
-        .lean();
-
+    // console.log(accountDetails);
     const hash = accountDetails?.password ?? "$2b$12$abcdefghijklmnopqrstuv"
     const accValdt = comparePassword(password, hash);
 
     // console.log(accValdt);
 
     if (accountDetails && accValdt) {
-        const account = await Account.findById(accountDetails._id).select(['-password', '-passwordBackup'])
-            .populate(['role', 'createdBy', 'updatedBy'])
-            .lean();
-
+        const account = await readByIdFunction(accountDetails._id);
         const verifiedData = await generateSession(
             account, device, location, userAgent, ipAddress
         );
@@ -110,11 +114,9 @@ export const checkSession = async (accessToken) => {
         sessacc: decoded.sessacc
     });
     if (!session) throw new Error('Session expired');
-
-    const account = await Account.findById(decoded.sessacc).select(['-password', '-passwordBackup'])
-        .populate(['role', 'createdBy', 'updatedBy']).lean();
+    
+    const account = await readByIdFunction(decoded.sessacc);
     if (!account) throw new Error('Account details not found');
-
     return account;
 };
 
@@ -129,21 +131,16 @@ export const regenerateToken = async (refreshToken) => {
     });
     if (!session) throw new Error('Invalid session');
 
-    const account = await Account
-        .findById(decoded.sessacc)
-        .select("-password -passwordBackup");
+    const account = await readByIdFunction(decoded.sessacc);
     if (!account) throw new Error('Account details not found');
     const newAccessToken = generateAccessToken(account);
-
     return newAccessToken;
 };
 
 export const logoutUser = async (refreshToken) => {
     if (refreshToken) {
         const refreshHash = hashGen(refreshToken);
-        await Session.deleteMany({
-            refreshToken: refreshHash
-        });
+        await Session.deleteMany({ refreshToken: refreshHash });
     }
     return true;
 };

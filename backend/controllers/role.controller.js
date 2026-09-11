@@ -92,7 +92,7 @@ const update = async (req, res) => {
         const existingRole = await readByIdFunction(id);
         if (!existingRole) return res.status(404).json({ success: false, message: "Role doesn't exist" });
 
-        const items = ["_id", "username"]
+        const items = ["_id", "name"]
         for (const key of items) {
             delete rolePayload[key]
         }

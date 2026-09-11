@@ -92,7 +92,7 @@ const update = async (req, res) => {
         const existingTerritory = await readByIdFunction(id);
         if (!existingTerritory) return res.status(404).json({ success: false, message: "Territory doesn't exist" });
 
-        const items = ["_id", "username"]
+        const items = ["_id", "code"]
         for (const key of items) {
             delete territoryPayload[key]
         }

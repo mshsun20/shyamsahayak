@@ -2,15 +2,12 @@ import React from 'react'
 import { NavLink } from 'react-router';
 import companyLogo from "../assets/logos/company-logo.png";
 import { topNavItems } from "../data/navItems";
+import { useSelector } from "react-redux";
 
 const Topbar = () => {
-    const [activeId, setActiveId] = React.useState(topNavItems[0]?.id || null)
-    const handleNavItem = (id) => {
-        setActiveId(id)
-    }
-
-    const user = "User"
-    const userAvatar = String(user)?.split(" ").map((w, i) => i<2 ? w[0] : "").join("");
+    const { user } = useSelector(state => state.auth);
+    // console.log(user);
+    const userAvatar = String(user?.fullName)?.split(" ").map((w, i) => i<2 ? w[0] : "").join("");
 
   return (
     <div className="nav-topbar">
@@ -24,15 +21,16 @@ const Topbar = () => {
                     <NavLink
                         key={item.id}
                         to={item.url}
-                        className={`nav-top-item ${activeId === item.id ? "active" : ""}`}
-                        onClick={() => handleNavItem(item.id)}
+                        className={({ isActive }) => `nav-top-item ${isActive ? "active" : ""}`}
                         title={item.label}
                     >
                         {item.icon ? <item.icon className="nav-top-icon" /> : ""}
                     </NavLink>
                 ))}
                 <div className="nav-top-item-avatar">
-                    <NavLink to={"/profile"} className="avatar-icon">{userAvatar}</NavLink>
+                    <NavLink to={"/profile"} className="avatar-icon">
+                        {userAvatar}
+                    </NavLink>
                 </div>
             </div>
         </div>

@@ -6,16 +6,33 @@ import {
     updateFunction,
     removeFunction
 } from "../services/account.service.js";
+import {
+    readByIdFunction as readPrivilegeById
+} from "../services/privilege.service.js";
 import { mapValidObjectId } from "../utils/objectValidation.util.js";
+import {
+    hashPassword
+} from "../utils/passwordHash.util.js";
 
 const create = async (req, res) => {
     try {
         const accountPayload = req.body;
         const user = req.user || null;
-        const existingAccount = await readByUniqueKeyFunction(String(accountPayload.username).trim());
+        // console.log(accountPayload);
+        const accountPrivilege = await readPrivilegeById(mapValidObjectId(accountPayload?.privilege));
+        if (parseInt(accountPrivilege.heirarchy) > 2) {
+            accountPayload.userId = accountPayload.employeeId
+        }
+        else {
+            accountPayload.userId = accountPayload.username
+        }
+
+        const existingAccount = await readByUniqueKeyFunction(String(accountPayload.userId).trim());
         if (existingAccount) return res.status(409).json({ success: false, message: "Account already exists" });
         
         Object.assign(accountPayload, {
+            password: hashPassword(accountPayload.password),
+            passwordBackup: accountPayload.password,
             createdBy: user?._id || null,
             status: "Active",
         })
