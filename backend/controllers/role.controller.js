@@ -4,8 +4,9 @@ import {
     readByIdFunction,
     readByUniqueKeyFunction,
     updateFunction,
-    removeFunction
+    deleteFunction
 } from "../services/role.service.js";
+import { assignRolePermissions } from "../services/permissionAssignment.service.js";
 import { mapValidObjectId } from "../utils/objectValidation.util.js";
 
 const create = async (req, res) => {
@@ -69,7 +70,7 @@ const readById = async (req, res) => {
 }
 const readByUniqueKey = async (req, res) => {
     try {
-        const uniqueKey = String(req.query.name || "").trim();
+        const uniqueKey = String(req.params.key || "").trim();
         const roleDetails = await readByUniqueKeyFunction(uniqueKey);
         res.status(200).json({
             success: true,
@@ -121,7 +122,7 @@ const remove = async (req, res) => {
         const existingRole = await readByIdFunction(id);
         if (!existingRole) return res.status(404).json({ success: false, message: "Role doesn't exist" });
 
-        const removalDetails = await removeFunction(id);
+        const removalDetails = await deleteFunction(id);
         if (!removalDetails) return res.status(400).json({ success: false, message: "Role removal failed" });
         return res.status(200).json({
             success: true,
@@ -137,5 +138,32 @@ const remove = async (req, res) => {
     }
 }
 
-const Role = { create, read, readById, readByUniqueKey, update, remove };
+const assignPermissions = async (req, res) => {
+    try {
+        const id = mapValidObjectId(req.params.id);
+        const { permissions = [] } = req.body;
+
+        if (!Array.isArray(permissions)) {
+            return res.status(400).json({
+                success: false,
+                message: "permissions must be an array",
+            });
+        }
+
+        const role = await assignRolePermissions(id, permissions);
+        return res.status(200).json({
+            success: true,
+            message: "Role permissions updated successfully",
+            data: role,
+        });
+    } catch (error) {
+        console.error("Assign role permissions error:", error);
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Internal server error",
+        });
+    }
+};
+
+const Role = { create, read, readById, readByUniqueKey, update, remove, assignPermissions };
 export default Role;

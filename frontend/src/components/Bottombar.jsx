@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 const Bottombar = () => {
     const [nvItms, setNvItms] = React.useState(bottomNavItems);
     const { user } = useSelector(state => state.auth);
-    console.log(user);
+    // console.log(user);
     const userRole = user?.role?.code;
 
     const setNavItems = React.useCallback(() => {

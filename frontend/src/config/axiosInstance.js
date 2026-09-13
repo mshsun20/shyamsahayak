@@ -9,7 +9,7 @@ const baseUrl = {
     development: import.meta.env.VITE_APIURL_DEV,
 };
 
-const basicAuthHeader = "Basic " + btoa(`${import.meta.env.VITE_API_USR}:${import.meta.env.VITE_API_PSS}`);
+// const basicAuthHeader = "Basic " + btoa(`${import.meta.env.VITE_API_USR}:${import.meta.env.VITE_API_PSS}`);
 
 const axiosInstance = axios.create({
     baseURL: baseUrl[appenv],
@@ -43,16 +43,11 @@ export const setupInterceptors = (store) => {
                 config.headers["Content-Type"] = "application/json";
                 config.headers["Accept"] = "application/json";
             }
+
             config.headers["X-Requested-With"] = "XMLHttpRequest";
 
-            if (!config.url?.startsWith("/auth")) {
-                config.headers["Authorization"] = basicAuthHeader;
-            }
-
             return config;
-
         },
-
         (error) => Promise.reject(error)
     );
 

@@ -2,10 +2,15 @@ import {
     loginUser,
     checkSession,
     regenerateToken,
+    changePasswordFunction,
     logoutUser,
     accessCookieOptions,
     refreshCookieOptions
 } from "../services/auth.service.js";
+import {
+    hashPassword,
+    comparePassword,
+} from "../utils/passwordHash.util.js";
 
 const login = async (req, res) => {
     try {
@@ -77,6 +82,46 @@ const logout = async (req, res) => {
     }
 };
 
-const Auth = { login, checkAuth, regenerateAccessToken, logout };
+const changePassword = async (req, res) => {
+    try {
+        const accountPayload = req.body
+        const user = req.user || null;
+        const accessToken = req.cookies.access_token;
+        const accountDetails = await checkSession(accessToken);
+        const hash = accountDetails?.password ?? "$2b$12$abcdefghijklmnopqrstuv"
+        const accValdt = comparePassword(accountPayload?.current, hash);
+        if (accValdt) {
+            const accountInfo = {}
+            Object.assign(accountInfo, {
+                password: hashPassword(accountPayload?.next),
+                passwordBackup: accountPayload?.next,
+                passwordChangeFlag: false,
+                status: "Active",
+                updatedBy: user?._id,
+            })
+            const chnagePasswordResult = await changePasswordFunction(accountDetails?._id, accountInfo);
+            if (chnagePasswordResult) {
+                res.status(201).json({
+                    success: true,
+                    message: "Password changed successfully"
+                })
+            }
+            else {
+                res.status(401).json({
+                    success: false,
+                    message: "Password changing failed"
+                })
+            }
+        }
+        else {
+            throw new Error('Wrong password provided');
+        }
+    } catch (error) {
+        console.error(error.message);
+        res.status(400).json({ success: false, message: error.message });
+    }
+}
+
+const Auth = { login, checkAuth, regenerateAccessToken, logout, changePassword };
 
 export default Auth;

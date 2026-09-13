@@ -2,10 +2,16 @@ import React from 'react'
 import { Lock, Eye, EyeOff, CheckCircle2, ChevronLeft } from "lucide-react";
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from "../redux/slices/authSlice";
-import { NavLink } from 'react-router';
+import { Navigate, NavLink, useNavigate } from 'react-router';
+import axiosInstance from '../config/axiosInstance';
 
 const PinField = React.memo(function PinField({ label, hint, value, onChange }) {
     const [visible, setVisible] = React.useState(false);
+    const handleChange = (e) => {
+        onChange(e.target.value.replace(/\D/g, ""));
+        // onChange(e.target.value);
+    }
+
     return (
         <div className="mt-5">
             <p className="text-[15px] font-bold text-neutral-900">{label}</p>
@@ -16,7 +22,7 @@ const PinField = React.memo(function PinField({ label, hint, value, onChange }) 
                     inputMode="numeric"
                     maxLength={4}
                     value={value}
-                    onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
+                    onChange={handleChange}
                     className="w-full rounded-xl border border-neutral-200 py-3.5 px-4 text-[20px] tracking-[10px] font-semibold text-neutral-800 outline-none focus:border-brand"
                 />
                 <button
@@ -36,24 +42,67 @@ const ChangePassword = () => {
     const [current, setCurrent] = React.useState("");
     const [next, setNext] = React.useState("");
     const [confirm, setConfirm] = React.useState("");
+    const [validationError, setValidationError] = React.useState("");
+    const navigate = useNavigate();
     const { user } = useSelector(state => state.auth);
-    const userPassChangeFlag = user?.passwordChangeFlag
+    const userPassChangeFlag = user?.passwordChangeFlag;
+    // console.log(userPassChangeFlag);
 
     const rules = [
         "4 digits",
         "Only numbers (0-9)",
         "Not same as old PIN",
         "Not in sequence",
+        "New and Confirm both should be same"
     ];
+    React.useEffect(() => {
+        if (!confirm) {
+            setValidationError("");
+            return;
+        }
+        if (next !== confirm) {
+            setValidationError(rules[4]);
+        }
+        else {
+            setValidationError("");
+        }
+    }, [next, confirm])
 
     const handleLogout = React.useCallback(async () => {
         try {
             await dispatch(logout());
-            
         } catch (error) {
             console.error(error.message);
         }
-    }, [])
+    }, [dispatch])
+
+    const handlePassChange = React.useCallback(async () => {
+        // console.log(current);
+        // console.log(next);
+        // console.log(confirm);
+
+        if (next !== confirm) {
+            setValidationError(rules[4]);
+            return;
+        }
+
+        try {
+            const response = await axiosInstance.post("/auth/change-pass", { current, next });
+            console.log(response);
+            if (response.status === 201) {
+                if (response.data?.success) {
+                    handleLogout();
+                }
+                else {
+                    alert(response.data.mesasge)
+                }
+            }
+        } catch (error) {
+            console.error(error.message);
+        }
+    }, [handleLogout, rules]);
+
+    const isConfirmValid = !confirm || next === confirm;
 
     return (
         <div className="min-h-dvh px-4 pt-6 pb-10">
@@ -88,17 +137,29 @@ const ChangePassword = () => {
             />
 
             <div className="flex flex-col gap-2.5 mt-5">
-                {rules.map((r) => (
-                    <div key={r} className="flex items-center gap-2.5">
-                        <CheckCircle2 size={17} className="text-emerald-500 shrink-0" />
-                        <span className="text-[13.5px] text-neutral-600">{r}</span>
-                    </div>
-                ))}
+                {rules.map((r, i) => {
+                    const isInvalid = i === 4 && validationError === r;
+                    const isValid = i === 4 && confirm.length > 0 && isConfirmValid;
+                    return (
+                        <div key={r} className="flex items-center gap-2.5">
+                            <CheckCircle2
+                                size={17}
+                                className={isInvalid ? `text-red-500 shrink-0` : `text-emerald-500 shrink-0`}
+                            />
+                            <span
+                                className={`text-[13.5px] ${isInvalid && "text-red-500"} text-neutral-600`}
+                            >
+                                {r}
+                            </span>
+                        </div>
+                    )
+                })}
             </div>
 
             <button
-                disabled={current.length < 4 || next.length < 4 || confirm.length < 4}
-                className="w-full mt-7 rounded-xl bg-brand py-3.5 text-white text-[15px] font-semibold disabled:opacity-50"
+                disabled={current.length < 4 || next.length < 4 || confirm.length < 4 || validationError}
+                className={`w-full mt-7 rounded-xl bg-brand py-3.5 text-white text-[15px] font-semibold disabled:cursor-not-allowed! disabled:opacity-50`}
+                onClick={handlePassChange}
             >
                 Update PIN
             </button>
@@ -106,18 +167,18 @@ const ChangePassword = () => {
             {userPassChangeFlag
             ? <button
                 onClick={handleLogout}
-                className="w-full mt-4 flex items-center justify-center gap-1 text-brand font-semibold text-[14px]"
+                className="w-full mt-4 flex items-center justify-center gap-1 text-amber-950 font-semibold text-[14px]"
             >
                 <ChevronLeft size={16} />
                 Back to Login
             </button>
-            : <NavLink
-                to={"/dashboard"}
-                className="w-full mt-4 flex items-center justify-center gap-1 text-brand font-semibold border border-b-brand text-[14px]"
+            : <button
+                onClick={() => navigate("/dashboard")}
+                className="w-full mt-4 flex items-center justify-center gap-1 text-brand font-semibold text-[14px]"
             >
                 <ChevronLeft size={16} />
                 Back to Home
-            </NavLink>}
+            </button>}
         </div>
     )
 }

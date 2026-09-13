@@ -1,15 +1,16 @@
 import expres from "express";
 const accountRouter = expres.Router();
 import Account from "../controllers/account.controller.js";
-import { jwtHybrdProtect, basicAuth } from "../middlewares/auth.middleware.js";
+import { unifiedAuthProtect } from "../middlewares/auth.middleware.js";
+import { requirePermission } from "../middlewares/permission.middleware.js";
 
-// accountRouter.use(jwtHybrdProtect);
+accountRouter.use(unifiedAuthProtect);
 
-accountRouter.post("/", Account.create);
-accountRouter.get("/", Account.read);
-accountRouter.get("/:id", Account.readById);
-accountRouter.get("/", Account.readByUniqueKey);
-accountRouter.patch("/:id", Account.update);
-accountRouter.delete("/:id", Account.remove);
+accountRouter.post("/", requirePermission("account:create"), Account.create);
+accountRouter.get("/", requirePermission("account:read"), Account.read);
+accountRouter.get("/unique/:key", requirePermission("account:read"), Account.readByUniqueKey);
+accountRouter.get("/:id", requirePermission("account:read"), Account.readById);
+accountRouter.patch("/:id", requirePermission("account:update"), Account.update);
+accountRouter.delete("/:id", requirePermission("account:delete"), Account.remove);
 
 export default accountRouter;

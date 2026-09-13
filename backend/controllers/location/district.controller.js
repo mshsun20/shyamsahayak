@@ -4,7 +4,7 @@ import {
     readByIdFunction,
     readByUniqueKeyFunction,
     updateFunction,
-    removeFunction
+    deleteFunction
 } from "../../services/location/district.service.js";
 import { mapValidObjectId } from "../../utils/objectValidation.util.js";
 
@@ -69,7 +69,7 @@ const readById = async (req, res) => {
 }
 const readByUniqueKey = async (req, res) => {
     try {
-        const uniqueKey = String(req.query.name || "").trim();
+        const uniqueKey = String(req.params.key || "").trim();
         const districtDetails = await readByUniqueKeyFunction(uniqueKey);
         res.status(200).json({
             success: true,
@@ -121,7 +121,7 @@ const remove = async (req, res) => {
         const existingDistrict = await readByIdFunction(id);
         if (!existingDistrict) return res.status(404).json({ success: false, message: "District doesn't exist" });
 
-        const removalDetails = await removeFunction(id);
+        const removalDetails = await deleteFunction(id);
         if (!removalDetails) return res.status(400).json({ success: false, message: "District removal failed" });
         return res.status(200).json({
             success: true,

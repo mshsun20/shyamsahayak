@@ -37,7 +37,7 @@ const router = createBrowserRouter([
         children: [
             { index: true, element: <Navigate to="/dashboard" replace /> },
             { path: "/profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
-            { path: "/change-password", element: <ProtectedRoute><ChangePassword /></ProtectedRoute> },
+            { path: "/change-password", element: <ProtectedRoute allowPasswordChange={true}><ChangePassword /></ProtectedRoute> },
             { path: "/dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
             { path: "/chat", element: <ProtectedRoute><ChatScreen /></ProtectedRoute> },
             { path: "/recent-conversations", element: <ProtectedRoute><RecentConversationsScreen /></ProtectedRoute> },

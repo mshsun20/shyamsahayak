@@ -6,15 +6,36 @@ export const createFunction = async (payload) => {
 }
 
 export const readFunction = async () => {
-    return Privilege.find().populate("createdBy updatedBy").lean();
+    return Privilege.find().populate([
+        {
+            path: "permissions",
+            select: "code name module action status",
+        },
+        "createdBy",
+        "updatedBy",
+    ]).lean();
 }
 
 export const readByIdFunction = async (id) => {
-    return Privilege.findById(id).populate("createdBy updatedBy");
+    return Privilege.findById(id).populate([
+        {
+            path: "permissions",
+            select: "code name module action status",
+        },
+        "createdBy",
+        "updatedBy",
+    ]).lean();
 }
 
 export const readByUniqueKeyFunction = async (uniqueKey) => {
-    return Privilege.findOne({ name: uniqueKey }).populate("createdBy updatedBy");
+    return Privilege.findOne({ name: uniqueKey }).populate([
+        {
+            path: "permissions",
+            select: "code name module action status",
+        },
+        "createdBy",
+        "updatedBy",
+    ]).lean();
 }
 
 export const updateFunction = async (id, payload) => {
@@ -22,7 +43,7 @@ export const updateFunction = async (id, payload) => {
     return updatedDetails;
 }
 
-export const removeFunction = async (id) => {
+export const deleteFunction = async (id) => {
     const removalDetails = await Privilege.findByIdAndDelete(id);
     return removalDetails;
 }

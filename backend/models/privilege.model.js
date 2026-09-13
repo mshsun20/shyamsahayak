@@ -6,6 +6,7 @@ const PrivilegeSchema = new Schema({
     heirarchy: { type: Number, required: true },
     sameLevel: { type: Boolean, required: true, default: false },
     description: { type: String, required: true, trim: true },
+    permissions: [{ type: Types.ObjectId, ref: "Permission" }],
     status: { type: String, required: true, enum: ["Active", "Inactive"], default: "Active" },
     createdBy: { type: Types.ObjectId, ref: "Account" },
     updatedBy: { type: Types.ObjectId, ref: "Account" },

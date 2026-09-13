@@ -6,15 +6,36 @@ export const createFunction = async (payload) => {
 }
 
 export const readFunction = async () => {
-    return Role.find().populate("createdBy updatedBy").lean();
+    return Role.find().populate([
+        {
+            path: "permissions",
+            select: "code name module action status",
+        },
+        "createdBy",
+        "updatedBy",
+    ]).lean();
 }
 
 export const readByIdFunction = async (id) => {
-    return Role.findById(id).populate("createdBy updatedBy");
+    return Role.findById(id).populate([
+        {
+            path: "permissions",
+            select: "code name module action status",
+        },
+        "createdBy",
+        "updatedBy",
+    ]).lean();
 }
 
 export const readByUniqueKeyFunction = async (uniqueKey) => {
-    return Role.findOne({ code: uniqueKey }).populate("createdBy updatedBy");
+    return Role.findOne({ code: uniqueKey }).populate([
+        {
+            path: "permissions",
+            select: "code name module action status",
+        },
+        "createdBy",
+        "updatedBy",
+    ]).lean();
 }
 
 export const updateFunction = async (id, payload) => {
@@ -22,7 +43,7 @@ export const updateFunction = async (id, payload) => {
     return updatedDetails;
 }
 
-export const removeFunction = async (id) => {
+export const deleteFunction = async (id) => {
     const removalDetails = await Role.findByIdAndDelete(id);
     return removalDetails;
 }

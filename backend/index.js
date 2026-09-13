@@ -8,6 +8,8 @@ import bodyParser from "body-parser";
 import env from "./config/env.js";
 import connectDB from "./config/dbcon.js";
 import authRouter from "./routes/auth.route.js";
+import permissionRouter from "./routes/permission.route.js";
+import apiClientRouter from "./routes/apiClient.route.js";
 import accountRouter from "./routes/account.route.js";
 import privilegeRouter from "./routes/privilege.route.js";
 import roleRouter from "./routes/role.route.js";
@@ -55,6 +57,8 @@ app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 // All routes
 app.use("/api/auth", authRouter);
+app.use("/api/permissions", permissionRouter);
+app.use("/api/api-clients", apiClientRouter);
 app.use("/api/accounts", accountRouter);
 app.use("/api/privileges", privilegeRouter);
 app.use("/api/roles", roleRouter);
@@ -65,6 +69,31 @@ app.use("/api/chats", chatRouter);
 app.get("/", (req, res) => {
     res.status(200).json({ message: "Welcome to the Shyam Sahayak API!" });
 });
+
+// UI Static Serving
+if (['quality', 'production'].includes(env.nodeEnv)) {
+    // =========================
+    // 1. User UI
+    // =========================
+    const frontendDistPath = path.join(__dirname, "..", "frontend", "dist");
+    // Serve User frontend static assets
+    app.use(express.static(frontendDistPath));
+    // User frontend SPA fallback
+    app.get(/^\/(?!api|admin)(.*)$/, (_, res) => {
+        res.sendFile(path.join(frontendDistPath, "index.html"));
+    });
+    
+    // =========================
+    // 2. Admin UI
+    // =========================
+    const adminDistPath = path.join(__dirname, "..", "admin", "dist");
+    // Serve Admin static assets
+    app.use( "/admin", express.static(adminDistPath));
+    // Admin SPA fallback
+    app.get(/^\/admin(?:\/.*)?$/, (_, res) => {
+        res.sendFile(path.join(adminDistPath, "index.html"));
+    });
+}
 
 (async () => {
     await connectDB();

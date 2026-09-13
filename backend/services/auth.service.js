@@ -8,9 +8,10 @@ import Account from "../models/account.model.js";
 import {
     readByIdFunction
 } from "../services/account.service.js";
+import { getEffectivePermissions } from "../services/authorization.service.js";
 import Session from "../models/session.model.js";
 import {
-    comparePassword
+    comparePassword,
 } from "../utils/passwordHash.util.js";
 import {
     hashGen
@@ -49,6 +50,7 @@ export const generateSession = async (account, device, location, userAgent, ipAd
         refreshToken: refreshHash,
         expiresAt: new Date(Date.now() + refreshTokenExpiryTTL)
     });
+    const allPermissions = getEffectivePermissions(account);
     const accountDetails = {
         _id: account?._id,
         userId: account?.userId,
@@ -60,14 +62,16 @@ export const generateSession = async (account, device, location, userAgent, ipAd
         phone: account?.phone,
         fullName: account?.fullName,
         role: account?.role,
+        privilege: account?.privilege,
         remarks: account?.remarks,
         status: account?.status,
+        allPermissions
     }
 
     return {
         accessToken,
         refreshToken,
-        accountDetails
+        accountDetails,
     };
 }
 
@@ -84,11 +88,6 @@ export const loginUser = async (accountInfo) => {
     }
     // console.log(userId);
     const accountDetails = await Account.findOne({ userId })
-    .populate("privilege role")
-    .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
-    .populate({ path: "createdBy", select: "-password -passwordBackup" })
-    .populate({ path: "updatedBy", select: "-password -passwordBackup" });
-
     // console.log(accountDetails);
     const hash = accountDetails?.password ?? "$2b$12$abcdefghijklmnopqrstuv"
     const accValdt = comparePassword(password, hash);
@@ -144,3 +143,10 @@ export const logoutUser = async (refreshToken) => {
     }
     return true;
 };
+
+export const changePasswordFunction = async (id, payload) => {
+    const accountUpdated = await Account.findByIdAndUpdate(id, payload, { returnDocument: "after" });
+    if (accountUpdated) {
+        return true;
+    }
+}

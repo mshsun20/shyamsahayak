@@ -30,9 +30,6 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1
     devDependencies:
-      '@rolldown/plugin-babel':
-        specifier: ^0.2.4
-        version: 0.2.4(@babel/core@8.0.1)(rolldown@1.2.8)(vite@8.3.0(jiti@2.7.0))
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.0(jiti@2.7.0))
@@ -916,8 +913,10 @@ snapshots:
     dependencies:
       '@babel/helper-validator-identifier': 8.0.4
       js-tokens: 10.0.0
+    optional: true
 
-  '@babel/compat-data@8.0.0': {}
+  '@babel/compat-data@8.0.0':
+    optional: true
 
   '@babel/core@8.0.1':
     dependencies:
@@ -937,6 +936,7 @@ snapshots:
       json5: 2.2.3
       obug: 2.2.1
       semver: 7.8.5
+    optional: true
 
   '@babel/generator@8.0.0':
     dependencies:
@@ -946,6 +946,7 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.31
       '@types/jsesc': 2.5.1
       jsesc: 3.1.0
+    optional: true
 
   '@babel/helper-compilation-targets@8.0.0':
     dependencies:
@@ -954,29 +955,37 @@ snapshots:
       browserslist: 4.28.9
       lru-cache: 11.5.2
       semver: 7.8.5
+    optional: true
 
-  '@babel/helper-globals@8.0.0': {}
+  '@babel/helper-globals@8.0.0':
+    optional: true
 
-  '@babel/helper-string-parser@8.0.0': {}
+  '@babel/helper-string-parser@8.0.0':
+    optional: true
 
-  '@babel/helper-validator-identifier@8.0.4': {}
+  '@babel/helper-validator-identifier@8.0.4':
+    optional: true
 
-  '@babel/helper-validator-option@8.0.0': {}
+  '@babel/helper-validator-option@8.0.0':
+    optional: true
 
   '@babel/helpers@8.0.0':
     dependencies:
       '@babel/template': 8.0.0
       '@babel/types': 8.0.4
+    optional: true
 
   '@babel/parser@8.0.4':
     dependencies:
       '@babel/types': 8.0.4
+    optional: true
 
   '@babel/template@8.0.0':
     dependencies:
       '@babel/code-frame': 8.0.0
       '@babel/parser': 8.0.4
       '@babel/types': 8.0.4
+    optional: true
 
   '@babel/traverse@8.0.4':
     dependencies:
@@ -987,11 +996,13 @@ snapshots:
       '@babel/template': 8.0.0
       '@babel/types': 8.0.4
       obug: 2.2.1
+    optional: true
 
   '@babel/types@8.0.4':
     dependencies:
       '@babel/helper-string-parser': 8.0.0
       '@babel/helper-validator-identifier': 8.0.4
+    optional: true
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -1123,6 +1134,7 @@ snapshots:
       rolldown: 1.2.8
     optionalDependencies:
       vite: 8.3.0(jiti@2.7.0)
+    optional: true
 
   '@rolldown/pluginutils@1.0.1': {}
 
@@ -1194,9 +1206,11 @@ snapshots:
       tailwindcss: 4.3.3
       vite: 8.3.0(jiti@2.7.0)
 
-  '@types/gensync@1.0.5': {}
+  '@types/gensync@1.0.5':
+    optional: true
 
-  '@types/jsesc@2.5.1': {}
+  '@types/jsesc@2.5.1':
+    optional: true
 
   '@types/react-dom@19.3.0(@types/react@19.3.0)':
     dependencies:
@@ -1215,7 +1229,8 @@ snapshots:
     optionalDependencies:
       '@rolldown/plugin-babel': 0.2.4(@babel/core@8.0.1)(rolldown@1.2.8)(vite@8.3.0(jiti@2.7.0))
 
-  baseline-browser-mapping@2.11.21: {}
+  baseline-browser-mapping@2.11.21:
+    optional: true
 
   browserslist@4.28.9:
     dependencies:
@@ -1224,10 +1239,13 @@ snapshots:
       electron-to-chromium: 1.5.426
       node-releases: 2.0.55
       update-browserslist-db: 1.3.2(browserslist@4.28.9)
+    optional: true
 
-  caniuse-lite@1.0.30001810: {}
+  caniuse-lite@1.0.30001810:
+    optional: true
 
-  convert-source-map@2.0.0: {}
+  convert-source-map@2.0.0:
+    optional: true
 
   cookie@1.1.1: {}
 
@@ -1235,16 +1253,19 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  electron-to-chromium@1.5.426: {}
+  electron-to-chromium@1.5.426:
+    optional: true
 
-  empathic@2.0.1: {}
+  empathic@2.0.1:
+    optional: true
 
   enhanced-resolve@5.24.5:
     dependencies:
       graceful-fs: 4.2.11
       tapable: 2.3.3
 
-  escalade@3.2.0: {}
+  escalade@3.2.0:
+    optional: true
 
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
@@ -1253,19 +1274,24 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  gensync@1.0.0-beta.2: {}
+  gensync@1.0.0-beta.2:
+    optional: true
 
   graceful-fs@4.2.11: {}
 
-  import-meta-resolve@4.2.0: {}
+  import-meta-resolve@4.2.0:
+    optional: true
 
   jiti@2.7.0: {}
 
-  js-tokens@10.0.0: {}
+  js-tokens@10.0.0:
+    optional: true
 
-  jsesc@3.1.0: {}
+  jsesc@3.1.0:
+    optional: true
 
-  json5@2.2.3: {}
+  json5@2.2.3:
+    optional: true
 
   lightningcss-android-arm64@1.32.0:
     optional: true
@@ -1365,7 +1391,8 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.33.0
       lightningcss-win32-x64-msvc: 1.33.0
 
-  lru-cache@11.5.2: {}
+  lru-cache@11.5.2:
+    optional: true
 
   lucide-react@1.44.0(react@19.3.0):
     dependencies:
@@ -1377,9 +1404,11 @@ snapshots:
 
   nanoid@3.3.18: {}
 
-  node-releases@2.0.55: {}
+  node-releases@2.0.55:
+    optional: true
 
-  obug@2.2.1: {}
+  obug@2.2.1:
+    optional: true
 
   oxlint@1.82.0:
     optionalDependencies:
@@ -1472,7 +1501,8 @@ snapshots:
 
   scheduler@0.28.0: {}
 
-  semver@7.8.5: {}
+  semver@7.8.5:
+    optional: true
 
   set-cookie-parser@2.7.2: {}
 
@@ -1492,6 +1522,7 @@ snapshots:
       browserslist: 4.28.9
       escalade: 3.2.0
       picocolors: 1.1.1
+    optional: true
 
   use-sync-external-store@1.7.0(react@19.3.0):
     dependencies:

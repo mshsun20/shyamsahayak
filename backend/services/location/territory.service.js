@@ -22,7 +22,7 @@ export const updateFunction = async (id, payload) => {
     return updatedDetails;
 }
 
-export const removeFunction = async (id) => {
+export const deleteFunction = async (id) => {
     const removalDetails = await Territory.findByIdAndDelete(id);
     return removalDetails;
 }

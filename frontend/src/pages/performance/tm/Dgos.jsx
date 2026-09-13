@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate } from "react-router";
 import EntityListLayout from "../../../components/EntityListLayout";
+import axiosInstance from '../../../config/axiosInstance';
 
 const DGOS = [
     { key: "d1", code: "DGO1001", title: "Raj Kumar", related: "Dhanbad", achievement: 62, delta: "-18%", status: "Needs Attention" },
@@ -19,6 +20,19 @@ const STATS = [
 
 const Dgos = () => {
     const navigate = useNavigate();
+    const [dataSet, setDataSet] = React.useState([])
+
+    const fetchData = React.useCallback(async () => {
+        try {
+            const response = await axiosInstance.get(`/accounts`);
+            console.log(response);
+        } catch (error) {
+            console.error(error.message);
+        }
+    }, []);
+    React.useEffect(() => {
+        fetchData();
+    }, [fetchData])
 
   return (
     <EntityListLayout

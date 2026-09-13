@@ -4,7 +4,7 @@ import {
     readByIdFunction,
     readByUniqueKeyFunction,
     updateFunction,
-    removeFunction
+    deleteFunction
 } from "../services/account.service.js";
 import {
     readByIdFunction as readPrivilegeById
@@ -86,7 +86,7 @@ const readById = async (req, res) => {
 }
 const readByUniqueKey = async (req, res) => {
     try {
-        const uniqueKey = String(req.query.username || "").trim();
+        const uniqueKey = String(req.params.key || "").trim();
         const accountDetails = await readByUniqueKeyFunction(uniqueKey);
         res.status(200).json({
             success: true,
@@ -138,7 +138,7 @@ const remove = async (req, res) => {
         const existingAccount = await readByIdFunction(id);
         if (!existingAccount) return res.status(404).json({ success: false, message: "Account doesn't exist" });
 
-        const removalDetails = await removeFunction(id);
+        const removalDetails = await deleteFunction(id);
         if (!removalDetails) return res.status(400).json({ success: false, message: "Account removal failed" });
         return res.status(200).json({
             success: true,

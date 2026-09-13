@@ -8,6 +8,7 @@ import EntityIcon from '../../components/EntityIcon.jsx'
 import StatusPill from '../../components/StatusPill.jsx'
 import StatsFooter from '../../components/StatsFooter.jsx'
 import { fabricators, fabricatorStats } from '../../data/mockData.js'
+import axiosInstance from '../../config/axiosInstance.js';
 
 const TABS = [
   { key: 'all', label: 'All', count: 67 },
@@ -22,7 +23,7 @@ const STATUS_KEY = {
   'NEEDS ATTENTION': 'needs_attention',
 }
 
-const FabricatorCard = React.memo(function FabricatorCard({ fabricator, onClick }) {
+const FabricatorCard = React.memo(function FabricatorCard({ fabricator, onClick }) {  
   return (
     <button
       type="button"
@@ -94,6 +95,22 @@ const Fabricators = () => {
       return matchesTab && matchesQuery
     })
   }, [query, activeTab])
+
+  const fetchData = React.useCallback(async () => {
+    try {
+      const response = await axiosInstance.get("/accounts");
+
+      console.log("ACCOUNT API RESPONSE:", response);
+    } catch (error) {
+      console.error("ACCOUNT API ERROR:", error);
+      console.error("STATUS:", error.response?.status);
+      console.error("DATA:", error.response?.data);
+      console.error("HEADERS:", error.response?.headers);
+    }
+  }, []);
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData])
 
   return (
     <div className="flex min-h-screen flex-col bg-ink-50">
