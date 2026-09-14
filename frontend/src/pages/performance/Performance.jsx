@@ -1,10 +1,99 @@
 import React from 'react'
 import { useNavigate } from 'react-router';
-import { Calendar, ChevronDown, ChevronRight, Users, MapPin } from 'lucide-react'
+import { Calendar, ChevronDown, Check, ChevronRight, Users, MapPin } from 'lucide-react'
 import EntityIcon from '../../components/EntityIcon';
 import { summary, recentActivity } from '../../data/mockData';
 import { useSelector } from 'react-redux';
 
+const MonthSelect = ({ summary, selectedMonth, onChange }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const selectRef = React.useRef(null);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleSelect = (item) => {
+    onChange(item);
+    setIsOpen(false);
+  };
+
+  return (
+    <div ref={selectRef} className="relative shrink-0">
+      {/* Select Button */}
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="tap-highlight-none flex w-full min-w-40 items-center justify-between gap-2 rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm font-semibold text-ink-900 transition-colors active:bg-ink-50"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <span className="flex min-w-0 items-center gap-1.5">
+          <Calendar size={16} className="shrink-0 text-brand-500" />
+
+          <span className="truncate">
+            {selectedMonth?.month || "Select month"}
+          </span>
+        </span>
+
+        <ChevronDown
+          size={16}
+          className={`shrink-0 text-ink-400 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {/* Dropdown */}
+      {isOpen && summary?.length > 0 && (
+        <div
+          className="absolute right-0 z-50 mt-2 min-w-full overflow-hidden rounded-xl border border-ink-200 bg-white p-1.5 shadow-lg"
+          role="listbox"
+        >
+          {summary.map((item) => {
+            const isSelected =
+              selectedMonth?.summaryId === item.summaryId;
+
+            return (
+              <button
+                key={item.summaryId}
+                type="button"
+                onClick={() => handleSelect(item)}
+                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                  isSelected
+                    ? "bg-brand-50 font-semibold text-brand-600"
+                    : "text-ink-700 hover:bg-ink-50"
+                }`}
+                role="option"
+                aria-selected={isSelected}
+              >
+                <span>{item.month}</span>
+
+                {isSelected && (
+                  <Check
+                    size={16}
+                    className="shrink-0 text-brand-500"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const SummaryCard = ({ icon, iconBg, value, label, onViewAll }) => {
   return (
@@ -49,8 +138,11 @@ const iconToneFor = (type) => {
 
 const Performance = () => {
   const { user } = useSelector(state => state.auth);
-  console.log(user);
+  // console.log(user);
   const navigate = useNavigate();
+  const [selectedMonth, setSelectedMonth] = React.useState(
+    summary?.length > 0 ? summary[summary.length - 1] : null
+  );
 
   return (
     <div className="min-h-screen bg-ink-50 pb-8">
@@ -68,14 +160,16 @@ const Performance = () => {
               </span>)}
             </p>
           </div>
-          <button
+
+          <MonthSelect summary={summary} selectedMonth={selectedMonth} onChange={setSelectedMonth} />
+          {/* <button
             type="button"
             className="tap-highlight-none flex shrink-0 items-center gap-1.5 rounded-xl border border-ink-200 px-3 py-2.5 text-sm font-semibold text-ink-900 active:bg-ink-50"
           >
             <Calendar size={16} className="text-brand-500" />
-            {summary.month}
+            {summary?.length > 0 && summary?.map(s => <span key={s.summaryId}>{s.month}</span>)}
             <ChevronDown size={16} className="text-ink-400" />
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -87,14 +181,14 @@ const Performance = () => {
           <SummaryCard
             icon={<Users size={22} className="text-brand-500" />}
             iconBg="bg-brand-100"
-            value={summary.fabricatorsCount}
+            value={selectedMonth?.fabricatorsCount ?? 0}
             label="Fabricators"
             onViewAll={() => navigate('/fabricators')}
           />
           <SummaryCard
             icon={<MapPin size={22} className="text-info-600" />}
             iconBg="bg-info-100"
-            value={summary.visitsCount}
+            value={selectedMonth?.visitsCount ?? 0}
             label="Visits"
             onViewAll={() => navigate('/visits')}
           />

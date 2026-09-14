@@ -4,6 +4,7 @@ import Router from "./routes/Router";
 import { useDispatch, useSelector } from "react-redux";
 import { checkAuth } from './redux/slices/authSlice';
 import Loader from './components/Loader';
+import Snackbar from "./components/Snackbar";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -16,7 +17,10 @@ const App = () => {
   }, [dispatch, isAuthenticated]);
 
   if (loading) return <Loader />    
-  return <Router />
+  return <>
+    <Router />
+    <Snackbar />
+  </>
 }
 
 export default App

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/slices/authSlice";
+import { showSnackbar } from "../../redux/slices/snackbarSlice";
 
 const SETTINGS = [
     {
@@ -54,8 +55,10 @@ const Profile = () => {
     const handleLogout = React.useCallback(async () => {
         try {
             await dispatch(logout());
+            await dispatch(showSnackbar({ message: "Logout successful", type: "info" }))
         } catch (error) {
             console.error(error.message);
+            await dispatch(showSnackbar({ message: error.message, type: "error" }))
         }
     }, [])
 

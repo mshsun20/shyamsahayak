@@ -35,6 +35,13 @@ export const refreshCookieOptions = {
 };
 
 // reusable functions
+export const accessControl = async (client, accountPrivilege) => {
+    return [
+        String(client).trim().toLowerCase() === "chatapp",
+        String(client).trim().toLowerCase() === "adminpanel" && parseInt(accountPrivilege) < 3
+    ]
+}
+
 export const generateSession = async (account, device, location, userAgent, ipAddress) => {
     const accessToken = generateAccessToken(account);
     const refreshToken = generateRefreshToken(account);
@@ -79,7 +86,7 @@ export const generateSession = async (account, device, location, userAgent, ipAd
 // handler functions
 export const loginUser = async (accountInfo) => {
     let userId
-    const { password, device, location, userAgent, ipAddress } = accountInfo;
+    const { password, client, device, location, userAgent, ipAddress } = accountInfo;
     if (accountInfo.username) {
         userId = accountInfo.username;
     }
@@ -87,21 +94,51 @@ export const loginUser = async (accountInfo) => {
         userId = accountInfo.employeeId;
     }
     // console.log(userId);
-    const accountDetails = await Account.findOne({ userId })
-    // console.log(accountDetails);
-    const hash = accountDetails?.password ?? "$2b$12$abcdefghijklmnopqrstuv"
-    const accValdt = comparePassword(password, hash);
+    const accountDetails = await Account.findOne({ userId }).populate([
+        {
+            path: "role",
+            populate: {
+                path: "permissions",
+                select: "code name module action status",
+            },
+        },
+        {
+            path: "privilege",
+            populate: {
+                path: "permissions",
+                select: "code name module action status",
+            },
+        },
+        {
+            path: "permissions",
+            select: "code name module action status",
+        },
+    ])
+    .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+    .populate({ path: "createdBy", select: "-password -passwordBackup" })
+    .populate({ path: "updatedBy", select: "-password -passwordBackup" })
+    .lean();
+    
+    const accessUsecases = await accessControl(client, accountDetails?.privilege?.heirarchy);
+    // console.log(accessUsecases);
+    if (accessUsecases?.length > 0 && accessUsecases?.some(a => a)) {
+        const hash = accountDetails?.password ?? "$2b$12$abcdefghijklmnopqrstuv"
+        const accValdt = comparePassword(password, hash);
 
-    // console.log(accValdt);
+        // console.log(accValdt);
 
-    if (accountDetails && accValdt) {
-        const account = await readByIdFunction(accountDetails._id);
-        const verifiedData = await generateSession(
-            account, device, location, userAgent, ipAddress
-        );
-        return verifiedData;
-    } else {
-        throw new Error('Invalid username or password');
+        if (accountDetails && accValdt) {
+            const account = await readByIdFunction(accountDetails._id);
+            const verifiedData = await generateSession(
+                account, device, location, userAgent, ipAddress
+            );
+            return verifiedData;
+        } else {
+            throw new Error('Invalid username or password');
+        }
+    }
+    else {
+        throw new Error("Invalid User");
     }
 }
 

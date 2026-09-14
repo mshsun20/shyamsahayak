@@ -17,6 +17,9 @@ const login = async (req, res) => {
         const accountInfo = req.body;
         const userAgent = req.get('User-Agent');
         const ipAddress = req.ip;
+        // const url = req.get("referer") || null;
+        // const client = accountInfo?.client
+        // console.log(client);
 
         Object.assign(accountInfo, { userAgent, ipAddress })
         const verifiedData = await loginUser(accountInfo);

@@ -11,7 +11,7 @@ import {
     PURGE,
     REGISTER,
 } from 'redux-persist';
-import { snackbarReducer } from './slices/snackbar';
+import snackbarReducer from './slices/snackbarSlice';
 import authReducer from './slices/authSlice';
 
 const persistConfig = {
