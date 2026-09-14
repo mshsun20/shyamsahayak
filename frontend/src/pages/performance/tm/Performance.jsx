@@ -72,9 +72,6 @@ const MonthSelect = ({ stat, selectedMonth, onChange }) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const selectRef = React.useRef(null);
 
-    console.log(stat);
-    console.log(selectedMonth);
-
     // Close dropdown when clicking outside
     React.useEffect(() => {
         const handleClickOutside = (event) => {
@@ -181,7 +178,6 @@ const Sparkline = React.memo(function Sparkline() {
 
 const Performance = () => {
     const navigate = useNavigate();
-    // console.log(STATS[STATS.length - 1]);
     const [selectedMonth, setSelectedMonth] = React.useState(
         STATS?.length > 0 ? STATS[STATS.length - 1] : null
     );
@@ -196,11 +192,6 @@ const Performance = () => {
                     </h1>
                     <p className="text-[12.5px] text-neutral-500 mt-0.5">TM • Delhi</p>
                 </div>
-                {/* <button className="flex items-center gap-1.5 bg-white border border-neutral-200 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-neutral-700 shrink-0">
-                    <Calendar size={13} />
-                    Aug 2026
-                    <ChevronDown size={13} />
-                </button> */}
                 <MonthSelect stat={STATS} selectedMonth={selectedMonth} onChange={setSelectedMonth} />
             </div>
 
