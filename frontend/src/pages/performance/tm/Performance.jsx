@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import {
     Calendar,
     ChevronDown,
+    Check,
     ChevronRight,
     AlertTriangle,
     Users,
@@ -12,10 +13,36 @@ import {
 } from "lucide-react";
 
 const STATS = [
-    { label: "DGOs", value: "4", sub: "All Active" },
-    { label: "Fabricators", value: "126", sub: "98 Active" },
-    { label: "Counters", value: "215", sub: "168 Active" },
-    { label: "Total Visits", value: "548", sub: "This Period" },
+    {
+        statId: 2,
+        month: "Jun 2026",
+        statistics: [
+            { label: "DGOs", value: "4", sub: "All Active" },
+            { label: "Fabricators", value: "126", sub: "98 Active" },
+            { label: "Counters", value: "215", sub: "168 Active" },
+            { label: "Total Visits", value: "548", sub: "This Period" },
+        ]
+    },
+    {
+        statId: 1,
+        month: "July 2026",
+        statistics: [
+            { label: "DGOs", value: "7", sub: "All Active" },
+            { label: "Fabricators", value: "96", sub: "98 Active" },
+            { label: "Counters", value: "172", sub: "168 Active" },
+            { label: "Total Visits", value: "819", sub: "This Period" },
+        ]
+    },
+    {
+        statId: 0,
+        month: "Aug 2026",
+        statistics: [
+            { label: "DGOs", value: "3", sub: "All Active" },
+            { label: "Fabricators", value: "103", sub: "98 Active" },
+            { label: "Counters", value: "195", sub: "168 Active" },
+            { label: "Total Visits", value: "793", sub: "This Period" },
+        ]
+    },
 ];
 
 const ATTENTION = [
@@ -41,6 +68,96 @@ const QUICK_ACTIONS = [
     { label: "Download Report", icon: Download, bg: "bg-emerald-50", color: "text-emerald-500" },
 ];
 
+const MonthSelect = ({ stat, selectedMonth, onChange }) => {
+    const [isOpen, setIsOpen] = React.useState(false);
+    const selectRef = React.useRef(null);
+
+    console.log(stat);
+    console.log(selectedMonth);
+
+    // Close dropdown when clicking outside
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (selectRef.current && !selectRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const handleSelect = (item) => {
+        onChange(item);
+        setIsOpen(false);
+    };
+
+    return (
+        <div ref={selectRef} className="relative shrink-0">
+            {/* Select Button */}
+            <button
+                type="button"
+                onClick={() => setIsOpen((prev) => !prev)}
+                className="tap-highlight-none flex w-full min-w-40 items-center justify-between gap-2 rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm font-semibold text-ink-900 transition-colors active:bg-ink-50"
+                aria-haspopup="listbox"
+                aria-expanded={isOpen}
+            >
+                <span className="flex min-w-0 items-center gap-1.5">
+                    <Calendar size={16} className="shrink-0 text-brand-500" />
+
+                    <span className="truncate">
+                        {selectedMonth?.month || "Select month"}
+                    </span>
+                </span>
+
+                <ChevronDown
+                    size={16}
+                    className={`shrink-0 text-ink-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                        }`}
+                />
+            </button>
+
+            {/* Dropdown */}
+            {isOpen && stat?.length > 0 && (
+                <div
+                    className="absolute right-0 z-50 mt-2 min-w-full overflow-hidden rounded-xl border border-ink-200 bg-white p-1.5 shadow-lg"
+                    role="listbox"
+                >
+                    {stat.map((item) => {
+                        const isSelected =
+                            selectedMonth?.statId === item.statId;
+
+                        return (
+                            <button
+                                key={item.statId}
+                                type="button"
+                                onClick={() => handleSelect(item)}
+                                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${isSelected
+                                        ? "bg-brand-50 font-semibold text-brand-600"
+                                        : "text-ink-700 hover:bg-ink-50"
+                                    }`}
+                                role="option"
+                                aria-selected={isSelected}
+                            >
+                                <span>{item.month}</span>
+
+                                {isSelected && (
+                                    <Check
+                                        size={16}
+                                        className="shrink-0 text-brand-500"
+                                    />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Sparkline = React.memo(function Sparkline() {
     const w = 280;
     const h = 70;
@@ -64,6 +181,10 @@ const Sparkline = React.memo(function Sparkline() {
 
 const Performance = () => {
     const navigate = useNavigate();
+    // console.log(STATS[STATS.length - 1]);
+    const [selectedMonth, setSelectedMonth] = React.useState(
+        STATS?.length > 0 ? STATS[STATS.length - 1] : null
+    );
 
     return (
         <div className="min-h-dvh px-4 pt-6 pb-10">
@@ -75,16 +196,17 @@ const Performance = () => {
                     </h1>
                     <p className="text-[12.5px] text-neutral-500 mt-0.5">TM • Delhi</p>
                 </div>
-                <button className="flex items-center gap-1.5 bg-white border border-neutral-200 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-neutral-700 shrink-0">
+                {/* <button className="flex items-center gap-1.5 bg-white border border-neutral-200 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-neutral-700 shrink-0">
                     <Calendar size={13} />
                     Aug 2026
                     <ChevronDown size={13} />
-                </button>
+                </button> */}
+                <MonthSelect stat={STATS} selectedMonth={selectedMonth} onChange={setSelectedMonth} />
             </div>
 
             {/* Stat grid */}
             <div className="grid grid-cols-2 gap-3 mt-4">
-                {STATS.map((s) => (
+                {selectedMonth?.statistics?.map((s) => (
                     <div key={s.label} className="bg-white rounded-2xl border border-neutral-200 p-4">
                         <p className="text-[12.5px] text-neutral-500">{s.label}</p>
                         <p className="text-[22px] font-bold text-neutral-900 mt-1">{s.value}</p>

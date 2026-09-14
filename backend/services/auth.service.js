@@ -37,7 +37,7 @@ export const refreshCookieOptions = {
 // reusable functions
 export const accessControl = async (client, accountPrivilege) => {
     return [
-        String(client).trim().toLowerCase() === "chatapp",
+        String(client).trim().toLowerCase() === "chatapp" && parseInt(accountPrivilege) > 2,
         String(client).trim().toLowerCase() === "adminpanel" && parseInt(accountPrivilege) < 3
     ]
 }
