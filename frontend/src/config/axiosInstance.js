@@ -1,20 +1,20 @@
 import axios from "axios";
 import { clearAuthState } from "../redux/slices/authSlice";
 
-const appenv = import.meta.env.VITE_ENV || "development";
+const appenv = import.meta.env.VITE_APP_ENV || "development";
 
 const baseUrl = {
     production: import.meta.env.VITE_APIURL_PRD,
     quality: import.meta.env.VITE_APIURL_QAS,
     development: import.meta.env.VITE_APIURL_DEV,
 };
-
 // const basicAuthHeader = "Basic " + btoa(`${import.meta.env.VITE_API_USR}:${import.meta.env.VITE_API_PSS}`);
 
 const axiosInstance = axios.create({
     baseURL: baseUrl[appenv],
     withCredentials: true,
 });
+console.log(baseUrl[appenv]);
 
 let isRefreshing = false;
 let failedQueue = [];
