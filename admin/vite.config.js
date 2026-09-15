@@ -12,7 +12,8 @@ import {
 import tailwindcss from '@tailwindcss/vite'
 
 const __dirname = dirname(fileURLToPath(
-  import.meta.url))
+  import.meta.url
+))
 
 export default defineConfig(({
   mode
@@ -31,6 +32,9 @@ export default defineConfig(({
       react(),
       tailwindcss(),
     ],
+
+    // Admin application is served under /admin
+    base: '/admin/',
 
     server: {
       port: portDetails[appenv],
