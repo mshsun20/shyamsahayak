@@ -7,6 +7,7 @@ import { requirePermission } from "../middlewares/permission.middleware.js";
 accountRouter.use(unifiedAuthProtect);
 
 accountRouter.post("/", requirePermission("account:create"), Account.create);
+accountRouter.post("/import", requirePermission("account:create"), Account.upload);
 accountRouter.get("/", requirePermission("account:read"), Account.read);
 accountRouter.get("/unique/:key", requirePermission("account:read"), Account.readByUniqueKey);
 accountRouter.get("/:id", requirePermission("account:read"), Account.readById);

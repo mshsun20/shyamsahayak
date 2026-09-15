@@ -17,7 +17,7 @@ export const performanceTool = {
         description: "Performance month in YYYY format. If the user provides only a month name, use the current calendar year.",
       },
     },
-    required: ["month"],
+    required: ["month", "year"],
   },
 };
 
