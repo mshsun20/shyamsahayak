@@ -65,24 +65,8 @@ app.use("/api/roles", roleRouter);
 app.use("/api/districts", districtRouter);
 app.use("/api/chats", chatRouter);
 
-// ping
-app.get("/", (req, res) => {
-    res.status(200).json({ message: "Welcome to the Shyam Sahayak API!" });
-});
-
 // UI Static Serving
-if (['quality', 'production'].includes(env.nodeEnv)) {
-    // =========================
-    // 1. User UI
-    // =========================
-    const frontendDistPath = path.join(__dirname, "..", "frontend", "dist");
-    // Serve User frontend static assets
-    app.use(express.static(frontendDistPath));
-    // User frontend SPA fallback
-    app.get(/^\/(?!api|admin)(.*)$/, (_, res) => {
-        res.sendFile(path.join(frontendDistPath, "index.html"));
-    });
-    
+if (['quality', 'production'].includes(env.nodeEnv)) {    
     // =========================
     // 2. Admin UI
     // =========================
@@ -93,7 +77,23 @@ if (['quality', 'production'].includes(env.nodeEnv)) {
     app.get(/^\/admin(?:\/.*)?$/, (_, res) => {
         res.sendFile(path.join(adminDistPath, "index.html"));
     });
+    
+    // =========================
+    // 1. User UI
+    // =========================
+    const frontendDistPath = path.join(__dirname, "..", "frontend", "dist");
+    // Serve User frontend static assets
+    app.use(express.static(frontendDistPath));
+    // User frontend SPA fallback
+    app.get(/^\/(?!api|admin)(.*)$/, (_, res) => {
+        res.sendFile(path.join(frontendDistPath, "index.html"));
+    });
 }
+
+// ping
+app.get("/", (req, res) => {
+    res.status(200).json({ message: "Welcome to the Shyam Sahayak API!" });
+});
 
 (async () => {
     await connectDB();
