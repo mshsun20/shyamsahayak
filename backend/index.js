@@ -14,6 +14,8 @@ import accountRouter from "./routes/account.route.js";
 import privilegeRouter from "./routes/privilege.route.js";
 import roleRouter from "./routes/role.route.js";
 import districtRouter from "./routes/location/district.route.js";
+import productRouter from "./routes/product.route.js";
+import schemeRouter from "./routes/scheme.route.js";
 import chatRouter from "./routes/chat.route.js";
 
 
@@ -63,6 +65,8 @@ app.use("/api/accounts", accountRouter);
 app.use("/api/privileges", privilegeRouter);
 app.use("/api/roles", roleRouter);
 app.use("/api/districts", districtRouter);
+app.use("/api/products", productRouter);
+app.use("/api/schemes", schemeRouter);
 app.use("/api/chats", chatRouter);
 
 // UI Static Serving

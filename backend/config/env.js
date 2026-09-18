@@ -38,6 +38,8 @@ const requiredEnvVariables = [
     "ANTHROPIC_API_KEY",
     "CLAUDE_MODEL",
     "CLAUDE_MAX_TOKENS",
+    "UPLD_COUNT",
+    "UPLD_SIZE_MB",
 ];
 
 for (const envVar of requiredEnvVariables) {
@@ -109,6 +111,12 @@ const challengeTokenExpiry = nodeEnv === "production"
 ? process.env.CHALLENGE_EXP_QAS
 : process.env.CHALLENGE_EXP_DEV;
 
+const uploadCount = process.env.UPLD_COUNT
+? parseInt(process.env.UPLD_COUNT) : 10
+
+const uploadSize = process.env.UPLD_SIZE_MB
+? parseInt(process.env.UPLD_SIZE_MB) : 20
+
 const env = {
     nodeEnv: nodeEnv,
     apiUsr: apiUser,
@@ -128,6 +136,8 @@ const env = {
     jwtChallenge: jwtChallengeSecret,
     claudeModel: process.env.CLAUDE_MODEL || "claude-sonnet-5",
     claudeMaxTokens: process.env.CLAUDE_MAX_TOKENS ? parseInt(process.env.CLAUDE_MAX_TOKENS, 10) : 1000,
+    uploadCount,
+    uploadSize,
 };
 
 export default env;

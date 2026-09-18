@@ -1,5 +1,5 @@
-import expres from "express";
-const privilegeRouter = expres.Router();
+import express from "express";
+const privilegeRouter = express.Router();
 import Privilege from "../controllers/privilege.controller.js";
 import { unifiedAuthProtect } from "../middlewares/auth.middleware.js";
 import { requirePermission } from "../middlewares/permission.middleware.js";

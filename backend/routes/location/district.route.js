@@ -1,5 +1,5 @@
-import expres from "express";
-const districtRouter = expres.Router();
+import express from "express";
+const districtRouter = express.Router();
 import District from "../../controllers/location/district.controller.js";
 
 districtRouter.post("/", District.create);

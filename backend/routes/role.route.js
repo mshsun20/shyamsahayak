@@ -1,5 +1,5 @@
-import expres from "express";
-const roleRouter = expres.Router();
+import express from "express";
+const roleRouter = express.Router();
 import Role from "../controllers/role.controller.js";
 import { unifiedAuthProtect } from "../middlewares/auth.middleware.js";
 import { requirePermission } from "../middlewares/permission.middleware.js";
