@@ -6,12 +6,29 @@ export const user = {
   territory: 'North Delhi',
 }
 
-export const summary = {
-  month: 'Aug 2026',
-  fabricatorsCount: 124,
-  visitsCount: 48,
-  priorityAction: '8 inactive fabricators need your follow-up.',
-}
+export const summary = [
+  {
+    summaryId: 2,
+    month: 'June 2026',
+    fabricatorsCount: 104,
+    visitsCount: 31,
+    priorityAction: '8 inactive fabricators need your follow-up.',
+  },
+  {
+    summaryId: 1,
+    month: 'July 2026',
+    fabricatorsCount: 93,
+    visitsCount: 27,
+    priorityAction: '8 inactive fabricators need your follow-up.',
+  },
+  {
+    summaryId: 0,
+    month: 'Aug 2026',
+    fabricatorsCount: 124,
+    visitsCount: 48,
+    priorityAction: '8 inactive fabricators need your follow-up.',
+  },
+]
 
 export const recentActivity = [
   {

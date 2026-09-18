@@ -2,8 +2,7 @@ import React from 'react'
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import PublicsRoute from "./PublicRoute";
 import ProtectedRoute from "./ProtectedRoute";
-// import Loader from "../components/Loader";
-const Loader = React.lazy(() => import("../components/Loader"));
+import Loader from "../components/Loader";
 const Layout = React.lazy(() => import("../components/Layout"));
 const Login = React.lazy(() => import("../pages/Login"));
 const ChangePassword = React.lazy(() => import("../pages/ChangePassword"));

@@ -15,6 +15,7 @@ import axiosInstance from "../config/axiosInstance";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../redux/slices/authSlice";
 import { NavLink } from "react-router";
+import { showSnackbar } from "../redux/slices/snackbarSlice";
 
 const DEMO_USER = {
     employeeId: "EMP001",
@@ -45,25 +46,24 @@ const Login = () => {
             return;
         }
 
-        // if (!/^\d{4}$/.test(pin)) {
-        //     setError("PIN must contain exactly 4 digits.");
-        //     return;
-        // }
+        if (!/^\d{4}$/.test(pin)) {
+            setError("PIN must contain exactly 4 digits.");
+            return;
+        }
 
         setLoading(true);
 
-        // Simulated API request using static data.
-        // await new Promise((resolve) => setTimeout(resolve, 800));
-
-        // if (normalizedId === DEMO_USER.employeeId && pin === DEMO_USER.pin) {
-        //     setMessage(`Welcome, ${DEMO_USER.name}. Login successful.`);
-        // } else {
-        //     setError("Invalid employee ID or PIN.");
-        // }
-
         try {
-            const response = await dispatch(login({ username: normalizedId, password: pin }));
-            console.log(response);
+            const response = await dispatch(login({ username: normalizedId, password: pin, client: "chatapp" }));
+            // console.log(response);
+
+            if (response?.type === "auth/login/fulfilled") {
+                // alert(response?.payload?.message);
+                dispatch(showSnackbar({ message: response?.payload?.message, type: "success" }));
+            }
+            else {
+                dispatch(showSnackbar({ message: response?.payload, type: "error" }));
+            }
         } catch (error) {
             setLoading(false);
             console.error(error.message);
@@ -73,12 +73,13 @@ const Login = () => {
     };
 
     const handlePinChange = (value) => {
-        // setPin(value.replace(/\D/g, "").slice(0, 4));
-        setPin(value)
+        setPin(value.replace(/\D/g, "").slice(0, 4));
+        // setPin(value)
     };
 
     return (
         <main className="login-page">
+            {/* <Snackbar /> */}
             <section className="login-shell" aria-label="Seltiger Sahayak login">
                 <div className="brand-panel">
                     <img
@@ -115,7 +116,7 @@ const Login = () => {
                                 id="pin"
                                 type={showPin ? "text" : "password"}
                                 inputMode="numeric"
-                                // maxLength={4}
+                                maxLength={4}
                                 value={pin}
                                 onChange={(e) => handlePinChange(e.target.value)}
                                 placeholder="Enter 4-digit PIN"

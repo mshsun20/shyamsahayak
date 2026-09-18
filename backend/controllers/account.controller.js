@@ -14,19 +14,24 @@ import {
     hashPassword
 } from "../utils/passwordHash.util.js";
 
+// reusable functions
+const uniqueIdGen = async (payload) => {
+    const accountPrivilege = await readPrivilegeById(mapValidObjectId(payload?.privilege));
+    if (parseInt(accountPrivilege.heirarchy) > 2) {
+        return payload.employeeId;
+    }
+    else {
+        return payload.username;
+    }
+}
+
+// handler functions
 const create = async (req, res) => {
     try {
         const accountPayload = req.body;
         const user = req.user || null;
-        // console.log(accountPayload);
-        const accountPrivilege = await readPrivilegeById(mapValidObjectId(accountPayload?.privilege));
-        if (parseInt(accountPrivilege.heirarchy) > 2) {
-            accountPayload.userId = accountPayload.employeeId
-        }
-        else {
-            accountPayload.userId = accountPayload.username
-        }
-
+        
+        accountPayload.userId = await uniqueIdGen(accountPayload);
         const existingAccount = await readByUniqueKeyFunction(String(accountPayload.userId).trim());
         if (existingAccount) return res.status(409).json({ success: false, message: "Account already exists" });
         
@@ -43,6 +48,52 @@ const create = async (req, res) => {
             message: "Account created succesfully",
             data: account
         });
+    } catch (error) {
+        console.error(error.message);
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+const upload = async (req, res) => {
+    try {
+        const accountDataSheet = req.body?.accounts;
+        const user = req.user || null;
+        // let newAccounts = []
+        accountDataSheet?.forEach(async (account, i) => {
+            account.userId = await uniqueIdGen(account);
+            const existingAccount = await readByUniqueKeyFunction(String(accountPayload.userId).trim());
+
+            if (existingAccount) {
+                Object.assign(account, {
+                    updatedBy: user?._id || null,
+                    status: "Active",
+                })
+                const updatedUpload = await updateFunction(existingAccount?._id, account);
+                console.log(updatedUpload);
+                accountDataSheet[i].uploadReport = updatedUpload;
+            }
+            else {
+                Object.assign(account, {
+                    password: hashPassword(account.password),
+                    passwordBackup: account.password,
+                    createdBy: user?._id || null,
+                    status: "Active",
+                })
+                const newUpload = await createFunction(account);
+                console.log(newUpload);
+                accountDataSheet[i].uploadReport = newUpload;
+            }
+        })
+        if (accountDataSheet?.length > 0) {
+            console.log(accountDataSheet);
+            return res.status(201).json({
+                success: true,
+                message: "Account data sheet uploaded",
+                data: accountDataSheet
+            })
+        }
     } catch (error) {
         console.error(error.message);
         res.status(400).json({
@@ -154,5 +205,5 @@ const remove = async (req, res) => {
     }
 }
 
-const Account = { create, read, readById, readByUniqueKey, update, remove };
+const Account = { create, upload, read, readById, readByUniqueKey, update, remove };
 export default Account;
