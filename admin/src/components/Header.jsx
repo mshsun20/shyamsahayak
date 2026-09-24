@@ -1,21 +1,30 @@
 import { Search, Bell, ChevronDown, LogOut, HelpCircle } from "lucide-react";
-import { useState } from "react";
-import { useDispatch } from "react-redux";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../redux/store";
+import { logout } from "../redux/slices/authSlice";
+import { showSnackbar } from "../redux/slices/snackbarSlice";
 
 export default function Header({ title }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const { user } = useSelector(state => state.auth);
+  const userName = String(user?.fullName)?.split(" ")?.map((s, i) => i<2 ? s.slice(0, 1) : "")?.join("");
+  console.log(userName);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/login");
-  };
+  const handleLogout = React.useCallback(async () => {
+    try {
+      await dispatch(logout());
+      await dispatch(showSnackbar({ message: "Logout successful", type: "info" }))
+    } catch (error) {
+      console.error(error.message);
+      await dispatch(showSnackbar({ message: error.message, type: "error" }))
+    }
+  }, [])
 
   return (
-    <header className="h-[55px] shrink-0 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
+    <header className="h-13.75 shrink-0 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
       <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
 
       <div className="flex items-center gap-4">
@@ -44,11 +53,11 @@ export default function Header({ title }) {
             className="flex items-center gap-2"
           >
             <div className="w-8 h-8 rounded-full bg-primary-light text-primary font-semibold text-xs flex items-center justify-center">
-              AK
+              {userName}
             </div>
             <div className="text-left leading-tight">
-              <p className="text-xs font-semibold text-gray-800">Admin User</p>
-              <p className="text-[11px] text-gray-400">Super Admin</p>
+              <p className="text-xs font-semibold text-gray-800">{String(user?.fullName).split(" ")?.map((s, i) => i<2 ? s : "")?.join(" ")}</p>
+              <p className="text-[11px] text-gray-400 capitalize">{String(user?.privilege?.name)}</p>
             </div>
             <ChevronDown size={14} className="text-gray-400" />
           </button>

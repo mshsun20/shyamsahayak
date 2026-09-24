@@ -3,7 +3,8 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
 import { ShieldCheck, Eye, EyeOff, Lock } from "lucide-react";
-import { login } from "../../redux/store";
+// import { login } from "../../redux/store";
+import { login } from "../../redux/slices/authSlice";
 import Logo from "../../components/Logo";
 import skyline from "../../assets/skyline.jpg";
 
@@ -28,7 +29,7 @@ export default function Login() {
   }
 
   const onSubmit = (data) => {
-    dispatch(login(data.userId.trim()));
+    dispatch(login({ username: data?.userId, password: data?.pin, client: "adminpanel" }));
     navigate("/dashboard");
   };
 
@@ -43,7 +44,7 @@ export default function Login() {
       <div className="relative z-10 flex flex-col items-center">
         <Logo className="h-16 w-auto mb-8" />
 
-        <div className="bg-white border border-gray-100 shadow-xl rounded-2xl w-[380px] px-7 py-7">
+        <div className="bg-white border border-gray-100 shadow-xl rounded-2xl w-95 px-7 py-7">
           <div className="flex flex-col items-center text-center mb-5">
             <div className="w-11 h-11 rounded-full bg-primary-light flex items-center justify-center mb-3">
               <ShieldCheck size={20} className="text-primary" />

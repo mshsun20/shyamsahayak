@@ -17,11 +17,11 @@ import { login } from "../redux/slices/authSlice";
 import { NavLink } from "react-router";
 import { showSnackbar } from "../redux/slices/snackbarSlice";
 
-const DEMO_USER = {
-    employeeId: "EMP001",
-    pin: "1234",
-    name: "Demo Employee",
-};
+// const DEMO_USER = {
+//     employeeId: "EMP001",
+//     pin: "1234",
+//     name: "Demo Employee",
+// };
 
 const Login = () => {
     const dispatch = useDispatch();

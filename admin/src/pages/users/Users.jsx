@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Download, Plus, Search, Eye, Pencil, Trash2, SlidersHorizontal } from "lucide-react";
 import AdminLayout from "../../layouts/AdminLayout";
 import Modal from "../../components/Modal";
-import { deleteUser } from "../../redux/store";
+// import { deleteUser } from "../../redux/store";
 import { roles, territories } from "../../data/users";
 
 
@@ -116,12 +116,12 @@ export default function Users() {
     URL.revokeObjectURL(url);
   };
 
-  const confirmDelete = () => {
-    if (deleteTarget) {
-      dispatch(deleteUser(deleteTarget.id));
-      setDeleteTarget(null);
-    }
-  };
+  // const confirmDelete = () => {
+  //   if (deleteTarget) {
+  //     dispatch(deleteUser(deleteTarget.id));
+  //     setDeleteTarget(null);
+  //   }
+  // };
 
   return (
     <AdminLayout title="Users & Mapping">

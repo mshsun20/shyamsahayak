@@ -1,6 +1,6 @@
 import React from 'react'
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
-import PublicsRoute from "./PublicRoute";
+import PublicRoute from "./PublicRoute";
 import ProtectedRoute from "./ProtectedRoute";
 import Loader from "../components/Loader";
 const Layout = React.lazy(() => import("../components/Layout"));
@@ -28,7 +28,7 @@ const Installation = React.lazy(() => import("../pages/knowledge-base/Installati
 const InstallationDetail = React.lazy(() => import("../pages/knowledge-base/InstallationDetail"));
 
 const router = createBrowserRouter([
-    { path: "/login", element: <PublicsRoute><Login /></PublicsRoute> },
+    { path: "/login", element: <PublicRoute><Login /></PublicRoute> },
     {
         path: "/",
         element: <Layout />,

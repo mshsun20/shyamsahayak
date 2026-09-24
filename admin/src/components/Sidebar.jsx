@@ -18,7 +18,7 @@ import {
   LogOut,
 } from "lucide-react";
 import Logo from "./Logo";
-import { logout } from "../redux/store";
+import { logout } from "../redux/slices/authSlice"
 
 const navItemBase =
   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors";
