@@ -2,14 +2,14 @@ import mongoose from "mongoose";
 const { Schema, model, Types } = mongoose;
 
 const AccountSchema = new Schema({
-    userId: { type: String, required: true, trim: true },
-    fullName: { type: String, required: true, trim: true },
+    userId: { type: String, required: true, trim: true, index: true },
+    fullName: { type: String, required: true, trim: true, index: true },
     privilege: { type: Types.ObjectId, ref: "Privilege", required: true },
-    email: { type: String, trim: true },
-    phone: { type: String, trim: true },
+    email: { type: String, trim: true, index: true },
+    phone: { type: String, trim: true, index: true },
     role: { type: Types.ObjectId, ref: "Role" },
-    username: { type: String, trim: true },
-    employeeId: { type: String, trim: true },
+    username: { type: String, trim: true, index: true },
+    employeeId: { type: String, trim: true, index: true },
     password: { type: String, required: true, trim: true },
     passwordBackup: { type: String, required: true, trim: true },
     passwordChangeFlag: { type: Boolean, default: false },
@@ -20,7 +20,7 @@ const AccountSchema = new Schema({
     }],
     permissions: [{ type: Types.ObjectId, ref: "Permission" }],
     remarks: { type: String, trim: true },
-    status: { type: String, required: true, enum: ["Active", "Inactive", "Needs Attention"], default: "Active" },
+    status: { type: String, required: true, enum: ["Active", "Inactive", "Needs Attention"], default: "Active", index: true },
     createdBy: { type: Types.ObjectId, ref: "Account" },
     updatedBy: { type: Types.ObjectId, ref: "Account" },
 }, { timestamps: true });

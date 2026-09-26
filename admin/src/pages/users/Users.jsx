@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,8 @@ import AdminLayout from "../../layouts/AdminLayout";
 import Modal from "../../components/Modal";
 // import { deleteUser } from "../../redux/store";
 import { roles, territories } from "../../data/users";
+import axiosInstance from "../../config/axiosInstance";
+import Loader from "../../components/Loader";
 
 
 const avatarColors = [
@@ -47,9 +49,8 @@ function StatusBadge({ status }) {
   const isActive = status === "Active";
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-        isActive ? "bg-green-50 text-success" : "bg-red-50 text-danger"
-      }`}
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${isActive ? "bg-green-50 text-success" : "bg-red-50 text-danger"
+        }`}
     >
       {status}
     </span>
@@ -57,25 +58,51 @@ function StatusBadge({ status }) {
 }
 
 export default function Users() {
-  const users = useSelector((state) => state.users);
+  // const users = useSelector((state) => state.users);
+  const [users, setUsers] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [viewUser, setViewUser] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [viewUser, setViewUser] = React.useState(null);
+  const [deleteTarget, setDeleteTarget] = React.useState(null);
 
   const { register, watch, reset } = useForm({ defaultValues: filterDefaults });
   const { search, role, status, territory } = watch();
 
-  const filteredUsers = useMemo(() => {
+  const fetchData = React.useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.get(`/accounts`);
+      console.log(response?.data?.data);
+      if (response.status === 200) {
+        setIsLoading(false);
+        setUsers(response?.data?.data?.accounts);
+      }
+      else {
+        setIsLoading(false);
+        setUsers([]);
+      }
+    } catch (error) {
+      setIsLoading(false);
+      console.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [])
+  React.useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  const filteredUsers = React.useMemo(() => {
     return users.filter((user) => {
       const q = search.toLowerCase();
       const matchesSearch =
-        user.name.toLowerCase().includes(q) ||
+        user.fullName.toLowerCase().includes(q) ||
         user.email.toLowerCase().includes(q) ||
         user.employeeId.toLowerCase().includes(q);
 
-      const matchesRole = role === "All Roles" || user.role === role;
+      const matchesRole = role === "All Roles" || user.role?.name === role;
       const matchesStatus = status === "All Status" || user.status === status;
       const matchesTerritory = territory === "All Territories" || user.territory === territory;
 
@@ -96,11 +123,11 @@ export default function Users() {
       "Last Login",
     ];
     const rows = filteredUsers.map((u) => [
-      u.name,
+      u.fullName,
       u.employeeId,
-      u.role,
-      u.reportingManager,
-      u.territory,
+      u.role.name,
+      u.reportingDetails?.map(r => r?.reportingManager?.fullName)?.join(", "),
+      u.reportingDetails?.map(r => r?.territory)?.join(", "),
       u.status,
       u.lastLogin,
     ]);
@@ -204,8 +231,8 @@ export default function Users() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 text-left text-[11px] uppercase tracking-wide text-gray-500">
-                <th className="px-4 py-3 font-semibold">Employee Name</th>
-                <th className="px-4 py-3 font-semibold">Employee ID</th>
+                <th className="px-4 py-3 font-semibold">Name</th>
+                <th className="px-4 py-3 font-semibold">User ID</th>
                 <th className="px-4 py-3 font-semibold">Role</th>
                 <th className="px-4 py-3 font-semibold">Reporting Manager</th>
                 <th className="px-4 py-3 font-semibold">Assigned Territory</th>
@@ -216,45 +243,52 @@ export default function Users() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+                <tr key={user._id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 align-middle">
-            <div className="flex items-center gap-3">
-              {/* Avatar */}
-              <div
-                className={`
-                  flex
-                  h-[27px]
-                  w-[27px]
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-full
-                  text-[10px]
-                  font-medium
-                  ${getAvatarColor(user.name)}
-                `}
-              >
-                {getInitials(user.name)}
-              </div>
+                    <div className="flex items-center gap-3">
+                      {/* Avatar */}
+                      <div
+                        className={
+                          `
+                            flex
+                            h-6.75
+                            w-6.75
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-full
+                            text-[10px]
+                            font-medium
+                            ${getAvatarColor(user.fullName)}
+                          `
+                        }
+                      >
+                        {getInitials(user.fullName)}
+                      </div>
 
-              <div className="min-w-0">
-                <p className="truncate text-[11px] font-semibold leading-[15px] text-[#1f2937]">
-                  {user.name}
-                </p>
+                      <div className="min-w-0">
+                        <p className="truncate text-[11px] font-semibold leading-3.75 text-[#1f2937]">
+                          {user.fullName}
+                        </p>
 
-                <p className="truncate text-[10px] leading-[14px] text-[#8a94a6]">
-                  {user.email}
-                </p>
-              </div>
-            </div>
-          </td>
-                  <td className="px-4 py-3 text-gray-600">{user.employeeId}</td>
-                  <td className="px-4 py-3 text-gray-600">{user.role}</td>
-                  <td className="px-4 py-3">
-                    <p className="text-gray-700">{user.reportingManager}</p>
-                    <p className="text-xs text-gray-400">{user.reportingManagerId}</p>
+                        <p className="truncate text-[10px] leading-3.5 text-[#8a94a6]">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{user.territory}</td>
+                  <td className="px-4 py-3 text-gray-600">{user.userId}</td>
+                  <td className="px-4 py-3 text-gray-600">{user.role?.name}</td>
+                  <td className="px-4 py-3">
+                    <p className="text-xs text-gray-400">
+                      {user.reportingDetails?.length > 0
+                        && user.reportingDetails?.map(r => r?.reportingManager?.fullName)?.join(", ")}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {user.reportingDetails?.length > 0
+                      && user.reportingDetails?.map(r => r?.territory)?.join(", ")}
+                  </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={user.status} />
                   </td>
@@ -272,7 +306,7 @@ export default function Users() {
                         <Eye size={15} />
                       </button>
                       <button
-                        onClick={() => navigate(`/users/edit/${user.id}`)}
+                        onClick={() => navigate(`/users/edit/${user._id}`)}
                         title="Edit"
                         className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary-light rounded-md"
                       >

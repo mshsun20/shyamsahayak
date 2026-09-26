@@ -9,7 +9,6 @@ export default function Header({ title }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const { user } = useSelector(state => state.auth);
   const userName = String(user?.fullName)?.split(" ")?.map((s, i) => i<2 ? s.slice(0, 1) : "")?.join("");
-  console.log(userName);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

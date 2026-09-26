@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Eye, EyeOff, ChevronRight, Plus } from "lucide-react";
 import AdminLayout from "../../layouts/AdminLayout";
-import { addUser, updateUser } from "../../redux/store";
-import { roles, reportingManagers, territories, districts } from "../../data/users";
+// import { addUser, updateUser } from "../../redux/store";
+import { reportingManagers, territories, districts } from "../../data/users";
+import axiosInstance from "../../config/axiosInstance";
 
 const emptyForm = {
-  name: "",
+  fullName: "",
   employeeId: "",
   email: "",
   phone: "",
@@ -24,15 +25,49 @@ const emptyForm = {
   remarks: "",
 };
 
-export default function AddUser() {
+const AddUser = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const users = useSelector((state) => state.users);
+  // const users = useSelector((state) => state.users);
+  const [user, setUser] = React.useState(null);
+  const [accounts, setAccounts] = React.useState([]);
+  const [roles, setRoles] = React.useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirm, setShowConfirm] = React.useState(false);
+
+  const fetchAllMasters = React.useCallback(async () => {
+    try {
+      const [accountResponse, roleResponse] = await Promise.allSettled([
+        axiosInstance.get(`/accounts`).then(res => res.data.data?.accounts),
+        axiosInstance.get(`/roles`).then(res => res.data.data),
+      ])
+
+      // console.log(accountResponse);
+      // console.log(roleResponse);
+
+      if (accountResponse.status === "fulfilled" || roleResponse.status === "fulfilled") {
+        const allAccounts = accountResponse?.value?.length>0 ? accountResponse?.value?.map(acc => acc?.fullName) : [];
+        const allRoles = roleResponse?.value?.length>0 ? roleResponse?.value?.map(rol => rol?.name) : []
+        setAccounts(allAccounts);
+        setRoles(allRoles);
+      }
+      else {
+        setAccounts([]);
+        setRoles([]);
+      }
+    } catch (error) {
+      console.error(error.message);
+    }
+  }, [])
+  React.useEffect(() => {
+    fetchAllMasters();
+  }, [fetchAllMasters]);
+
+  // const masterDataSet = await fetchAllMasters();
+  // console.log(masterDataSet);
 
   const {
     register,
@@ -44,45 +79,62 @@ export default function AddUser() {
 
   const passwordValue = watch("password");
 
-  useEffect(() => {
+  const fetchData = React.useCallback(async () => {
+    try {
+      const respone = await axiosInstance.get(`/accounts/${id}`);
+      // console.log(respone.data?.data);
+      if (respone.status === 200) {
+        setUser(respone?.data?.data);
+      }
+      else {
+        setUser(null);
+      }
+    } catch (error) {
+      console.error(error.message);
+    }
+  }, []);
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  React.useEffect(() => {
     if (isEdit) {
-      const existing = users.find((u) => String(u.id) === id);
-      if (existing) {
+      if (user !== null) {
         reset({
           ...emptyForm,
-          ...existing,
+          ...user,
           password: "",
           confirmPassword: "",
           mustChangePassword: false,
         });
       }
     }
-  }, [id, isEdit, users, reset]);
+  }, [id, isEdit, user, reset]);
 
   const onSubmit = (data) => {
-    const manager = reportingManagers.find((m) => m.id === data.reportingManagerId);
-    const payload = {
-      ...data,
-      reportingManager: manager?.name || "",
-      reportingManagerId: manager?.id || "",
-    };
-    delete payload.password;
-    delete payload.confirmPassword;
-    delete payload.mustChangePassword;
+    // const manager = reportingManagers.find((m) => m.id === data.reportingManagerId);
+    // const payload = {
+    //   ...data,
+    //   reportingManager: manager?.name || "",
+    //   reportingManagerId: manager?.id || "",
+    // };
+    // delete payload.password;
+    // delete payload.confirmPassword;
+    // delete payload.mustChangePassword;
 
-    if (isEdit) {
-      dispatch(updateUser({ ...payload, id: Number(id) }));
-    } else {
-      dispatch(
-        addUser({
-          ...payload,
-          id: Date.now(),
-          lastLogin: "-",
-          loginTime: "-",
-        })
-      );
-    }
-    navigate("/users");
+    // if (isEdit) {
+    //   dispatch(updateUser({ ...payload, id: Number(id) }));
+    // } else {
+    //   dispatch(
+    //     addUser({
+    //       ...payload,
+    //       id: Date.now(),
+    //       lastLogin: "-",
+    //       loginTime: "-",
+    //     })
+    //   );
+    // }
+    // navigate("/users");
   };
 
   const inputClass = (field) =>
@@ -128,8 +180,8 @@ export default function AddUser() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Full Name *</label>
-              <input {...register("name", { required: "Full name is required." })} className={inputClass("name")} />
-              {errors.name && <p className="text-xs text-danger mt-1">{errors.name.message}</p>}
+              <input {...register("fullName", { required: "Full name is required." })} className={inputClass("fullName")} />
+              {errors.fullName && <p className="text-xs text-danger mt-1">{errors.fullName.message}</p>}
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Employee ID *</label>
@@ -180,8 +232,8 @@ export default function AddUser() {
                   {...register("reportingManagerId", { required: true })}
                   className={inputClass("reportingManagerId")}
                 >
-                  {reportingManagers.map((m) => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
+                  {accounts.map((m) => (
+                    <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
                 <button type="button" title="Add manager" className="shrink-0 w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-400 hover:text-primary hover:border-primary">
@@ -287,3 +339,5 @@ export default function AddUser() {
     </AdminLayout>
   );
 }
+
+export default React.memo(AddUser);

@@ -5,38 +5,46 @@ export const createFunction = async (payload) => {
     return details;
 }
 
-export const readFunction = async () => {
-    return Account.find()
-    .select("-password -passwordBackup")
-    .populate([
-        {
-            path: "role",
-            populate: {
+export const readFunction = async (filter={}, { page=1, limit=0 }={}) => {
+    const skip = (page - 1) * limit;
+
+    const [accounts, total] = await Promise.all([
+        Account.find(filter)
+        .select("-password -passwordBackup")
+        .populate([
+            {
+                path: "role",
+                populate: {
+                    path: "permissions",
+                    select: "code name module action status",
+                },
+            },
+            {
+                path: "privilege",
+                populate: {
+                    path: "permissions",
+                    select: "code name module action status",
+                },
+            },
+            {
                 path: "permissions",
                 select: "code name module action status",
             },
-        },
-        {
-            path: "privilege",
-            populate: {
-                path: "permissions",
-                select: "code name module action status",
-            },
-        },
-        {
-            path: "permissions",
-            select: "code name module action status",
-        },
-    ])
-    .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
-    .populate({ path: "createdBy", select: "-password -passwordBackup" })
-    .populate({ path: "updatedBy", select: "-password -passwordBackup" })
-    .lean();
+        ])
+        .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+        .populate({ path: "createdBy", select: "-password -passwordBackup" })
+        .populate({ path: "updatedBy", select: "-password -passwordBackup" })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+        Account.countDocuments(filter),
+    ]);
+
+    return { accounts, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
 }
 
 export const readByIdFunction = async (id) => {
     return Account.findById(id)
-    // .select("-password -passwordBackup")
     .populate([
         {
             path: "role",
