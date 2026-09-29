@@ -58,7 +58,7 @@ const create = async (req, res) => {
 }
 const upload = async (req, res) => {
     try {
-        const accountDataSheet = req.body?.accounts;
+        const accountDataSheet = req.body?.accounts || [];
         const user = req.user || null;
         // let newAccounts = []
         accountDataSheet?.forEach(async (account, i) => {
@@ -70,8 +70,9 @@ const upload = async (req, res) => {
                     updatedBy: user?._id || null,
                     status: "Active",
                 })
-                const updatedUpload = await updateFunction(existingAccount?._id, account);
-                console.log(updatedUpload);
+                const { _id, userId, username, employeeId, ...newPayload } = account;
+                const updatedUpload = await updateFunction(existingAccount?._id, newPayload);
+                // console.log(updatedUpload);
                 accountDataSheet[i].uploadReport = updatedUpload;
             }
             else {
@@ -85,7 +86,7 @@ const upload = async (req, res) => {
                 console.log(newUpload);
                 accountDataSheet[i].uploadReport = newUpload;
             }
-        })
+        });
         if (accountDataSheet?.length > 0) {
             console.log(accountDataSheet);
             return res.status(201).json({

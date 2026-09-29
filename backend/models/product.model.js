@@ -12,11 +12,11 @@ const ProductSchema = new Schema({
     price: { type: String, required: true, trim: true },
     priceUnit: { type: String, required: true, trim: true },
     gstRate: { type: String, required: true, trim: true },
-    tags: { type: String, trim: true },
+    tags: [{ type: String, trim: true }],
     priority: { type: String, trim: true },
     metaTitle: { type: String, trim: true },
     metaDescription: { type: String, trim: true },
-    status: { type: String, required: true, enum: ["Active", "Inactive"], default: "Active" },
+    status: { type: String, required: true, enum: ["Draft", "Published"], default: "Draft" },
     createdBy: { type: Types.ObjectId, ref: "Account" },
     updatedBy: { type: Types.ObjectId, ref: "Account" }
 }, { timestamps: true })

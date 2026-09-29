@@ -18,7 +18,7 @@ const create = async (req, res) => {
         const upload = await uploadSingleFile(file)
         console.log(upload);
         
-        const existingProduct = await readByUniqueKeyFunction(String(productPayload.name).trim());
+        const existingProduct = await readByUniqueKeyFunction(String(productPayload.code).trim());
         if (existingProduct) return res.status(409).json({ success: false, message: "Product already exists" });
         
         Object.assign(productPayload, {
@@ -33,6 +33,47 @@ const create = async (req, res) => {
             message: "Product created succesfully",
             data: product
         });
+    } catch (error) {
+        console.error(error.message);
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+const upload = async (req, res) => {
+    try {
+        const productDataSheet = req.body?.products || [];
+        const user = req.user || null;
+        productDataSheet?.forEach(async (product, i) => {
+            const existingProduct = await readByUniqueKeyFunction(String(product.code).trim());
+            if (existingProduct) {
+                Object.assign(product, {
+                    updatedBy: user?._id || null,
+                    status: "Draft",
+                })
+                const { code, ...newPayload } = product;
+                const updatedUpload = await updateFunction(existingProduct?._id, newPayload);
+                // console.log(updatedUpload);
+                productDataSheet[i].uploadReport = updatedUpload;
+            }
+            else {
+                Object.assign(product, {
+                    createdBy: user?._id || null,
+                    status: "Draft",
+                })
+                const newUpload = await createFunction(product);
+                productDataSheet[i].uploadReport = newUpload;
+            }
+        });
+        if (productDataSheet?.length > 0) {
+            console.log(productDataSheet);
+            return res.status(201).json({
+                success: true,
+                message: "Product bulk imported done",
+                data: productDataSheet
+            })
+        }
     } catch (error) {
         console.error(error.message);
         res.status(400).json({
@@ -144,6 +185,6 @@ const remove = async (req, res) => {
     }
 }
 
-const Product = { create, read, readById, readByUniqueKey, update, remove }
+const Product = { create, upload, read, readById, readByUniqueKey, update, remove }
 
 export default Product;
