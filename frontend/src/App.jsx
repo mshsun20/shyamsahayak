@@ -6,6 +6,7 @@ import { checkAuth } from './redux/slices/authSlice';
 import Loader from './components/Loader';
 import Snackbar from "./components/Snackbar";
 import CustomFavIcon from "./assets/favicon1.ico";
+import SocketConnection from "./socket/SocketConnection";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -27,6 +28,7 @@ const App = () => {
 
   if (loading) return <Loader />    
   return <>
+    {isAuthenticated && <SocketConnection />}
     <Router />
     <Snackbar />
   </>
