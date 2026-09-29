@@ -7,6 +7,7 @@ import fileUpload from "../middlewares/filUpload.middleware.js";
 productRouter.use(unifiedAuthProtect);
 
 productRouter.post("/", fileUpload.single("image"), Product.create);
+productRouter.post("/import", Product.upload);
 productRouter.get("/", Product.read);
 productRouter.get("/unique/:key", Product.readByUniqueKey);
 productRouter.get("/:id", Product.readById);
