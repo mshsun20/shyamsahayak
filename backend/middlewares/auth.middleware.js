@@ -58,9 +58,11 @@ export const basicAuth = async (req, res, next) => {
                 path: "permissions",
                 select: "code name module action status",
             },
-            "createdBy",
-            "updatedBy",
-        ]).lean();
+        ])
+        .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+        .populate({ path: "createdBy", select: "-password -passwordBackup" })
+        .populate({ path: "updatedBy", select: "-password -passwordBackup" })
+        .lean();
 
     // ✅ Compare against actual env values
     if (user === username && pass === password) {
@@ -118,9 +120,10 @@ export const jwtHybridProtect = async (req, res, next) => {
                     path: "permissions",
                     select: "code name module action status",
                 },
-                "createdBy",
-                "updatedBy",
             ])
+            .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+            .populate({ path: "createdBy", select: "-password -passwordBackup" })
+            .populate({ path: "updatedBy", select: "-password -passwordBackup" })
             .lean();
 
         if (!userDtl) {

@@ -1,5 +1,6 @@
 import express from "express";
-import os from "os";
+import http from "http";
+import { Server } from "socket.io";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
@@ -7,6 +8,8 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import env from "./config/env.js";
 import connectDB from "./config/dbcon.js";
+import socketAuth from "./middlewares/socketAuth.middleware.js";
+import { setupSocketAuthLifecycle, clearSocketAuthLifecycle } from "./sockets/socketAuthLifecycle.js";
 import authRouter from "./routes/auth.route.js";
 import permissionRouter from "./routes/permission.route.js";
 import apiClientRouter from "./routes/apiClient.route.js";
@@ -99,9 +102,48 @@ app.get("/", (req, res) => {
     res.status(200).json({ message: "Welcome to the Shyam Sahayak API!" });
 });
 
+
+// (async () => {
+//     await connectDB();
+//     app.listen(env.port, () => {
+//         console.log(`Server is running on port ${env.port} in ${env.nodeEnv} mode`);
+//     });
+// })();
+
+
+// HTTP Server
+const httpServer = http.createServer(app);
+
+// Socket.IO Server
+const io = new Server(httpServer, {
+    cors: {
+        origin: allowedOrigins,
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+});
+
+io.use(socketAuth);
+
+// Socket.IO Connection
+io.on("connection", (socket) => {
+    console.log(`Authenticated Socket connected: ${socket.id}`);
+    console.log(`Authenticated account: ${socket.user.userId}`);
+    /*
+     * Start access-token lifecycle monitoring.
+     */
+    setupSocketAuthLifecycle(io, socket);
+    socket.on("disconnect", (reason) => {
+        console.log(`Authenticated Socket disconnected: ${socket.id}`, reason);
+        clearSocketAuthLifecycle(socket);
+    })
+});
+
+// Start Application
 (async () => {
     await connectDB();
-    app.listen(env.port, () => {
+    httpServer.listen(env.port, () => {
         console.log(`Server is running on port ${env.port} in ${env.nodeEnv} mode`);
-    });
+        console.log(`WebSocket is running on port ${env.port}`);
+    })
 })();
