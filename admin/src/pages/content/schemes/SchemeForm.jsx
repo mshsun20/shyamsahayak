@@ -51,7 +51,7 @@ function daysBetween(start, end) {
 export default function SchemeForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const schemes = useSelector((state) => state.schemes);
+  const schemes = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const bannerInputRef = useRef(null);

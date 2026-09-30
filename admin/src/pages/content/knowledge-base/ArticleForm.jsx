@@ -61,7 +61,7 @@ function SectionHeader({ children }) {
 export default function ArticleForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const articles = useSelector((state) => state.articles);
+  const articles = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);

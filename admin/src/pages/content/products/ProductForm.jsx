@@ -19,7 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
-import { addProduct, updateProduct } from "../../../redux/store";
+// import { addProduct, updateProduct } from "../../../redux/store";
 import { productCategories, unitTypes } from "../../../data/content";
 
 const emptyForm = {
@@ -43,7 +43,7 @@ const emptyForm = {
 export default function ProductForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const products = useSelector((state) => state.products);
+  const products = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -78,26 +78,26 @@ export default function ProductForm() {
 
   const onSubmit = (data) => {
     if (isEdit) {
-      dispatch(
-        updateProduct({
-          ...data,
-          id: Number(id),
-          lastUpdated: "Today",
-          lastUpdatedTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          lastUpdatedBy: "Admin User",
-        })
-      );
+      // dispatch(
+      //   updateProduct({
+      //     ...data,
+      //     id: Number(id),
+      //     lastUpdated: "Today",
+      //     lastUpdatedTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      //     lastUpdatedBy: "Admin User",
+      //   })
+      // );
     } else {
-      dispatch(
-        addProduct({
-          ...data,
-          id: Date.now(),
-          featured: false,
-          lastUpdated: "Today",
-          lastUpdatedTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          lastUpdatedBy: "Admin User",
-        })
-      );
+      // dispatch(
+      //   addProduct({
+      //     ...data,
+      //     id: Date.now(),
+      //     featured: false,
+      //     lastUpdated: "Today",
+      //     lastUpdatedTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      //     lastUpdatedBy: "Admin User",
+      //   })
+      // );
     }
     navigate("/content/products");
   };

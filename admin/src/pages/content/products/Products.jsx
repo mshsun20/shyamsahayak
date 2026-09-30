@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
 import Modal from "../../../components/Modal";
-import { deleteProduct, deleteProducts } from "../../../redux/store";
+// import { deleteProduct, deleteProducts } from "../../../redux/store";
 import { productCategories } from "../../../data/content";
 
 const filterDefaults = {
@@ -82,7 +82,7 @@ function ActionsMenu({ onEdit, onDelete }) {
 }
 
 export default function Products() {
-  const products = useSelector((state) => state.products);
+  const products = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -151,14 +151,14 @@ export default function Products() {
 
   const confirmDelete = () => {
     if (deleteTarget) {
-      dispatch(deleteProduct(deleteTarget.id));
+      // dispatch(deleteProduct(deleteTarget.id));
       setSelected((prev) => prev.filter((id) => id !== deleteTarget.id));
       setDeleteTarget(null);
     }
   };
 
   const confirmBulkDelete = () => {
-    dispatch(deleteProducts(selected));
+    // dispatch(deleteProducts(selected));
     setSelected([]);
     setBulkDeleteOpen(false);
   };

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../layouts/AdminLayout";
 import Modal from "../../components/Modal";
-import { updateProfile, changePin } from "../../redux/store";
+// import { updateProfile, changePin } from "../../redux/store";
 import { activityLog } from "../../data/profile";
 
 const PAGE_SIZE = 5;
@@ -36,7 +36,7 @@ function InfoRow({ icon: Icon, label, value, valueNode }) {
 }
 
 export default function Profile() {
-  const profile = useSelector((state) => state.profile);
+  const profile = [];
   const dispatch = useDispatch();
 
   const [editOpen, setEditOpen] = useState(false);
@@ -62,7 +62,7 @@ export default function Profile() {
   };
 
   const onSaveProfile = (data) => {
-    dispatch(updateProfile(data));
+    // dispatch(updateProfile(data));
     setEditOpen(false);
   };
 
@@ -85,7 +85,7 @@ export default function Profile() {
       setPinError("New PIN and confirmation do not match.");
       return;
     }
-    dispatch(changePin(data.newPin));
+    // dispatch(changePin(data.newPin));
     setPinOpen(false);
   };
 

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
 import Modal from "../../../components/Modal";
-import { deleteArticle } from "../../../redux/store";
+// import { deleteArticle } from "../../../redux/store";
 import { articleCategories, articleStatuses, articleAuthors } from "../../../data/content";
 
 const filterDefaults = {
@@ -70,7 +70,7 @@ function ActionsMenu({ onDelete }) {
 }
 
 export default function KnowledgeBase() {
-  const articles = useSelector((state) => state.articles);
+  const articles = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -108,7 +108,7 @@ export default function KnowledgeBase() {
 
   const confirmDelete = () => {
     if (deleteTarget) {
-      dispatch(deleteArticle(deleteTarget.id));
+      // dispatch(deleteArticle(deleteTarget.id));
       setDeleteTarget(null);
     }
   };

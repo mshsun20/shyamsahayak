@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
 import Modal from "../../../components/Modal";
-import { deleteScheme } from "../../../redux/store";
+// import { deleteScheme } from "../../../redux/store";
 import { schemeTypes, applicableOnOptions, schemeStatuses } from "../../../data/content";
 
 const filterDefaults = {
@@ -79,7 +79,7 @@ function ActionsMenu({ onDelete }) {
 }
 
 export default function Schemes() {
-  const schemes = useSelector((state) => state.schemes);
+  const schemes = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -131,7 +131,7 @@ export default function Schemes() {
 
   const confirmDelete = () => {
     if (deleteTarget) {
-      dispatch(deleteScheme(deleteTarget.id));
+      // dispatch(deleteScheme(deleteTarget.id));
       setDeleteTarget(null);
     }
   };

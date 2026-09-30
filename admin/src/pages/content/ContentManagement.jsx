@@ -19,9 +19,9 @@ const statusBadge = {
 const filterOptions = ["All Content", "Products", "Schemes", "Articles"];
 
 export default function ContentManagement() {
-  const products = useSelector((state) => state.products);
-  const schemes = useSelector((state) => state.schemes);
-  const articles = useSelector((state) => state.articles);
+  const products = [];
+  const schemes = [];
+  const articles = [];
   const navigate = useNavigate();
   const [contentFilter, setContentFilter] = useState("All Content");
   const [filterOpen, setFilterOpen] = useState(false);
