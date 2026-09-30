@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, Link } from "react-router-dom";
@@ -19,19 +19,21 @@ import {
   Trash2,
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
-// import { addProduct, updateProduct } from "../../../redux/store";
-import { productCategories, unitTypes } from "../../../data/content";
+import Loader from "../../../components/Loader";
+import axiosInstance from "../../../config/axiosInstance";
+import { showSnackbar } from "../../../redux/slices/snackbarSlice";
+import { productCategories, units } from "../../../data/content";
 
 const emptyForm = {
   name: "",
-  sku: "",
+  code: "",
   category: productCategories[0],
-  unitType: unitTypes[0],
+  unit: units[0],
   shortDescription: "",
   description: "",
   image: "",
   price: "",
-  priceUnit: unitTypes[0],
+  priceUnit: units[0],
   gstRate: "",
   status: "Active",
   tags: [],
@@ -43,12 +45,13 @@ const emptyForm = {
 export default function ProductForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const products = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const [tagInput, setTagInput] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -57,7 +60,7 @@ export default function ProductForm() {
     reset,
     control,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({ defaultValues: emptyForm, mode: "onSubmit" });
 
   const shortDescription = watch("shortDescription") || "";
@@ -67,44 +70,61 @@ export default function ProductForm() {
   const image = watch("image");
   const tags = watch("tags") || [];
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.get(`/products/${id}`);
+      const product = response?.data?.data;
+      if (product) {
+        reset({ ...emptyForm, ...product });
+      }
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id, reset, dispatch]);
   useEffect(() => {
     if (isEdit) {
-      const existing = products.find((p) => String(p.id) === id);
-      if (existing) {
-        reset({ ...emptyForm, ...existing });
-      }
+      fetchData();
     }
-  }, [id, isEdit, products, reset]);
+  }, [isEdit, fetchData]);
 
-  const onSubmit = (data) => {
-    if (isEdit) {
-      // dispatch(
-      //   updateProduct({
-      //     ...data,
-      //     id: Number(id),
-      //     lastUpdated: "Today",
-      //     lastUpdatedTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      //     lastUpdatedBy: "Admin User",
-      //   })
-      // );
-    } else {
-      // dispatch(
-      //   addProduct({
-      //     ...data,
-      //     id: Date.now(),
-      //     featured: false,
-      //     lastUpdated: "Today",
-      //     lastUpdatedTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      //     lastUpdatedBy: "Admin User",
-      //   })
-      // );
+  const onSubmit = async (data) => {
+    const formData = new FormData();
+    Object.keys(emptyForm).forEach((key) => {
+      if (key === "image") return;
+      if (key === "tags") {
+        (data.tags || []).forEach((tag) => formData.append("tags", tag));
+        return;
+      }
+      if (data[key] !== "" && data[key] != null) {
+        formData.append(key, data[key]);
+      }
+    });
+    if (imageFile) {
+      formData.append("image", imageFile);
     }
-    navigate("/content/products");
+
+    try {
+      if (isEdit) {
+        await axiosInstance.patch(`/products/${id}`, formData);
+      } else {
+        await axiosInstance.post(`/products`, formData);
+      }
+      dispatch(showSnackbar({ message: isEdit ? "Product updated successfully" : "Product created successfully", type: "success" }));
+      navigate("/content/products");
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    }
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setImageFile(file);
     const reader = new FileReader();
     reader.onload = () => setValue("image", reader.result);
     reader.readAsDataURL(file);
@@ -131,6 +151,7 @@ export default function ProductForm() {
 
   return (
     <AdminLayout title="Content Management">
+      {isLoading && <Loader />}
       <div className="flex items-center justify-between mb-1">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1.5">
@@ -153,7 +174,8 @@ export default function ProductForm() {
           <button
             type="submit"
             form="product-form"
-            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark"
+            disabled={isSubmitting}
+            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark disabled:opacity-60"
           >
             {isEdit ? "Save Changes" : "Save Product"}
           </button>
@@ -178,10 +200,10 @@ export default function ProductForm() {
               <label className="block text-xs font-medium text-gray-600 mb-1.5">SKU / Code *</label>
               <input
                 placeholder="Enter SKU or code"
-                {...register("sku", { required: "SKU / Code is required." })}
-                className={inputClass("sku")}
+                {...register("code", { required: "SKU / Code is required." })}
+                className={inputClass("code")}
               />
-              {errors.sku && <p className="text-xs text-danger mt-1">{errors.sku.message}</p>}
+              {errors.code && <p className="text-xs text-danger mt-1">{errors.code.message}</p>}
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Category *</label>
@@ -193,8 +215,8 @@ export default function ProductForm() {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Unit Type *</label>
-              <select {...register("unitType", { required: true })} className={inputClass("unitType")}>
-                {unitTypes.map((u) => (
+              <select {...register("unit", { required: true })} className={inputClass("unit")}>
+                {units.map((u) => (
                   <option key={u}>{u}</option>
                 ))}
               </select>
@@ -282,7 +304,10 @@ export default function ProductForm() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setValue("image", "")}
+                      onClick={() => {
+                        setValue("image", "");
+                        setImageFile(null);
+                      }}
                       className="p-2 text-danger border border-gray-200 rounded-lg hover:bg-red-50"
                     >
                       <Trash2 size={14} />
@@ -324,7 +349,7 @@ export default function ProductForm() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Price Unit *</label>
               <select {...register("priceUnit", { required: true })} className={inputClass("priceUnit")}>
-                {unitTypes.map((u) => (
+                {units.map((u) => (
                   <option key={u}>{u}</option>
                 ))}
               </select>

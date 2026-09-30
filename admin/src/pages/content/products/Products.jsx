@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
@@ -17,7 +17,9 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
 import Modal from "../../../components/Modal";
-// import { deleteProduct, deleteProducts } from "../../../redux/store";
+import Loader from "../../../components/Loader";
+import axiosInstance from "../../../config/axiosInstance";
+import { showSnackbar } from "../../../redux/slices/snackbarSlice";
 import { productCategories } from "../../../data/content";
 
 const filterDefaults = {
@@ -82,9 +84,11 @@ function ActionsMenu({ onEdit, onDelete }) {
 }
 
 export default function Products() {
-  const products = [];
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const importInputRef = useRef(null);
 
   const { register, watch, reset } = useForm({ defaultValues: filterDefaults });
   const { search, category, status, featured } = watch();
@@ -94,13 +98,30 @@ export default function Products() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.get(`/products`);
+      const data = response?.data?.data;
+      setProducts(Array.isArray(data) ? data : data?.products || []);
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const q = search.toLowerCase();
       const matchesSearch =
-        p.name.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q) ||
-        p.shortDescription.toLowerCase().includes(q);
+        p.name?.toLowerCase().includes(q) ||
+        p.code?.toLowerCase().includes(q) ||
+        p.shortDescription?.toLowerCase().includes(q);
       const matchesCategory = category === "All Categories" || p.category === category;
       const matchesStatus =
         status === "All Status" ||
@@ -119,7 +140,7 @@ export default function Products() {
   const allSelected = filteredProducts.length > 0 && selected.length === filteredProducts.length;
 
   const toggleSelectAll = () => {
-    setSelected(allSelected ? [] : filteredProducts.map((p) => p.id));
+    setSelected(allSelected ? [] : filteredProducts.map((p) => p._id));
   };
 
   const toggleSelectOne = (id) => {
@@ -131,7 +152,7 @@ export default function Products() {
     const rows = filteredProducts.map((p) => [
       p.name,
       p.category,
-      p.sku,
+      p.code,
       `${p.price} / ${p.priceUnit}`,
       p.status === "Active" ? "Published" : "Draft",
       p.featured ? "Yes" : "No",
@@ -149,22 +170,64 @@ export default function Products() {
     URL.revokeObjectURL(url);
   };
 
-  const confirmDelete = () => {
-    if (deleteTarget) {
-      // dispatch(deleteProduct(deleteTarget.id));
-      setSelected((prev) => prev.filter((id) => id !== deleteTarget.id));
-      setDeleteTarget(null);
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    setIsLoading(true);
+    try {
+      await axiosInstance.delete(`/products/${target._id}`);
+      dispatch(showSnackbar({ message: "Product deleted successfully", type: "success" }));
+      setSelected((prev) => prev.filter((id) => id !== target._id));
+      await fetchData();
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const confirmBulkDelete = () => {
-    // dispatch(deleteProducts(selected));
-    setSelected([]);
+  const confirmBulkDelete = async () => {
+    const ids = selected;
     setBulkDeleteOpen(false);
+    setIsLoading(true);
+    try {
+      await Promise.all(ids.map((id) => axiosInstance.delete(`/products/${id}`)));
+      dispatch(showSnackbar({ message: `${ids.length} product${ids.length > 1 ? "s" : ""} deleted successfully`, type: "success" }));
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      // some deletes may have succeeded even if one failed, so always refresh
+      setSelected([]);
+      await fetchData();
+      setIsLoading(false);
+    }
+  };
+
+  const handleImport = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.post(`/products/import`, formData);
+      dispatch(showSnackbar({ message: response?.data?.message || "Products imported successfully", type: "success" }));
+      await fetchData();
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <AdminLayout title="Content Management">
+      {isLoading && <Loader />}
       <div className="flex items-center justify-between mb-1">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1.5">
@@ -184,7 +247,17 @@ export default function Products() {
             <Download size={15} />
             Export
           </button>
-          <button className="flex items-center gap-2 border border-primary text-sm font-medium text-primary px-3.5 py-2 rounded-lg hover:bg-primary-light">
+          <input
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            ref={importInputRef}
+            onChange={handleImport}
+            className="hidden"
+          />
+          <button
+            onClick={() => importInputRef.current?.click()}
+            className="flex items-center gap-2 border border-primary text-sm font-medium text-primary px-3.5 py-2 rounded-lg hover:bg-primary-light"
+          >
             <Layers size={15} />
             Add Product in Bulk
           </button>
@@ -287,12 +360,12 @@ export default function Products() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50">
+                <tr key={product._id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <input
                       type="checkbox"
-                      checked={selected.includes(product.id)}
-                      onChange={() => toggleSelectOne(product.id)}
+                      checked={selected.includes(product._id)}
+                      onChange={() => toggleSelectOne(product._id)}
                       className="rounded border-gray-300 text-primary focus:ring-primary/30"
                     />
                   </td>
@@ -308,7 +381,7 @@ export default function Products() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{product.category}</td>
-                  <td className="px-4 py-3 text-gray-600">{product.sku}</td>
+                  <td className="px-4 py-3 text-gray-600">{product.code}</td>
                   <td className="px-4 py-3 text-gray-600">
                     ₹{product.price} / {product.priceUnit}
                   </td>
@@ -332,7 +405,7 @@ export default function Products() {
                         <Eye size={15} />
                       </button>
                       <ActionsMenu
-                        onEdit={() => navigate(`/content/products/edit/${product.id}`)}
+                        onEdit={() => navigate(`/content/products/edit/${product._id}`)}
                         onDelete={() => setDeleteTarget(product)}
                       />
                     </div>
@@ -359,9 +432,9 @@ export default function Products() {
         <Modal title="Product Details" onClose={() => setViewProduct(null)}>
           <div className="space-y-2.5 text-sm">
             <div className="flex justify-between"><span className="text-gray-400">Product Name</span><span className="text-gray-800 font-medium">{viewProduct.name}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">SKU / Code</span><span className="text-gray-800">{viewProduct.sku}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">SKU / Code</span><span className="text-gray-800">{viewProduct.code}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Category</span><span className="text-gray-800">{viewProduct.category}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Unit Type</span><span className="text-gray-800">{viewProduct.unitType}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Unit Type</span><span className="text-gray-800">{viewProduct.unit}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Price</span><span className="text-gray-800">₹{viewProduct.price} / {viewProduct.priceUnit}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">GST Rate</span><span className="text-gray-800">{viewProduct.gstRate}%</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Status</span><StatusBadge status={viewProduct.status} /></div>
