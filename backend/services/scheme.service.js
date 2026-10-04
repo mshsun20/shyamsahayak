@@ -6,21 +6,21 @@ export const createFunction = async (payload) => {
 }
 
 export const readFunction = async () => {
-    return Scheme.find()
+    return Scheme.find().populate("banner")
     .populate({ path: "createdBy", select: "-password -passwordBackup" })
     .populate({ path: "updatedBy", select: "-password -passwordBackup" })
     .lean();
 }
 
 export const readByIdFunction = async (id) => {
-    return Scheme.findById(id)
+    return Scheme.findById(id).populate("banner")
     .populate({ path: "createdBy", select: "-password -passwordBackup" })
     .populate({ path: "updatedBy", select: "-password -passwordBackup" })
     .lean();
 }
 
 export const readByUniqueKeyFunction = async (uniqueKey) => {
-    return Scheme.findOne({ code: uniqueKey })
+    return Scheme.findOne({ code: uniqueKey }).populate("banner")
     .populate({ path: "createdBy", select: "-password -passwordBackup" })
     .populate({ path: "updatedBy", select: "-password -passwordBackup" })
     .lean();

@@ -6,24 +6,21 @@ export const createFunction = async (payload) => {
 }
 
 export const readFunction = async () => {
-    return Product.find()
-    .populate("applicableOn applicableProduct")
+    return Product.find().populate("image")
     .populate({ path: "createdBy", select: "-password -passwordBackup" })
     .populate({ path: "updatedBy", select: "-password -passwordBackup" })
     .lean();
 }
 
 export const readByIdFunction = async (id) => {
-    return Product.findById(id)
-    .populate("applicableOn applicableProduct")
+    return Product.findById(id).populate("image")
     .populate({ path: "createdBy", select: "-password -passwordBackup" })
     .populate({ path: "updatedBy", select: "-password -passwordBackup" })
     .lean();
 }
 
 export const readByUniqueKeyFunction = async (uniqueKey) => {
-    return Product.findOne({ code: uniqueKey })
-    .populate("applicableOn applicableProduct")
+    return Product.findOne({ code: uniqueKey }).populate("image")
     .populate({ path: "createdBy", select: "-password -passwordBackup" })
     .populate({ path: "updatedBy", select: "-password -passwordBackup" })
     .lean();

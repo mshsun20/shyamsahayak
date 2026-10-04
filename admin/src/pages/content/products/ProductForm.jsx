@@ -35,7 +35,7 @@ const emptyForm = {
   price: "",
   priceUnit: units[0],
   gstRate: "",
-  status: "Active",
+  status: "Draft",
   tags: [],
   sortOrder: "",
   metaTitle: "",
@@ -76,7 +76,8 @@ export default function ProductForm() {
       const response = await axiosInstance.get(`/products/${id}`);
       const product = response?.data?.data;
       if (product) {
-        reset({ ...emptyForm, ...product });
+        const { image, ...others } = product
+        reset({ ...emptyForm, ...others, image: image?.relativePath });
       }
     } catch (error) {
       console.error(error.message);
@@ -123,6 +124,7 @@ export default function ProductForm() {
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
+    console.log(file);
     if (!file) return;
     setImageFile(file);
     const reader = new FileReader();
@@ -369,8 +371,9 @@ export default function ProductForm() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Status *</label>
               <select {...register("status", { required: true })} className={inputClass("status")}>
-                <option value="Active">Active</option>
                 <option value="Draft">Draft</option>
+                <option value="Published">Published</option>
+                <option value="Archived">Archived</option>
               </select>
             </div>
           </div>

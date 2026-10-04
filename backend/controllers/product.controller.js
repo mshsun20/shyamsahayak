@@ -9,22 +9,24 @@ import {
 import {
     uploadSingleFile,
 } from "../services/file.service.js";
+import { mapValidObjectId } from "../utils/objectValidation.util.js";
 
 const create = async (req, res) => {
     try {
         const productPayload = req.body;
         const user = req.user || null;
-        const file = req.file.image || null;
-        const upload = await uploadSingleFile(file)
-        console.log(upload);
+        const file = req.file || null;
+        // console.log(file);
+        const uploadReport = await uploadSingleFile(file)
+        console.log(uploadReport);
         
         const existingProduct = await readByUniqueKeyFunction(String(productPayload.code).trim());
         if (existingProduct) return res.status(409).json({ success: false, message: "Product already exists" });
         
         Object.assign(productPayload, {
-            // image: upload,
+            image: uploadReport?.uploaded?._id || null,
+            status: productPayload.status || "Draft",
             createdBy: user?._id || null,
-            status: "Active",
         })
         const product = await createFunction(productPayload);
         if (!product) return res.status(401).json({ success: false, message: "Product creation failed" });
@@ -137,6 +139,11 @@ const update = async (req, res) => {
         const id = mapValidObjectId(req.params.id);
         const productPayload = req.body;
         const user = req.user || null;
+        const file = req.file || null;
+        // console.log(file);
+        const uploadReport = await uploadSingleFile(file)
+        console.log(uploadReport);
+        
         const existingProduct = await readByIdFunction(id);
         if (!existingProduct) return res.status(404).json({ success: false, message: "Product doesn't exist" });
 
@@ -145,8 +152,9 @@ const update = async (req, res) => {
             delete productPayload[key]
         }
         Object.assign(productPayload, {
+            image: uploadReport?.uploaded?._id || null,
+            status: productPayload.status || "Draft",
             updatedBy: user?._id || null,
-            status: "Active",
         })
         const updatedProduct = await updateFunction(id, productPayload);
         if (!updatedProduct) return res.status(401).json({ success: false, message: "Product update failed" });

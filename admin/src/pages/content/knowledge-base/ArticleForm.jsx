@@ -26,7 +26,10 @@ import {
   Trash2,
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
-import { addArticle, updateArticle } from "../../../redux/store";
+// import { addArticle, updateArticle } from "../../../redux/store";
+import Loader from "../../../components/Loader";
+import axiosInstance from "../../../config/axiosInstance";
+import { showSnackbar } from "../../../redux/slices/snackbarSlice";
 import { articleCategories, articleAuthors } from "../../../data/content";
 
 const emptyForm = {
@@ -220,6 +223,7 @@ export default function ArticleForm() {
               <select {...register("status", { required: true })} className={inputClass("status")}>
                 <option value="Draft">Draft</option>
                 <option value="Published">Published</option>
+                <option value="Archived">Archived</option>
               </select>
             </div>
           </div>
@@ -436,9 +440,10 @@ export default function ArticleForm() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Visibility</label>
               <select {...register("visibility")} className={inputClass("visibility")}>
-                <option>Visible to all users</option>
-                <option>Visible to Admins only</option>
-                <option>Visible to DGOs & TMs</option>
+                <option value={"All Users"}>Visible to all users</option>
+                <option value={"TMs"}>Visible to TMs</option>
+                <option value={"DGOs"}>Visible to DGOs</option>
+                <option value={"TMs & DGOs"}>Visible to TMs & DGOs</option>
               </select>
               <p className="text-[11px] text-gray-400 mt-1">Choose who can view this article</p>
             </div>

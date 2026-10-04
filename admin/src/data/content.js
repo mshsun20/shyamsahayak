@@ -3,19 +3,12 @@
 // for now; Schemes/Knowledge Base are summary-only, matching the reference
 // screenshots.
 
-export const productCategories = [
-  "Roofing Sheets",
-  "Pipes",
-  "TMT Bars",
-  "Coils",
-];
-
+export const productCategories = ["Roofing Sheets", "Pipes", "TMT Bars", "Coils"];
 export const units = ["Sheet", "Kg", "Piece", "Meter"];
-
-export const productStatuses = ["Active", "Draft"];
+export const productStatuses = ["Draft", "Published", "Archived"];
 
 // Status shown on the list/table is derived from `status`:
-// Active -> "Published", Draft -> "Draft"
+// Published -> "Published", Draft -> "Draft"
 
 export const initialProducts = [
   {
@@ -30,7 +23,7 @@ export const initialProducts = [
     price: "560.00",
     priceUnit: "Sheet",
     gstRate: "18",
-    status: "Active",
+    status: "Published",
     featured: true,
     tags: ["Roofing Sheet", "Industrial"],
     sortOrder: "1",
@@ -52,7 +45,7 @@ export const initialProducts = [
     price: "640.00",
     priceUnit: "Sheet",
     gstRate: "18",
-    status: "Active",
+    status: "Published",
     featured: true,
     tags: ["Roofing Sheet"],
     sortOrder: "2",
@@ -74,7 +67,7 @@ export const initialProducts = [
     price: "510.00",
     priceUnit: "Sheet",
     gstRate: "18",
-    status: "Active",
+    status: "Published",
     featured: false,
     tags: ["Roofing Sheet"],
     sortOrder: "3",
@@ -96,7 +89,7 @@ export const initialProducts = [
     price: "78.00",
     priceUnit: "Kg",
     gstRate: "18",
-    status: "Active",
+    status: "Published",
     featured: false,
     tags: ["Pipe"],
     sortOrder: "4",
@@ -140,7 +133,7 @@ export const initialProducts = [
     price: "62.00",
     priceUnit: "Kg",
     gstRate: "18",
-    status: "Active",
+    status: "Published",
     featured: true,
     tags: ["TMT Bar", "Construction"],
     sortOrder: "6",
@@ -162,7 +155,7 @@ export const initialProducts = [
     price: "53.00",
     priceUnit: "Kg",
     gstRate: "18",
-    status: "Active",
+    status: "Published",
     featured: false,
     tags: ["Coil"],
     sortOrder: "7",
@@ -184,7 +177,7 @@ export const initialProducts = [
     price: "58.00",
     priceUnit: "Kg",
     gstRate: "18",
-    status: "Active",
+    status: "Published",
     featured: false,
     tags: ["Coil"],
     sortOrder: "8",
@@ -228,7 +221,7 @@ export const initialProducts = [
     price: "63.50",
     priceUnit: "Kg",
     gstRate: "18",
-    status: "Active",
+    status: "Published",
     featured: false,
     tags: ["TMT Bar"],
     sortOrder: "10",
@@ -250,7 +243,7 @@ export const initialProducts = [
     price: "80.00",
     priceUnit: "Kg",
     gstRate: "18",
-    status: "Active",
+    status: "Published",
     featured: false,
     tags: ["Pipe"],
     sortOrder: "11",
@@ -288,7 +281,7 @@ export const initialProducts = [
 // ---- Schemes ----
 export const schemeTypes = ["Discount", "Cashback", "Combo", "Loyalty"];
 export const applicableOnOptions = ["All Products", "Roofing Sheets", "Pipes", "TMT Bars", "Coils"];
-export const schemeStatuses = ["Active", "Upcoming", "Expired", "Draft"];
+export const schemeStatuses = ["Draft", "Upcoming", "Active", "Inactive", "Expired"];
 export const benefitTypes = ["Percentage", "Flat Amount", "Cashback"];
 
 export const initialSchemes = [
@@ -439,8 +432,8 @@ export const initialSchemes = [
 ];
 
 // ---- Knowledge Base ----
-export const articleCategories = ["Products", "Schemes", "User Management", "Settings"];
-export const articleStatuses = ["Published", "Draft"];
+export const articleCategories = ["Products", "Installation", "Warranty", "Videos"];
+export const articleStatuses = ["Published", "Draft", "Archived"];
 export const articleAuthors = ["Admin User", "Priya Sharma", "Amit Verma", "Neha Patel", "Rohit Kumar"];
 
 export const initialArticles = [

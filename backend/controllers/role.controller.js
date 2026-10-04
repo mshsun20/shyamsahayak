@@ -118,7 +118,7 @@ const update = async (req, res) => {
 }
 const remove = async (req, res) => {
     try {
-        const id = mapValidObjectId(req.params.id);
+        const id = mapValidObjectIdc(req.params.id);
         const existingRole = await readByIdFunction(id);
         if (!existingRole) return res.status(404).json({ success: false, message: "Role doesn't exist" });
 

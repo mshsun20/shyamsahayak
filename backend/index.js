@@ -19,6 +19,7 @@ import roleRouter from "./routes/role.route.js";
 import districtRouter from "./routes/location/district.route.js";
 import productRouter from "./routes/product.route.js";
 import schemeRouter from "./routes/scheme.route.js";
+import knowledgeBaseRouter from "./routes/KnowledgeBase.route.js";
 import chatRouter from "./routes/chat.route.js";
 
 
@@ -46,7 +47,7 @@ app.get("/api/debug/ip", (req, res) => {
 // Middleware
 app.use(cors({
     origin: allowedOrigins, // Allow all origins
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'Authorization'],
     credentials: true,
     optionsSuccessStatus: 200, // For legacy browser support
@@ -70,6 +71,7 @@ app.use("/api/roles", roleRouter);
 app.use("/api/districts", districtRouter);
 app.use("/api/products", productRouter);
 app.use("/api/schemes", schemeRouter);
+app.use("/api/knowledge-bases", knowledgeBaseRouter);
 app.use("/api/chats", chatRouter);
 
 // UI Static Serving
@@ -129,13 +131,21 @@ io.use(socketAuth);
 io.on("connection", (socket) => {
     console.log(`Authenticated Socket connected: ${socket.id}`);
     console.log(`Authenticated account: ${socket.user.userId}`);
+
+    // start user room
+    const userId = socket.auth.userId.toString();
+    const userRoom = `user:${userId}`;
+    socket.join(userRoom);
+    console.log(`Socket ${socket.id} joined ${userRoom}`);
+
     /*
      * Start access-token lifecycle monitoring.
      */
     setupSocketAuthLifecycle(io, socket);
+
     socket.on("disconnect", (reason) => {
-        console.log(`Authenticated Socket disconnected: ${socket.id}`, reason);
         clearSocketAuthLifecycle(socket);
+        console.log(`Authenticated Socket disconnected: ${socket.id}`, reason);
     })
 });
 

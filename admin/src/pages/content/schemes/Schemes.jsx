@@ -34,10 +34,10 @@ const typeBadge = {
 };
 
 const statusBadge = {
-  Active: "bg-green-50 text-success",
-  Upcoming: "bg-amber-50 text-warning",
-  Expired: "bg-red-50 text-danger",
   Draft: "bg-gray-100 text-gray-500",
+  Upcoming: "bg-amber-50 text-warning",
+  Active: "bg-green-50 text-success",
+  Expired: "bg-red-50 text-danger",
 };
 
 function formatDate(iso) {

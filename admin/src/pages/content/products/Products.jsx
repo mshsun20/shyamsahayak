@@ -30,7 +30,7 @@ const filterDefaults = {
 };
 
 function StatusBadge({ status }) {
-  const isActive = status === "Active";
+  const isActive = status === "Published";
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
@@ -125,7 +125,7 @@ export default function Products() {
       const matchesCategory = category === "All Categories" || p.category === category;
       const matchesStatus =
         status === "All Status" ||
-        (status === "Published" && p.status === "Active") ||
+        (status === "Published" && p.status === "Published") ||
         (status === "Draft" && p.status === "Draft");
       const matchesFeatured =
         featured === "All" ||
@@ -154,7 +154,7 @@ export default function Products() {
       p.category,
       p.code,
       `${p.price} / ${p.priceUnit}`,
-      p.status === "Active" ? "Published" : "Draft",
+      p.status === "Published" ? "Published" : "Draft",
       p.featured ? "Yes" : "No",
       `${p.lastUpdated} ${p.lastUpdatedTime}`,
     ]);

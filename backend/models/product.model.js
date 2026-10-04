@@ -16,7 +16,7 @@ const ProductSchema = new Schema({
     priority: { type: String, trim: true },
     metaTitle: { type: String, trim: true },
     metaDescription: { type: String, trim: true },
-    status: { type: String, required: true, enum: ["Draft", "Published"], default: "Draft" },
+    status: { type: String, required: true, enum: ["Draft", "Published", "Archived"], default: "Draft" },
     createdBy: { type: Types.ObjectId, ref: "Account" },
     updatedBy: { type: Types.ObjectId, ref: "Account" }
 }, { timestamps: true })

@@ -1,28 +1,81 @@
-import React from 'react'
-import { Calculator as CalcIcon, ChevronDown, RotateCcw, Info } from "lucide-react";
+import React from "react";
+import { Calculator as CalcIcon, ChevronDown, RotateCcw } from "lucide-react";
 
-// Approx unit-weight (kg per running ft) by sheet thickness for the demo product
-const UNIT_WEIGHT_BY_THICKNESS = {
-  "0.40 mm": 1.637,
-  "0.45 mm": 1.842,
-  "0.50 mm": 2.046,
-  "0.60 mm": 2.455,
-};
-
-const LENGTHS = [6, 8, 10, 12, 14, 16];
-const QUANTITIES = [1, 5, 10, 20, 50, 100];
+// kg weight per 1 unit of quantity, by thickness + metric
+const productWeights = [
+  {
+    code: "AZ150",
+    name: "TIGER Premium Roofing Sheet",
+    shortDescription: "Zinc-Aluminium Coated",
+    image: "https://picsum.photos/seed/roofing-sheet/1000/1000",
+    weights: [
+      { thickness: "0.30 mm", metrics: [{ metric: "RMT", value: 2.3, uom: "kg" }, { metric: "Sq.ft", value: 1.38, uom: "kg" }, { metric: "Sq.m", value: 14.85, uom: "kg" }] },
+      { thickness: "0.32 mm", metrics: [{ metric: "RMT", value: 2.46, uom: "kg" }, { metric: "Sq.ft", value: 1.48, uom: "kg" }, { metric: "Sq.m", value: 15.9, uom: "kg" }] },
+      { thickness: "0.35 mm", metrics: [{ metric: "RMT", value: 2.69, uom: "kg" }, { metric: "Sq.ft", value: 1.61, uom: "kg" }, { metric: "Sq.m", value: 17.35, uom: "kg" }] },
+      { thickness: "0.40 mm", metrics: [{ metric: "RMT", value: 3.07, uom: "kg" }, { metric: "Sq.ft", value: 1.84, uom: "kg" }, { metric: "Sq.m", value: 19.8, uom: "kg" }] },
+      { thickness: "0.45 mm", metrics: [{ metric: "RMT", value: 3.45, uom: "kg" }, { metric: "Sq.ft", value: 2.07, uom: "kg" }, { metric: "Sq.m", value: 22.3, uom: "kg" }] },
+      { thickness: "0.50 mm", metrics: [{ metric: "RMT", value: 3.84, uom: "kg" }, { metric: "Sq.ft", value: 2.3, uom: "kg" }, { metric: "Sq.m", value: 24.8, uom: "kg" }] },
+    ]
+  },
+  {
+    code: "PDT2",
+    name: "Pdt 2",
+  },
+  {
+    code: "PDT3",
+    name: "Pdt 3",
+  },
+]
 
 const Calculator = () => {
-  const [thickness, setThickness] = React.useState("0.50 mm");
-  const [length, setLength] = React.useState(12);
-  const [quantity, setQuantity] = React.useState(10);
-  const [showResult, setShowResult] = React.useState(true);
+  const [productCode, setProductCode] = React.useState(productWeights[0]?.code || "");
+  const [thickness, setThickness] = React.useState(productWeights[0]?.weights?.[1]?.thickness || productWeights[0]?.weights?.[0]?.thickness || "");
+  const [metric, setMetric] = React.useState(productWeights[0]?.weights?.[1]?.metrics?.[0]?.metric || productWeights[0]?.weights?.[0]?.metrics?.[0]?.metric || "");
+  const [quantity, setQuantity] = React.useState(1000);
+  const [calculated, setCalculated] = React.useState(true);
 
-  const unitWeight = UNIT_WEIGHT_BY_THICKNESS[thickness];
-  const totalWeight = React.useMemo(
-    () => unitWeight * length * quantity,
-    [unitWeight, length, quantity]
-  );
+  // Selected product
+  const selectedProduct = React.useMemo(() => productWeights.find((product) => product.code === productCode) || productWeights[0], [productCode]);
+  // Available thicknesses for selected product
+  const thicknesses = React.useMemo(() => selectedProduct?.weights?.map((weight) => weight.thickness) || [], [selectedProduct]);
+  // Selected thickness mapping
+  const selectedThickness = React.useMemo(() => selectedProduct?.weights?.find((weight) => weight.thickness === thickness) || selectedProduct?.weights?.[0], [selectedProduct, thickness]);
+  // Available metrics for selected product + thickness
+  const metrics = React.useMemo(() => selectedThickness?.metrics?.map((item) => item.metric) || [], [selectedThickness]);
+  // Selected metric mapping
+  const selectedMetric = React.useMemo(() => selectedThickness?.metrics?.find((item) => item.metric === metric) || selectedThickness?.metrics?.[0], [selectedThickness, metric]);
+  // Unit kg weight based on selected product + thickness + metric
+  const unitWeight = selectedMetric?.value || 0;
+  const unitUom = selectedMetric?.uom || "";
+  // Total calculated weight
+  const calculatedWeight = React.useMemo(() => unitWeight * Number(quantity || 0), [unitWeight, quantity]);
+
+  // Handle product change
+  const handleProductChange = (productCodeValue) => {
+    const product = productWeights.find((item) => item.code === productCodeValue);
+    setProductCode(productCodeValue);
+    const firstThickness = product?.weights?.[0];
+    setThickness(firstThickness?.thickness || "");
+    setMetric(firstThickness?.metrics?.[0]?.metric || "");
+  };
+
+  // Handle thickness change
+  const handleThicknessChange = (thicknessValue) => {
+    setThickness(thicknessValue);
+    const thicknessData = selectedProduct?.weights?.find((weight) => weight.thickness === thicknessValue);
+    setMetric(thicknessData?.metrics?.[0]?.metric || "");
+  };
+
+  // Reset calculator
+  const handleReset = () => {
+    const defaultProduct = productWeights[0];
+    const defaultThickness = defaultProduct?.weights?.find((weight) => weight.thickness === "0.32 mm") || defaultProduct?.weights?.[0];
+    setProductCode(defaultProduct?.code || "");
+    setThickness(defaultThickness?.thickness || "");
+    setMetric(defaultThickness?.metrics?.[0]?.metric || "RMT");
+    setQuantity(1000);
+    setCalculated(true);
+  };
 
   return (
     <div className="min-h-dvh px-4 pt-6 pb-10">
@@ -31,148 +84,181 @@ const Calculator = () => {
         <div className="w-11 h-11 rounded-2xl bg-brand flex items-center justify-center shrink-0 shadow-sm shadow-orange-200">
           <CalcIcon size={20} className="text-white" strokeWidth={2.25} />
         </div>
+
         <div>
           <h1 className="text-[19px] font-bold text-neutral-900 leading-tight">
             Weight Calculator
           </h1>
+
           <p className="text-[13px] text-neutral-500 mt-0.5">
-            Calculate the total weight of roofing sheets
+            Calculate the total weight of the product
           </p>
         </div>
       </div>
 
-      {/* Total weight card */}
-      <div className="bg-white rounded-2xl border border-neutral-200 p-5">
-        <div className="bg-neutral-100 rounded-xl py-5 text-center">
-          <p className="text-[13px] text-neutral-500">Total Weight</p>
-          <p className="text-[28px] font-bold text-emerald-600 mt-1">
-            {showResult ? `${totalWeight.toFixed(2)} kg` : "-- kg"}
-          </p>
-        </div>
+      {/* Total weight */}
+      <div
+        className="rounded-2xl py-5 text-center border border-neutral-200"
+        style={{
+          background: "#ecf5f0",
+          borderColor: "#ecf5f0",
+        }}
+      >
+        <p className="text-[13px] text-neutral-500">Total Weight</p>
 
-        <h2 className="text-[15px] font-bold text-neutral-900 mt-5 mb-3">
+        <p className="text-[28px] font-bold text-emerald-600 mt-1">
+          {calculated ? `${Math.round(calculatedWeight)} ${unitUom}` : "-- kg"}
+        </p>
+      </div>
+
+      {/* Form card */}
+      <div className="bg-white rounded-2xl border border-neutral-200 p-5 mt-4">
+        <h2 className="text-[15px] font-bold text-neutral-900 mb-3">
           Enter Details
         </h2>
 
         {/* Product */}
         <label className="text-[13px] text-neutral-500">Product</label>
-        <button className="w-full mt-1.5 flex items-center gap-3 rounded-xl border border-neutral-200 p-2.5 text-left">
-          <img
-            src="https://picsum.photos/seed/roofing-sheet/64/64"
-            alt="TIGER Premium Roofing Sheet"
-            className="w-11 h-11 rounded-lg object-cover shrink-0"
+
+        <div className="relative mt-1.5">
+          <select
+            value={productCode}
+            onChange={(e) => handleProductChange(e.target.value)}
+            className="w-full appearance-none rounded-xl border border-neutral-200 p-3.5 pr-10 text-[14px] font-medium text-neutral-900 bg-white"
+          >
+            {productWeights.map((product) => (
+              <option
+                key={product.code || product.name}
+                value={product.code || ""}
+                disabled={!product.code}
+              >
+                {product.name}
+              </option>
+            ))}
+          </select>
+
+          <ChevronDown
+            size={18}
+            className="text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
           />
-          <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-neutral-900 leading-snug">
-              TIGER Premium Roofing Sheet
-            </p>
-            <p className="text-[12px] text-neutral-500">
-              AZ150 • Zinc-Aluminium Coated
-            </p>
+        </div>
+
+        {/* Selected Product Information */}
+        {selectedProduct && (
+          <div className="flex items-center gap-3 mt-2.5">
+            <img
+              src={selectedProduct.image}
+              alt={selectedProduct.name}
+              className="w-11 h-11 rounded-lg object-cover shrink-0"
+            />
+
+            <div className="flex-1 min-w-0">
+              <p className="text-[14px] font-semibold text-neutral-900 leading-snug">
+                {selectedProduct.name}
+              </p>
+
+              <p className="text-[12px] text-neutral-500">
+                {selectedProduct.code
+                  ? `${selectedProduct.code}${selectedProduct.shortDescription ? ` • ${selectedProduct.shortDescription}` : ""}`
+                  : selectedProduct.shortDescription ? ` • ${selectedProduct.shortDescription}` : ""}
+              </p>
+            </div>
           </div>
-          <ChevronDown size={18} className="text-neutral-400 shrink-0" />
-        </button>
+        )}
 
         {/* Thickness */}
-        <label className="text-[13px] text-neutral-500 block mt-4">
+        <label className="text-[13px] font-semibold text-neutral-700 block mt-4">
           Thickness
         </label>
+
         <div className="relative mt-1.5">
           <select
             value={thickness}
-            onChange={(e) => setThickness(e.target.value)}
-            className="w-full appearance-none rounded-xl border border-neutral-200 p-3 text-[14px] font-medium text-neutral-900 bg-white"
+            onChange={(e) => handleThicknessChange(e.target.value)}
+            className="w-full appearance-none rounded-xl border border-neutral-200 p-3.5 text-[14px] font-medium text-neutral-900 bg-white"
           >
-            {Object.keys(UNIT_WEIGHT_BY_THICKNESS).map((t) => (
+            {thicknesses.map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>
             ))}
           </select>
+
           <ChevronDown
             size={18}
-            className="text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            className="text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
           />
         </div>
 
-        {/* Length + Quantity */}
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          <div>
-            <label className="text-[13px] text-neutral-500">Length (ft)</label>
-            <div className="relative mt-1.5">
-              <select
-                value={length}
-                onChange={(e) => setLength(Number(e.target.value))}
-                className="w-full appearance-none rounded-xl border border-neutral-200 p-3 text-[14px] font-medium text-neutral-900 bg-white"
-              >
-                {LENGTHS.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={18}
-                className="text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-[13px] text-neutral-500">Quantity (Nos)</label>
-            <div className="relative mt-1.5">
-              <select
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="w-full appearance-none rounded-xl border border-neutral-200 p-3 text-[14px] font-medium text-neutral-900 bg-white"
-              >
-                {QUANTITIES.map((q) => (
-                  <option key={q} value={q}>
-                    {q}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={18}
-                className="text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              />
-            </div>
-          </div>
+        {/* Metric */}
+        <label className="text-[13px] font-semibold text-neutral-700 block mt-4">
+          Metric
+        </label>
+
+        <div className="relative mt-1.5">
+          <select
+            value={metric}
+            onChange={(e) => setMetric(e.target.value)}
+            className="w-full appearance-none rounded-xl border border-neutral-200 p-3.5 text-[14px] font-medium text-neutral-900 bg-white"
+          >
+            {metrics.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+
+          <ChevronDown
+            size={18}
+            className="text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+          />
         </div>
 
-        {/* Unit weight */}
-        <label className="text-[13px] text-neutral-500 block mt-4">
+        {/* Purchased quantity */}
+        <label className="text-[13px] font-semibold text-neutral-700 block mt-4">
+          Purchased Quantity
+        </label>
+
+        <div className="relative mt-1.5">
+          <input
+            type="number"
+            min={0}
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            className="w-full rounded-xl border border-neutral-200 p-3.5 pr-14 text-[15px] font-bold text-neutral-900"
+          />
+
+          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] text-neutral-400 font-medium">
+            {metric}
+          </span>
+        </div>
+
+        {/* Kg weight */}
+        <label className="text-[13px] font-semibold text-neutral-700 block mt-4">
           Unit Weight
         </label>
-        <div
-          className="mt-1.5 flex items-center justify-between rounded-xl bg-neutral-100 p-3.5"
-          style={{background:"#f9fafc",border:"0.05rem solid #e6e8eb"}}
-        >
-          <span className="text-[14px] font-medium text-neutral-700">
-            {unitWeight.toFixed(3)} kg/ft
+
+        <div className="relative mt-1.5 rounded-xl bg-emerald-50 border border-emerald-100 p-3.5">
+          <span className="text-[15px] font-bold text-emerald-700">
+            {unitWeight}
           </span>
-          <span
-            className="flex items-center gap-1 text-[12px] font-medium text-blue-600"
-            style={{background:"#ebf5ff",padding:"0.2rem 0.5rem", borderRadius:"0.5rem"}}
-          >
-            Auto calculated
-            <Info size={13} />
+
+          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] text-neutral-400 font-medium">
+            {unitUom}
           </span>
         </div>
 
         {/* Actions */}
         <button
-          onClick={() => setShowResult(true)}
+          onClick={() => setCalculated(true)}
           className="w-full mt-5 flex items-center justify-center gap-2 rounded-xl bg-brand py-3.5 text-white text-[15px] font-semibold active:bg-brand-dark transition-colors"
         >
           <CalcIcon size={18} />
           Calculate Weight
         </button>
+
         <button
-          onClick={() => {
-            setThickness("0.50 mm");
-            setLength(12);
-            setQuantity(10);
-          }}
+          onClick={handleReset}
           className="w-full mt-3 flex items-center justify-center gap-2 rounded-xl border border-brand py-3.5 text-brand-dark text-[15px] font-semibold"
         >
           <RotateCcw size={16} />
@@ -184,7 +270,7 @@ const Calculator = () => {
         Weight may vary ±5% due to manufacturing tolerance.
       </p>
     </div>
-  )
-}
+  );
+};
 
-export default React.memo(Calculator)
+export default React.memo(Calculator);

@@ -15,14 +15,17 @@ import {
   AlignRight,
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
-import { addScheme, updateScheme } from "../../../redux/store";
+// import { addScheme, updateScheme } from "../../../redux/store";
+import Loader from "../../../components/Loader";
+import axiosInstance from "../../../config/axiosInstance";
+import { showSnackbar } from "../../../redux/slices/snackbarSlice";
 import { schemeTypes, applicableOnOptions, benefitTypes, productCategories } from "../../../data/content";
 
 const emptyForm = {
   name: "",
   schemeType: schemeTypes[0],
   applicableOn: applicableOnOptions[0],
-  status: "Active",
+  status: "Draft",
   shortDescription: "",
   description: "",
   termsConditions: "",
@@ -191,10 +194,11 @@ export default function SchemeForm() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Status *</label>
               <select {...register("status", { required: true })} className={inputClass("status")}>
-                <option value="Active">Active</option>
-                <option value="Upcoming">Upcoming</option>
-                <option value="Expired">Expired</option>
                 <option value="Draft">Draft</option>
+                <option value="Upcoming">Upcoming</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Expired">Expired</option>
               </select>
             </div>
           </div>

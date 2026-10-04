@@ -14,7 +14,7 @@ const axiosInstance = axios.create({
     baseURL: baseUrl[appenv],
     withCredentials: true,
 });
-console.log(baseUrl[appenv]);
+// console.log(baseUrl[appenv]);
 
 let isRefreshing = false;
 let failedQueue = [];

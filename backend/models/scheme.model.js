@@ -19,7 +19,7 @@ const SchemeSchema = new Schema({
     priority: { type: String, trim: true },
     banner: { type: Types.ObjectId, ref: "File" },
     metaDescription: { type: String, trim: true },
-    status: { type: String, required: true, enum: ["Active", "Inactive"], default: "Active" },
+    status: { type: String, required: true, enum: ["Draft", "Upcoming", "Active", "Inactive", "Expired"], default: "Draft" },
     createdBy: { type: Types.ObjectId, ref: "Account" },
     updatedBy: { type: Types.ObjectId, ref: "Account" }
 }, { timestamps: true })
