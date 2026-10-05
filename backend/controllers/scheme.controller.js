@@ -53,6 +53,47 @@ const create = async (req, res) => {
         });
     }
 }
+const upload = async (req, res) => {
+    try {
+        const schemeDataSheet = req.body?.schemes || [];
+        const user = req.user || null;
+        schemeDataSheet?.forEach(async (scheme, i) => {
+            const existingScheme = await readByUniqueKeyFunction(String(scheme.code).trim());
+            if (existingScheme) {
+                Object.assign(scheme, {
+                    status: scheme.status || "Draft",
+                    updatedBy: user?._id || null,
+                })
+                const { code, name, ...newPayload } = scheme;
+                const updatedUpload = await updateFunction(existingScheme?._id, newPayload);
+                // console.log(updatedUpload);
+                schemeDataSheet[i].uploadReport = updatedUpload;
+            }
+            else {
+                Object.assign(scheme, {
+                    status: scheme.status || "Draft",
+                    createdBy: user?._id || null,
+                })
+                const newUpload = await createFunction(scheme);
+                schemeDataSheet[i].uploadReport = newUpload;
+            }
+        });
+        if (schemeDataSheet?.length > 0) {
+            console.log(schemeDataSheet);
+            return res.status(201).json({
+                success: true,
+                message: "Scheme bulk imported done",
+                data: schemeDataSheet
+            })
+        }
+    } catch (error) {
+        console.error(error.message);
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
 const read = async (req, res) => {
     try {
         const schemes = await readFunction();
@@ -164,6 +205,6 @@ const remove = async (req, res) => {
     }
 }
 
-const Scheme = { create, read, readById, readByUniqueKey, update, remove }
+const Scheme = { create, upload, read, readById, readByUniqueKey, update, remove }
 
 export default Scheme;

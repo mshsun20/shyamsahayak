@@ -50,11 +50,13 @@ const upload = async (req, res) => {
         const productDataSheet = req.body?.products || [];
         const user = req.user || null;
         productDataSheet?.forEach(async (product, i) => {
+            const tags = String(product.tags || "").split(",").map((t) => String(t || "").trim()).filter((t) => t.length > 0);
             const existingProduct = await readByUniqueKeyFunction(String(product.code).trim());
             if (existingProduct) {
                 Object.assign(product, {
+                    tags: tags,
+                    status: product.status || "Draft",
                     updatedBy: user?._id || null,
-                    status: "Draft",
                 })
                 const { code, ...newPayload } = product;
                 const updatedUpload = await updateFunction(existingProduct?._id, newPayload);
@@ -63,8 +65,9 @@ const upload = async (req, res) => {
             }
             else {
                 Object.assign(product, {
+                    tags: tags,
+                    status: product.status || "Draft",
                     createdBy: user?._id || null,
-                    status: "Draft",
                 })
                 const newUpload = await createFunction(product);
                 productDataSheet[i].uploadReport = newUpload;

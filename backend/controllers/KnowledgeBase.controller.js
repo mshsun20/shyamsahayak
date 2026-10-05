@@ -67,6 +67,50 @@ const create = async (req, res) => {
         });
     }
 }
+const upload = async (req, res) => {
+    try {
+        const knowledgeBaseDataSheet = req.body?.knowledgeBases || [];
+        const user = req.user || null;
+        knowledgeBaseDataSheet?.forEach(async (knowledgeBase, i) => {
+            const tags = String(knowledgeBase.tags || "").split(",").map((t) => String(t || "").trim()).filter((t) => t.length > 0);
+            const existingKnowledgeBase = await readByUniqueKeyFunction(String(knowledgeBase.code).trim());
+            if (existingKnowledgeBase) {
+                Object.assign(knowledgeBase, {
+                    tags: tags,
+                    status: knowledgeBase.status || "Draft",
+                    updatedBy: user?._id || null,
+                })
+                const { code, title, category, ...newPayload } = knowledgeBase;
+                const updatedUpload = await updateFunction(existingKnowledgeBase?._id, newPayload);
+                // console.log(updatedUpload);
+                knowledgeBaseDataSheet[i].uploadReport = updatedUpload;
+            }
+            else {
+                Object.assign(knowledgeBase, {
+                    tags: tags,
+                    status: knowledgeBase.status || "Draft",
+                    createdBy: user?._id || null,
+                })
+                const newUpload = await createFunction(knowledgeBase);
+                knowledgeBaseDataSheet[i].uploadReport = newUpload;
+            }
+        });
+        if (knowledgeBaseDataSheet?.length > 0) {
+            console.log(knowledgeBaseDataSheet);
+            return res.status(201).json({
+                success: true,
+                message: "Knowledge Base bulk imported done",
+                data: knowledgeBaseDataSheet
+            })
+        }
+    } catch (error) {
+        console.error(error.message);
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
 const read = async (req, res) => {
     try {
         const knowledgeBases = await readFunction();
@@ -185,6 +229,6 @@ const remove = async (req, res) => {
     }
 }
 
-const KnowledgeBase = { create, read, readById, readByUniqueKey, update, remove }
+const KnowledgeBase = { create, upload, read, readById, readByUniqueKey, update, remove }
 
 export default KnowledgeBase;

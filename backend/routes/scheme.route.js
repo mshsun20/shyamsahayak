@@ -7,6 +7,7 @@ import fileUpload from "../middlewares/filUpload.middleware.js";
 schemeRouter.use(unifiedAuthProtect);
 
 schemeRouter.post("/", fileUpload.single("banner"), Scheme.create);
+schemeRouter.post("/import", Scheme.upload);
 schemeRouter.get("/", Scheme.read);
 schemeRouter.get("/unique/:key", Scheme.readByUniqueKey);
 schemeRouter.get("/:id", Scheme.readById);
