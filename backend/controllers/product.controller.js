@@ -16,15 +16,17 @@ const create = async (req, res) => {
         const productPayload = req.body;
         const user = req.user || null;
         const file = req.file || null;
-        // console.log(file);
-        const uploadReport = await uploadSingleFile(file)
-        console.log(uploadReport);
+        console.log(file);
+        if (file && file?.size > 0) {
+            const uploadReport = await uploadSingleFile(file)
+            console.log(uploadReport);
+            productPayload.image = uploadReport?.uploaded?._id || null;
+        }
         
         const existingProduct = await readByUniqueKeyFunction(String(productPayload.code).trim());
         if (existingProduct) return res.status(409).json({ success: false, message: "Product already exists" });
         
         Object.assign(productPayload, {
-            image: uploadReport?.uploaded?._id || null,
             status: productPayload.status || "Draft",
             createdBy: user?._id || null,
         })
@@ -140,19 +142,21 @@ const update = async (req, res) => {
         const productPayload = req.body;
         const user = req.user || null;
         const file = req.file || null;
-        // console.log(file);
-        const uploadReport = await uploadSingleFile(file)
-        console.log(uploadReport);
+        console.log(file);
+        if (file && file?.size > 0) {
+            const uploadReport = await uploadSingleFile(file)
+            console.log(uploadReport);
+            productPayload.image = uploadReport?.uploaded?._id || null;
+        }
         
         const existingProduct = await readByIdFunction(id);
         if (!existingProduct) return res.status(404).json({ success: false, message: "Product doesn't exist" });
 
-        const items = ["_id", "name"]
+        const items = ["_id", "code"]
         for (const key of items) {
             delete productPayload[key]
         }
         Object.assign(productPayload, {
-            image: uploadReport?.uploaded?._id || null,
             status: productPayload.status || "Draft",
             updatedBy: user?._id || null,
         })

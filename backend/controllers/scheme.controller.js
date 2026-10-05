@@ -11,21 +11,32 @@ import {
 } from "../services/file.service.js";
 import { mapValidObjectId } from "../utils/objectValidation.util.js";
 
+// Reusable functions
+const codeGenerator = (text) => {
+    const code = String(text || "").trim().toLowerCase();
+    return `KB-${asciiGenerator(code)}}`;
+}
+
 const create = async (req, res) => {
     try {
         const schemePayload = req.body;
         const user = req.user || null;
         const file = req.file || null;
-        const uploadReport = await uploadSingleFile(file)
-        console.log(uploadReport);
+        console.log(file);
+        if (file && file?.size > 0) {
+            const uploadReport = await uploadSingleFile(file)
+            console.log(uploadReport);
+            schemePayload.banner = uploadReport?.uploaded?._id || null;
+        }
 
-        const existingScheme = await readByUniqueKeyFunction(String(schemePayload.name).trim());
+        const schemeCode = codeGenerator(String(schemePayload.name).trim());
+        const existingScheme = await readByUniqueKeyFunction(schemeCode);
         if (existingScheme) return res.status(409).json({ success: false, message: "Scheme already exists" });
         
         Object.assign(schemePayload, {
+            code: schemeCode,
             createdBy: user?._id || null,
             status: schemePayload.status || "Draft",
-            banner: uploadReport?.uploaded?._id || null,
         })
         const scheme = await createFunction(schemePayload);
         if (!scheme) return res.status(401).json({ success: false, message: "Scheme creation failed" });
@@ -98,20 +109,23 @@ const update = async (req, res) => {
         const schemePayload = req.body;
         const user = req.user || null;
         const file = req.file || null;
-        const uploadReport = await uploadSingleFile(file)
-        console.log(uploadReport);
+        console.log(file);
+        if (file && file?.size > 0) {
+            const uploadReport = await uploadSingleFile(file)
+            console.log(uploadReport);
+            schemePayload.banner = uploadReport?.uploaded?._id || null;
+        }
 
         const existingScheme = await readByIdFunction(id);
         if (!existingScheme) return res.status(404).json({ success: false, message: "Scheme doesn't exist" });
 
-        const items = ["_id", "name"]
+        const items = ["_id", "code", "name"]
         for (const key of items) {
             delete schemePayload[key]
         }
         Object.assign(schemePayload, {
             updatedBy: user?._id || null,
             status: schemePayload.status || "Draft",
-            banner: uploadReport?.uploaded?._id || null,
         })
         const updatedScheme = await updateFunction(id, schemePayload);
         if (!updatedScheme) return res.status(401).json({ success: false, message: "Scheme update failed" });

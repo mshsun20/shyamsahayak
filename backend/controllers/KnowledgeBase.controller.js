@@ -25,11 +25,21 @@ const create = async (req, res) => {
         const knowledgeBasePayload = req.body;
         const user = req.user || null;
         const allFiles = req.files?.attachments || [];
+        if (allFiles.length > 0) {
+            const attachmentUploadReport = await uploadMultipleFiles(allFiles)
+            console.log(attachmentUploadReport);
+            knowledgeBasePayload.attachments = attachmentUploadReport?.uploaded?.map((f) => f._id) || [];
+        }
         const bannerFile = req.files?.banner?.[0] || null;
-        const attachmentUploadReport = allFiles.length ? await uploadMultipleFiles(allFiles) : null;
-        const bannerUploadReport = bannerFile ? await uploadMultipleFiles([bannerFile]) : null;
-        console.log(attachmentUploadReport);
-        console.log(bannerUploadReport);
+        if (bannerFile) {
+            const bannerUploadReport = await uploadMultipleFiles([bannerFile])
+            console.log(bannerUploadReport);
+            knowledgeBasePayload.banner = bannerUploadReport?.uploaded?._id || null;
+        }
+        // const attachmentUploadReport = allFiles.length ? await uploadMultipleFiles(allFiles) : null;
+        // const bannerUploadReport = bannerFile ? await uploadMultipleFiles([bannerFile]) : null;
+        // console.log(attachmentUploadReport);
+        // console.log(bannerUploadReport);
 
         const kbCode = codeGenerator(`${knowledgeBasePayload.category}${knowledgeBasePayload.title}`);
         const existingKnowledgeBase = await readByUniqueKeyFunction(String(kbCode).trim());
@@ -37,8 +47,8 @@ const create = async (req, res) => {
         
         Object.assign(knowledgeBasePayload, {
             code: kbCode,
-            attachments: attachmentUploadReport?.uploaded?.map((f) => f._id) || [],
-            banner: bannerUploadReport?.uploaded?._id || null,
+            // attachments: attachmentUploadReport?.uploaded?.map((f) => f._id) || [],
+            // banner: bannerUploadReport?.uploaded?._id || null,
             status: knowledgeBasePayload.status || "Draft",
             createdBy: user?._id || null,
         })
@@ -113,22 +123,28 @@ const update = async (req, res) => {
         const knowledgeBasePayload = req.body;
         const user = req.user || null;
         const allFiles = req.files?.attachments || [];
+        if (allFiles.length > 0) {
+            const attachmentUploadReport = await uploadMultipleFiles(allFiles)
+            console.log(attachmentUploadReport);
+            knowledgeBasePayload.attachments = attachmentUploadReport?.uploaded?.map((f) => f._id) || [];
+        }
         const bannerFile = req.files?.banner?.[0] || null;
-        const attachmentUploadReport = allFiles.length ? await uploadMultipleFiles(allFiles) : null;
-        const bannerUploadReport = bannerFile ? await uploadMultipleFiles([bannerFile]) : null;
-        console.log(attachmentUploadReport);
-        console.log(bannerUploadReport);
+        if (bannerFile !== null) {
+            const bannerUploadReport = await uploadMultipleFiles([bannerFile])
+            console.log(bannerUploadReport);
+            knowledgeBasePayload.banner = bannerUploadReport?.uploaded?._id || null;
+        }
 
         const existingKnowledgeBase = await readByIdFunction(id);
         if (!existingKnowledgeBase) return res.status(404).json({ success: false, message: "Knowledge Base doesn't exist" });
 
-        const items = ["_id", "name"]
+        const items = ["_id", "code", "title", "category"]
         for (const key of items) {
             delete knowledgeBasePayload[key]
         }
         Object.assign(knowledgeBasePayload, {
-            attachments: attachmentUploadReport?.uploaded?.map((f) => f._id) || [],
-            banner: bannerUploadReport?.uploaded?._id || null,
+            // attachments: attachmentUploadReport?.uploaded?.map((f) => f._id) || [],
+            // banner: bannerUploadReport?.uploaded?._id || null,
             status: knowledgeBasePayload.status || "Draft",
             createdBy: user?._id || null,
         })

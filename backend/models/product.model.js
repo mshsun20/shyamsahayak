@@ -13,7 +13,7 @@ const ProductSchema = new Schema({
     priceUnit: { type: String, required: true, trim: true },
     gstRate: { type: String, required: true, trim: true },
     tags: [{ type: String, trim: true }],
-    priority: { type: String, trim: true },
+    sortOrder: { type: String, trim: true },
     metaTitle: { type: String, trim: true },
     metaDescription: { type: String, trim: true },
     status: { type: String, required: true, enum: ["Draft", "Published", "Archived"], default: "Draft" },
