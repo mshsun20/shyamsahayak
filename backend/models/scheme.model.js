@@ -6,6 +6,7 @@ const SchemeSchema = new Schema({
     name: { type: String, required: true, trim: true },
     type: { type: String, required: true, trim: true },
     applicableOn: { type: Types.ObjectId, ref: "Product", required: true },
+    shortDescription: { type: String, trim: true },
     description: { type: String, trim: true },
     validFrom: { type: Date, required: true },
     validTo: { type: Date },

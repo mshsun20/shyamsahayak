@@ -21,6 +21,7 @@ import productRouter from "./routes/product.route.js";
 import schemeRouter from "./routes/scheme.route.js";
 import knowledgeBaseRouter from "./routes/KnowledgeBase.route.js";
 import chatRouter from "./routes/chat.route.js";
+import conversationRouter from "./routes/conversation.route.js";
 
 
 const allowedOrigins = [env.adminUrl, env.appUrl]
@@ -73,6 +74,7 @@ app.use("/api/products", productRouter);
 app.use("/api/schemes", schemeRouter);
 app.use("/api/knowledge-bases", knowledgeBaseRouter);
 app.use("/api/chats", chatRouter);
+app.use("/api/conversations", conversationRouter);
 
 // UI Static Serving
 if (['quality', 'production'].includes(env.nodeEnv)) {    

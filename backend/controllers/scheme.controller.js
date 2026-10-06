@@ -14,7 +14,7 @@ import { mapValidObjectId } from "../utils/objectValidation.util.js";
 // Reusable functions
 const codeGenerator = (text) => {
     const code = String(text || "").trim().toLowerCase();
-    return `KB-${asciiGenerator(code)}}`;
+    return `SCHM-${asciiGenerator(code)}}`;
 }
 
 const create = async (req, res) => {
