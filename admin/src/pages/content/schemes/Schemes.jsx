@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
 import Modal from "../../../components/Modal";
-// import { deleteScheme } from "../../../redux/store";
+import Loader from "../../../components/Loader";
+import axiosInstance from "../../../config/axiosInstance";
+import { showSnackbar } from "../../../redux/slices/snackbarSlice";
 import { schemeTypes, applicableOnOptions, schemeStatuses } from "../../../data/content";
 
 const filterDefaults = {
@@ -34,10 +36,10 @@ const typeBadge = {
 };
 
 const statusBadge = {
-  Draft: "bg-gray-100 text-gray-500",
-  Upcoming: "bg-amber-50 text-warning",
   Active: "bg-green-50 text-success",
+  Upcoming: "bg-amber-50 text-warning",
   Expired: "bg-red-50 text-danger",
+  Draft: "bg-gray-100 text-gray-500",
 };
 
 function formatDate(iso) {
@@ -79,7 +81,8 @@ function ActionsMenu({ onDelete }) {
 }
 
 export default function Schemes() {
-  const schemes = [];
+  const [schemes, setSchemes] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -91,12 +94,30 @@ export default function Schemes() {
   const [viewScheme, setViewScheme] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.get(`/schemes`);
+      const data = response?.data?.data;
+      // list may come back as the data itself or wrapped in an object (like /accounts)
+      setSchemes(Array.isArray(data) ? data : Object.values(data || {}).find(Array.isArray) || []);
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const filteredSchemes = useMemo(() => {
     let list = schemes.filter((s) => {
       const q = search.toLowerCase();
       const matchesSearch =
-        s.name.toLowerCase().includes(q) || s.shortDescription.toLowerCase().includes(q);
-      const matchesType = schemeType === "All Types" || s.schemeType === schemeType;
+        s.name?.toLowerCase().includes(q) || s.shortDescription?.toLowerCase().includes(q);
+      const matchesType = schemeType === "All Types" || s.type === schemeType;
       const matchesApplicable = applicableOn === "All Products" || s.applicableOn === applicableOn;
       const matchesStatus = status === "All Status" || s.status === status;
       return matchesSearch && matchesType && matchesApplicable && matchesStatus;
@@ -107,8 +128,8 @@ export default function Schemes() {
         let av = a[sortKey];
         let bv = b[sortKey];
         if (sortKey === "validityPeriod") {
-          av = a.startDate;
-          bv = b.startDate;
+          av = a.validFrom;
+          bv = b.validFrom;
         }
         if (av < bv) return sortDir === "asc" ? -1 : 1;
         if (av > bv) return sortDir === "asc" ? 1 : -1;
@@ -129,10 +150,20 @@ export default function Schemes() {
     }
   };
 
-  const confirmDelete = () => {
-    if (deleteTarget) {
-      // dispatch(deleteScheme(deleteTarget.id));
-      setDeleteTarget(null);
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    setIsLoading(true);
+    try {
+      await axiosInstance.delete(`/schemes/${target._id}`);
+      dispatch(showSnackbar({ message: "Scheme deleted successfully", type: "success" }));
+      await fetchData();
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -145,6 +176,7 @@ export default function Schemes() {
 
   return (
     <AdminLayout title="Content Management">
+      {isLoading && <Loader />}
       <div className="flex items-center justify-between mb-1">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1.5">
@@ -237,19 +269,19 @@ export default function Schemes() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredSchemes.map((scheme) => (
-                <tr key={scheme.id} className="hover:bg-gray-50">
+                <tr key={scheme._id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-800">{scheme.name}</p>
                     <p className="text-xs text-gray-400">{scheme.shortDescription}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${typeBadge[scheme.schemeType]}`}>
-                      {scheme.schemeType}
+                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${typeBadge[scheme.type]}`}>
+                      {scheme.type}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{scheme.applicableProducts || scheme.applicableOn}</td>
+                  <td className="px-4 py-3 text-gray-600">{scheme.applicableProduct || scheme.applicableOn}</td>
                   <td className="px-4 py-3 text-gray-600">
-                    {scheme.noExpiry ? "No Expiry" : `${formatDate(scheme.startDate)} - ${formatDate(scheme.endDate)}`}
+                    {scheme.noExpiry ? "No Expiry" : `${formatDate(scheme.validFrom)} - ${formatDate(scheme.validTo)}`}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusBadge[scheme.status]}`}>
@@ -270,7 +302,7 @@ export default function Schemes() {
                         <Eye size={15} />
                       </button>
                       <button
-                        onClick={() => navigate(`/content/schemes/edit/${scheme.id}`)}
+                        onClick={() => navigate(`/content/schemes/edit/${scheme._id}`)}
                         title="Edit"
                         className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary-light rounded-md"
                       >
@@ -301,9 +333,9 @@ export default function Schemes() {
         <Modal title="Scheme Details" onClose={() => setViewScheme(null)}>
           <div className="space-y-2.5 text-sm">
             <div className="flex justify-between"><span className="text-gray-400">Scheme Name</span><span className="text-gray-800 font-medium">{viewScheme.name}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Type</span><span className="text-gray-800">{viewScheme.schemeType}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Applicable On</span><span className="text-gray-800">{viewScheme.applicableProducts || viewScheme.applicableOn}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Validity</span><span className="text-gray-800">{viewScheme.noExpiry ? "No Expiry" : `${formatDate(viewScheme.startDate)} - ${formatDate(viewScheme.endDate)}`}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Type</span><span className="text-gray-800">{viewScheme.type}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Applicable On</span><span className="text-gray-800">{viewScheme.applicableProduct || viewScheme.applicableOn}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Validity</span><span className="text-gray-800">{viewScheme.noExpiry ? "No Expiry" : `${formatDate(viewScheme.validFrom)} - ${formatDate(viewScheme.validTo)}`}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Status</span><StatusPill status={viewScheme.status} /></div>
             <div className="flex justify-between"><span className="text-gray-400">Benefit</span><span className="text-gray-800">{viewScheme.benefitValue}{viewScheme.benefitType === "Percentage" ? "%" : ""} ({viewScheme.benefitType})</span></div>
             {viewScheme.minPurchase && (

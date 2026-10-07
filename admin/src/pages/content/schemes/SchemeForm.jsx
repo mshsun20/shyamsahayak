@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, Link } from "react-router-dom";
@@ -15,7 +15,6 @@ import {
   AlignRight,
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
-// import { addScheme, updateScheme } from "../../../redux/store";
 import Loader from "../../../components/Loader";
 import axiosInstance from "../../../config/axiosInstance";
 import { showSnackbar } from "../../../redux/slices/snackbarSlice";
@@ -25,7 +24,7 @@ const emptyForm = {
   name: "",
   schemeType: schemeTypes[0],
   applicableOn: applicableOnOptions[0],
-  status: "Draft",
+  status: "Active",
   shortDescription: "",
   description: "",
   termsConditions: "",
@@ -42,6 +41,28 @@ const emptyForm = {
   banner: "",
 };
 
+// API field name -> form field name (only the fields the API has)
+const apiFields = {
+  name: "name",
+  type: "schemeType",
+  applicableOn: "applicableOn",
+  status: "status",
+  shortDescription: "shortDescription",
+  description: "description",
+  validFrom: "startDate",
+  validTo: "endDate",
+  noExpiry: "noExpiry",
+  benefitType: "benefitType",
+  benefitValue: "benefitValue",
+  maxDiscountValue: "maxDiscountValue",
+  minPurchase: "minPurchase",
+  applicableProduct: "applicableProducts",
+  priority: "priority",
+};
+
+// <input type="date"> needs YYYY-MM-DD
+const toDateInput = (value) => (value ? String(value).slice(0, 10) : "");
+
 function daysBetween(start, end) {
   if (!start || !end) return "";
   const d1 = new Date(start);
@@ -54,10 +75,12 @@ function daysBetween(start, end) {
 export default function SchemeForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const schemes = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const bannerInputRef = useRef(null);
+
+  const [bannerFile, setBannerFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -65,7 +88,7 @@ export default function SchemeForm() {
     watch,
     reset,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({ defaultValues: emptyForm, mode: "onSubmit" });
 
   const shortDescription = watch("shortDescription") || "";
@@ -76,33 +99,70 @@ export default function SchemeForm() {
   const noExpiry = watch("noExpiry");
   const banner = watch("banner");
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.get(`/schemes/${id}`);
+      const scheme = response?.data?.data;
+      if (scheme) {
+        const values = { ...emptyForm, banner: typeof scheme.banner === "string" ? scheme.banner : "" };
+        Object.entries(apiFields).forEach(([apiKey, formKey]) => {
+          if (scheme[apiKey] != null) values[formKey] = scheme[apiKey];
+        });
+        values.startDate = toDateInput(values.startDate);
+        values.endDate = toDateInput(values.endDate);
+        reset(values);
+      }
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id, reset, dispatch]);
   useEffect(() => {
     if (isEdit) {
-      const existing = schemes.find((s) => String(s.id) === id);
-      if (existing) reset({ ...emptyForm, ...existing });
+      fetchData();
     }
-  }, [id, isEdit, schemes, reset]);
+  }, [isEdit, fetchData]);
 
-  const onSubmit = (data) => {
-    if (isEdit) {
-      dispatch(updateScheme({ ...data, id: Number(id) }));
+  const onSubmit = async (data) => {
+    const formData = new FormData();
+    Object.entries(apiFields).forEach(([apiKey, formKey]) => {
+      const value = data[formKey];
+      if (value !== "" && value != null) {
+        formData.append(apiKey, value);
+      }
+    });
+    if (data.noExpiry) {
+      formData.delete("validTo");
     } else {
-      dispatch(
-        addScheme({
-          ...data,
-          id: Date.now(),
-          createdOn: "Today",
-          createdTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          createdBy: "Admin User",
-        })
-      );
+      const validity = parseInt(daysBetween(data.startDate, data.endDate), 10);
+      if (!isNaN(validity)) formData.append("validity", validity);
     }
-    navigate("/content/schemes");
+    // only a newly selected file is uploaded, never the existing banner value
+    if (bannerFile) {
+      formData.append("banner", bannerFile);
+    }
+
+    try {
+      if (isEdit) {
+        await axiosInstance.patch(`/schemes/${id}`, formData);
+      } else {
+        await axiosInstance.post(`/schemes`, formData);
+      }
+      dispatch(showSnackbar({ message: isEdit ? "Scheme updated successfully" : "Scheme created successfully", type: "success" }));
+      navigate("/content/schemes");
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    }
   };
 
   const handleBannerChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setBannerFile(file);
     const reader = new FileReader();
     reader.onload = () => setValue("banner", reader.result);
     reader.readAsDataURL(file);
@@ -132,6 +192,7 @@ export default function SchemeForm() {
 
   return (
     <AdminLayout title="Content Management">
+      {isLoading && <Loader />}
       <div className="flex items-center justify-between mb-1">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1.5">
@@ -154,7 +215,8 @@ export default function SchemeForm() {
           <button
             type="submit"
             form="scheme-form"
-            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark"
+            disabled={isSubmitting}
+            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark disabled:opacity-60"
           >
             {isEdit ? "Save Changes" : "Save Scheme"}
           </button>
@@ -194,11 +256,10 @@ export default function SchemeForm() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Status *</label>
               <select {...register("status", { required: true })} className={inputClass("status")}>
-                <option value="Draft">Draft</option>
-                <option value="Upcoming">Upcoming</option>
                 <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="Upcoming">Upcoming</option>
                 <option value="Expired">Expired</option>
+                <option value="Draft">Draft</option>
               </select>
             </div>
           </div>

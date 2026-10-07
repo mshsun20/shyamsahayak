@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, Link } from "react-router-dom";
@@ -20,13 +20,13 @@ import {
   Redo2,
   Lightbulb,
   UploadCloud,
+  Upload,
   FileText,
   X,
   Download,
   Trash2,
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
-// import { addArticle, updateArticle } from "../../../redux/store";
 import Loader from "../../../components/Loader";
 import axiosInstance from "../../../config/axiosInstance";
 import { showSnackbar } from "../../../redux/slices/snackbarSlice";
@@ -64,13 +64,16 @@ function SectionHeader({ children }) {
 export default function ArticleForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const articles = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const bannerInputRef = useRef(null);
 
   const [tagInput, setTagInput] = useState("");
   const [attachments, setAttachments] = useState([]);
+  const [bannerFile, setBannerFile] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -78,7 +81,7 @@ export default function ArticleForm() {
     watch,
     reset,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({ defaultValues: emptyForm, mode: "onSubmit" });
 
   const shortDescription = watch("shortDescription") || "";
@@ -89,35 +92,62 @@ export default function ArticleForm() {
   const featured = watch("featured");
   const status = watch("status");
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.get(`/knowledge-base/${id}`);
+      const article = response?.data?.data;
+      if (article) {
+        const values = { ...emptyForm };
+        Object.keys(emptyForm).forEach((key) => {
+          if (article[key] != null) values[key] = article[key];
+        });
+        reset(values);
+        setBannerPreview(typeof article.banner === "string" ? article.banner : "");
+      }
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id, reset, dispatch]);
   useEffect(() => {
     if (isEdit) {
-      const existing = articles.find((a) => String(a.id) === id);
-      if (existing) reset({ ...emptyForm, ...existing });
+      fetchData();
     }
-  }, [id, isEdit, articles, reset]);
+  }, [isEdit, fetchData]);
 
-  const onSubmit = (data) => {
-    if (isEdit) {
-      dispatch(
-        updateArticle({
-          ...data,
-          id: Number(id),
-          lastUpdated: "Today",
-          lastUpdatedTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        })
-      );
-    } else {
-      dispatch(
-        addArticle({
-          ...data,
-          id: Date.now(),
-          views: null,
-          lastUpdated: "Today",
-          lastUpdatedTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        })
-      );
+  const onSubmit = async (data) => {
+    const formData = new FormData();
+    Object.keys(emptyForm).forEach((key) => {
+      if (key === "tags") {
+        (data.tags || []).forEach((tag) => formData.append("tags", tag));
+        return;
+      }
+      if (data[key] !== "" && data[key] != null) {
+        formData.append(key, data[key]);
+      }
+    });
+    // only newly selected files are uploaded, never existing attachment values
+    attachments.forEach((a) => formData.append("attachments", a.file));
+    // only a newly selected banner file is uploaded, never the existing banner value
+    if (bannerFile) {
+      formData.append("banner", bannerFile);
     }
-    navigate("/content/knowledge-base");
+
+    try {
+      if (isEdit) {
+        await axiosInstance.patch(`/knowledge-base/${id}`, formData);
+      } else {
+        await axiosInstance.post(`/knowledge-base`, formData);
+      }
+      dispatch(showSnackbar({ message: isEdit ? "Article updated successfully" : "Article created successfully", type: "success" }));
+      navigate("/content/knowledge-base");
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    }
   };
 
   const addTag = (e) => {
@@ -139,12 +169,22 @@ export default function ArticleForm() {
       ...prev,
       ...files.map((f) => ({
         id: `${f.name}-${f.size}-${Date.now()}`,
+        file: f,
         name: f.name,
         type: f.type || f.name.split(".").pop()?.toUpperCase() || "FILE",
         size: formatFileSize(f.size),
       })),
     ]);
     e.target.value = "";
+  };
+
+  const handleBannerChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBannerFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setBannerPreview(reader.result);
+    reader.readAsDataURL(file);
   };
 
   const removeAttachment = (fileId) => {
@@ -158,6 +198,7 @@ export default function ArticleForm() {
 
   return (
     <AdminLayout title="Content Management">
+      {isLoading && <Loader />}
       <div className="flex items-center justify-between mb-1">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1.5">
@@ -189,7 +230,8 @@ export default function ArticleForm() {
           <button
             type="submit"
             form="article-form"
-            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark"
+            disabled={isSubmitting}
+            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark disabled:opacity-60"
           >
             {isEdit ? "Save Changes" : status === "Draft" ? "Save Draft" : "Save & Publish"}
           </button>
@@ -223,7 +265,6 @@ export default function ArticleForm() {
               <select {...register("status", { required: true })} className={inputClass("status")}>
                 <option value="Draft">Draft</option>
                 <option value="Published">Published</option>
-                <option value="Archived">Archived</option>
               </select>
             </div>
           </div>
@@ -286,6 +327,41 @@ export default function ArticleForm() {
             </div>
           </div>
           {errors.content && <p className="text-xs text-danger mt-1">{errors.content.message}</p>}
+
+          <div className="mt-4 max-w-xs">
+            <label className="block text-xs font-medium text-gray-600 mb-1.5">
+              Banner Image <span className="text-gray-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              ref={bannerInputRef}
+              onChange={handleBannerChange}
+              className="hidden"
+            />
+            {bannerPreview ? (
+              <div>
+                <img src={bannerPreview} alt="Banner" className="w-full h-16 object-cover rounded-lg border border-gray-200" />
+                <button
+                  type="button"
+                  onClick={() => bannerInputRef.current?.click()}
+                  className="w-full mt-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg py-1.5 hover:bg-gray-50"
+                >
+                  Change Banner
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => bannerInputRef.current?.click()}
+                className="w-full h-[72px] flex flex-col items-center justify-center gap-1 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-primary hover:text-primary"
+              >
+                <Upload size={16} />
+                <span className="text-[11px] font-medium">Upload banner image</span>
+              </button>
+            )}
+            <p className="text-[11px] text-gray-400 mt-1">Recommended size: 1200 × 400 px</p>
+          </div>
 
           <div className="flex items-start gap-2 bg-amber-50 text-amber-700 text-xs rounded-lg px-3 py-2 mt-3">
             <Lightbulb size={14} className="shrink-0 mt-0.5" />
@@ -440,10 +516,9 @@ export default function ArticleForm() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Visibility</label>
               <select {...register("visibility")} className={inputClass("visibility")}>
-                <option value={"All Users"}>Visible to all users</option>
-                <option value={"TMs"}>Visible to TMs</option>
-                <option value={"DGOs"}>Visible to DGOs</option>
-                <option value={"TMs & DGOs"}>Visible to TMs & DGOs</option>
+                <option>Visible to all users</option>
+                <option>Visible to Admins only</option>
+                <option>Visible to DGOs & TMs</option>
               </select>
               <p className="text-[11px] text-gray-400 mt-1">Choose who can view this article</p>
             </div>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
 import Modal from "../../../components/Modal";
-// import { deleteArticle } from "../../../redux/store";
+import Loader from "../../../components/Loader";
+import axiosInstance from "../../../config/axiosInstance";
+import { showSnackbar } from "../../../redux/slices/snackbarSlice";
 import { articleCategories, articleStatuses, articleAuthors } from "../../../data/content";
 
 const filterDefaults = {
@@ -70,7 +72,8 @@ function ActionsMenu({ onDelete }) {
 }
 
 export default function KnowledgeBase() {
-  const articles = [];
+  const [articles, setArticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -81,11 +84,29 @@ export default function KnowledgeBase() {
   const [viewArticle, setViewArticle] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.get(`/knowledge-bases`);
+      const data = response?.data?.data;
+      // list may come back as the data itself or wrapped in an object (like /accounts)
+      setArticles(Array.isArray(data) ? data : Object.values(data || {}).find(Array.isArray) || []);
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const filteredArticles = useMemo(() => {
     let list = articles.filter((a) => {
       const q = search.toLowerCase();
       const matchesSearch =
-        a.title.toLowerCase().includes(q) || a.shortDescription.toLowerCase().includes(q);
+        a.title?.toLowerCase().includes(q) || a.shortDescription?.toLowerCase().includes(q);
       const matchesCategory = category === "All Categories" || a.category === category;
       const matchesStatus = status === "All Status" || a.status === status;
       const matchesAuthor = author === "All Authors" || a.author === author;
@@ -106,15 +127,26 @@ export default function KnowledgeBase() {
     setSortDir((d) => (d === "asc" ? "desc" : "asc"));
   };
 
-  const confirmDelete = () => {
-    if (deleteTarget) {
-      // dispatch(deleteArticle(deleteTarget.id));
-      setDeleteTarget(null);
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    setIsLoading(true);
+    try {
+      await axiosInstance.delete(`/knowledge-bases/${target._id}`);
+      dispatch(showSnackbar({ message: "Article deleted successfully", type: "success" }));
+      await fetchData();
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <AdminLayout title="Content Management">
+      {isLoading && <Loader />}
       <div className="flex items-center justify-between mb-1">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1.5">
@@ -213,7 +245,7 @@ export default function KnowledgeBase() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredArticles.map((article) => (
-                <tr key={article.id} className="hover:bg-gray-50">
+                <tr key={article._id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-800">{article.title}</p>
                     <p className="text-xs text-gray-400">{article.shortDescription}</p>
@@ -244,7 +276,7 @@ export default function KnowledgeBase() {
                         <Eye size={15} />
                       </button>
                       <button
-                        onClick={() => navigate(`/content/knowledge-base/edit/${article.id}`)}
+                        onClick={() => navigate(`/content/knowledge-base/edit/${article._id}`)}
                         title="Edit"
                         className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary-light rounded-md"
                       >
