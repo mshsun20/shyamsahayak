@@ -20,6 +20,29 @@ import Loader from "../../../components/Loader";
 import axiosInstance from "../../../config/axiosInstance";
 import { showSnackbar } from "../../../redux/slices/snackbarSlice";
 import { schemeTypes, applicableOnOptions, schemeStatuses } from "../../../data/content";
+import BulkUploadModal from "../../../components/Bulkuploadmodal";
+
+// columns accepted by POST /schemes/import (applicableOn / applicableProduct are Product ObjectIds)
+const bulkFields = [
+  { key: "code", required: true, sample: "SCH-001" },
+  { key: "name", required: true, sample: "Monsoon Offer" },
+  { key: "type", sample: "Discount" },
+  { key: "applicableOn", type: "objectId" },
+  { key: "shortDescription", sample: "Special monsoon discount" },
+  { key: "description", sample: "Discount on all roofing sheets during the monsoon season" },
+  { key: "validFrom", type: "date", sample: "2026-06-01" },
+  { key: "validTo", type: "date", sample: "2026-08-31" },
+  { key: "validity", sample: "92" },
+  { key: "noExpiry", type: "boolean", sample: "false" },
+  { key: "benefitType", sample: "Percentage" },
+  { key: "benefitValue", type: "number", sample: "10" },
+  { key: "maxDiscountValue", type: "number", sample: "500" },
+  { key: "minPurchase", type: "number", sample: "1000" },
+  { key: "applicableProduct", type: "objectId" },
+  { key: "priority", type: "number", sample: "1" },
+  { key: "metaDescription", sample: "Monsoon discount offer" },
+  { key: "status", sample: "Active" },
+];
 
 const filterDefaults = {
   search: "",
@@ -93,6 +116,7 @@ export default function Schemes() {
   const [sortDir, setSortDir] = useState("asc");
   const [viewScheme, setViewScheme] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -187,7 +211,10 @@ export default function Schemes() {
           <h2 className="text-lg font-semibold text-gray-900">Schemes</h2>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 border border-primary text-sm font-medium text-primary px-3.5 py-2 rounded-lg hover:bg-primary-light">
+          <button
+            onClick={() => setBulkUploadOpen(true)}
+            className="flex items-center gap-2 border border-primary text-sm font-medium text-primary px-3.5 py-2 rounded-lg hover:bg-primary-light"
+          >
             <Layers size={15} />
             Add Scheme in Bulk
           </button>
@@ -374,6 +401,16 @@ export default function Schemes() {
             Are you sure you want to delete <span className="font-semibold text-gray-800">{deleteTarget.name}</span>? This action cannot be undone.
           </p>
         </Modal>
+      )}
+
+      {bulkUploadOpen && (
+        <BulkUploadModal
+          title="Bulk Upload Schemes"
+          endpoint="/schemes/import"
+          fields={bulkFields}
+          onClose={() => setBulkUploadOpen(false)}
+          onSuccess={fetchData}
+        />
       )}
     </AdminLayout>
   );

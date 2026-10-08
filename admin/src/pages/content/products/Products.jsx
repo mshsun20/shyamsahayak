@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
@@ -21,6 +21,25 @@ import Loader from "../../../components/Loader";
 import axiosInstance from "../../../config/axiosInstance";
 import { showSnackbar } from "../../../redux/slices/snackbarSlice";
 import { productCategories } from "../../../data/content";
+import BulkUploadModal from "../../../components/Bulkuploadmodal";
+
+// columns accepted by POST /products/import
+const bulkFields = [
+  { key: "code", required: true, sample: "PRD-001" },
+  { key: "name", required: true, sample: "Tiger Roofing Sheet" },
+  { key: "category", sample: "Roofing Sheets" },
+  { key: "unit", sample: "Sheet" },
+  { key: "shortDescription", sample: "High strength roofing sheet" },
+  { key: "description", sample: "Premium quality roofing sheet for industrial and residential use" },
+  { key: "price", type: "number", sample: "560" },
+  { key: "priceUnit", sample: "Sheet" },
+  { key: "gstRate", type: "number", sample: "18" },
+  { key: "tags", type: "list", sample: "Roofing Sheet;Industrial" },
+  { key: "sortOrder", type: "number", sample: "1" },
+  { key: "metaTitle", sample: "Tiger Roofing Sheet" },
+  { key: "metaDescription", sample: "High strength roofing sheet" },
+  { key: "status", sample: "Active" },
+];
 
 const filterDefaults = {
   search: "",
@@ -30,7 +49,7 @@ const filterDefaults = {
 };
 
 function StatusBadge({ status }) {
-  const isActive = status === "Published";
+  const isActive = status === "Active";
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
@@ -88,7 +107,6 @@ export default function Products() {
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const importInputRef = useRef(null);
 
   const { register, watch, reset } = useForm({ defaultValues: filterDefaults });
   const { search, category, status, featured } = watch();
@@ -97,6 +115,7 @@ export default function Products() {
   const [viewProduct, setViewProduct] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -120,12 +139,12 @@ export default function Products() {
       const q = search.toLowerCase();
       const matchesSearch =
         p.name?.toLowerCase().includes(q) ||
-        p.code?.toLowerCase().includes(q) ||
+        p.sku?.toLowerCase().includes(q) ||
         p.shortDescription?.toLowerCase().includes(q);
       const matchesCategory = category === "All Categories" || p.category === category;
       const matchesStatus =
         status === "All Status" ||
-        (status === "Published" && p.status === "Published") ||
+        (status === "Published" && p.status === "Active") ||
         (status === "Draft" && p.status === "Draft");
       const matchesFeatured =
         featured === "All" ||
@@ -152,9 +171,9 @@ export default function Products() {
     const rows = filteredProducts.map((p) => [
       p.name,
       p.category,
-      p.code,
+      p.sku,
       `${p.price} / ${p.priceUnit}`,
-      p.status === "Published" ? "Published" : "Draft",
+      p.status === "Active" ? "Published" : "Draft",
       p.featured ? "Yes" : "No",
       `${p.lastUpdated} ${p.lastUpdatedTime}`,
     ]);
@@ -206,25 +225,6 @@ export default function Products() {
     }
   };
 
-  const handleImport = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    setIsLoading(true);
-    try {
-      const response = await axiosInstance.post(`/products/import`, formData);
-      dispatch(showSnackbar({ message: response?.data?.message || "Products imported successfully", type: "success" }));
-      await fetchData();
-    } catch (error) {
-      console.error(error.message);
-      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <AdminLayout title="Content Management">
       {isLoading && <Loader />}
@@ -247,15 +247,8 @@ export default function Products() {
             <Download size={15} />
             Export
           </button>
-          <input
-            type="file"
-            accept=".csv,.xlsx,.xls"
-            ref={importInputRef}
-            onChange={handleImport}
-            className="hidden"
-          />
           <button
-            onClick={() => importInputRef.current?.click()}
+            onClick={() => setBulkUploadOpen(true)}
             className="flex items-center gap-2 border border-primary text-sm font-medium text-primary px-3.5 py-2 rounded-lg hover:bg-primary-light"
           >
             <Layers size={15} />
@@ -381,7 +374,7 @@ export default function Products() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{product.category}</td>
-                  <td className="px-4 py-3 text-gray-600">{product.code}</td>
+                  <td className="px-4 py-3 text-gray-600">{product.sku}</td>
                   <td className="px-4 py-3 text-gray-600">
                     ₹{product.price} / {product.priceUnit}
                   </td>
@@ -432,9 +425,9 @@ export default function Products() {
         <Modal title="Product Details" onClose={() => setViewProduct(null)}>
           <div className="space-y-2.5 text-sm">
             <div className="flex justify-between"><span className="text-gray-400">Product Name</span><span className="text-gray-800 font-medium">{viewProduct.name}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">SKU / Code</span><span className="text-gray-800">{viewProduct.code}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">SKU / Code</span><span className="text-gray-800">{viewProduct.sku}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Category</span><span className="text-gray-800">{viewProduct.category}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Unit Type</span><span className="text-gray-800">{viewProduct.unit}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Unit Type</span><span className="text-gray-800">{viewProduct.unitType}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Price</span><span className="text-gray-800">₹{viewProduct.price} / {viewProduct.priceUnit}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">GST Rate</span><span className="text-gray-800">{viewProduct.gstRate}%</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Status</span><StatusBadge status={viewProduct.status} /></div>
@@ -509,6 +502,16 @@ export default function Products() {
             Are you sure you want to delete <span className="font-semibold text-gray-800">{selected.length} product{selected.length > 1 ? "s" : ""}</span>? This action cannot be undone.
           </p>
         </Modal>
+      )}
+
+      {bulkUploadOpen && (
+        <BulkUploadModal
+          title="Bulk Upload Products"
+          endpoint="/products/import"
+          fields={bulkFields}
+          onClose={() => setBulkUploadOpen(false)}
+          onSuccess={fetchData}
+        />
       )}
     </AdminLayout>
   );

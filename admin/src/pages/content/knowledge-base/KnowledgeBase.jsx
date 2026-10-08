@@ -20,6 +20,23 @@ import Loader from "../../../components/Loader";
 import axiosInstance from "../../../config/axiosInstance";
 import { showSnackbar } from "../../../redux/slices/snackbarSlice";
 import { articleCategories, articleStatuses, articleAuthors } from "../../../data/content";
+import BulkUploadModal from "../../../components/Bulkuploadmodal";
+
+// columns accepted by POST /knowledge-bases/import
+const bulkFields = [
+  { key: "code", required: true, sample: "KB-001" },
+  { key: "title", required: true, sample: "How to Create a New Product" },
+  { key: "category", sample: "Products" },
+  { key: "shortDescription", sample: "Step-by-step guide to add a new product" },
+  { key: "content", sample: "Open Products, click Add Product and fill in the details." },
+  { key: "author", sample: "Admin User" },
+  { key: "tags", type: "list", sample: "Products;Guide" },
+  { key: "featured", type: "boolean", sample: "false" },
+  { key: "metaTitle", sample: "How to Create a New Product" },
+  { key: "metaDescription", sample: "Guide to adding a new product" },
+  { key: "visibility", sample: "Visible to all users" },
+  { key: "status", sample: "Draft" },
+];
 
 const filterDefaults = {
   search: "",
@@ -83,6 +100,7 @@ export default function KnowledgeBase() {
   const [sortDir, setSortDir] = useState(null);
   const [viewArticle, setViewArticle] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -157,7 +175,10 @@ export default function KnowledgeBase() {
           <h2 className="text-lg font-semibold text-gray-900">Knowledge Base</h2>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 border border-primary text-sm font-medium text-primary px-3.5 py-2 rounded-lg hover:bg-primary-light">
+          <button
+            onClick={() => setBulkUploadOpen(true)}
+            className="flex items-center gap-2 border border-primary text-sm font-medium text-primary px-3.5 py-2 rounded-lg hover:bg-primary-light"
+          >
             <Layers size={15} />
             Add Article in Bulk
           </button>
@@ -355,6 +376,16 @@ export default function KnowledgeBase() {
             Are you sure you want to delete <span className="font-semibold text-gray-800">{deleteTarget.title}</span>? This action cannot be undone.
           </p>
         </Modal>
+      )}
+
+      {bulkUploadOpen && (
+        <BulkUploadModal
+          title="Bulk Upload Articles"
+          endpoint="/knowledge-bases/import"
+          fields={bulkFields}
+          onClose={() => setBulkUploadOpen(false)}
+          onSuccess={fetchData}
+        />
       )}
     </AdminLayout>
   );
