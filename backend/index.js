@@ -10,6 +10,9 @@ import env from "./config/env.js";
 import connectDB from "./config/dbcon.js";
 import socketAuth from "./middlewares/socketAuth.middleware.js";
 import { setupSocketAuthLifecycle, clearSocketAuthLifecycle } from "./sockets/socketAuthLifecycle.js";
+import { registerChatSocket } from "./sockets/chat/chat.socket.js";
+import "./ai/tools/ai.tool.bootstrap.js"; // Import the AI tool bootstrap to register tools
+
 import authRouter from "./routes/auth.route.js";
 import permissionRouter from "./routes/permission.route.js";
 import apiClientRouter from "./routes/apiClient.route.js";
@@ -130,26 +133,36 @@ const io = new Server(httpServer, {
 io.use(socketAuth);
 
 // Socket.IO Connection
+
 io.on("connection", (socket) => {
-    console.log(`Authenticated Socket connected: ${socket.id}`);
-    console.log(`Authenticated account: ${socket.user.userId}`);
+    console.log("\n========== SOCKET CONNECTED ==========");
+    console.log("[SOCKET] ID:", socket.id);
+    console.log("[SOCKET] Auth:", socket.auth);
+    console.log("[SOCKET] User:", socket.user?.userId);
 
-    // start user room
-    const userId = socket.auth.userId.toString();
-    const userRoom = `user:${userId}`;
-    socket.join(userRoom);
-    console.log(`Socket ${socket.id} joined ${userRoom}`);
+    socket.onAny((eventName, ...args) => {
+        console.log("[SOCKET] Incoming event:", eventName);
+    });
 
-    /*
-     * Start access-token lifecycle monitoring.
-     */
+    const userId = socket.auth?.userId;
+
+    if (userId) {
+        const userRoom = `user:${userId.toString()}`;
+        socket.join(userRoom);
+        console.log("[SOCKET] Joined room:", userRoom);
+    }
+
     setupSocketAuthLifecycle(io, socket);
+    registerChatSocket(io, socket);
+
+    console.log("[CHAT] Handler registered for:", socket.id);
 
     socket.on("disconnect", (reason) => {
         clearSocketAuthLifecycle(socket);
-        console.log(`Authenticated Socket disconnected: ${socket.id}`, reason);
-    })
+        console.log("[SOCKET] Disconnected:", socket.id, reason);
+    });
 });
+
 
 // Start Application
 (async () => {

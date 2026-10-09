@@ -72,11 +72,11 @@ const upload = async (req, res) => {
         const knowledgeBaseDataSheet = req.body?.knowledgeBases || [];
         const user = req.user || null;
         knowledgeBaseDataSheet?.forEach(async (knowledgeBase, i) => {
-            const tags = String(knowledgeBase.tags || "").split(",").map((t) => String(t || "").trim()).filter((t) => t.length > 0);
+            // const tags = String(knowledgeBase.tags || "").split(",").map((t) => String(t || "").trim()).filter((t) => t.length > 0);
             const existingKnowledgeBase = await readByUniqueKeyFunction(String(knowledgeBase.code).trim());
             if (existingKnowledgeBase) {
                 Object.assign(knowledgeBase, {
-                    tags: tags,
+                    // tags: tags,
                     status: knowledgeBase.status || "Draft",
                     updatedBy: user?._id || null,
                 })
@@ -96,7 +96,6 @@ const upload = async (req, res) => {
             }
         });
         if (knowledgeBaseDataSheet?.length > 0) {
-            console.log(knowledgeBaseDataSheet);
             return res.status(201).json({
                 success: true,
                 message: "Knowledge Base bulk imported done",

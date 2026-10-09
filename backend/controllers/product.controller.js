@@ -47,14 +47,15 @@ const create = async (req, res) => {
 }
 const upload = async (req, res) => {
     try {
-        const productDataSheet = req.body?.products || [];
+        const productDataSheet = req.body || [];
+        // console.log(productDataSheet);
         const user = req.user || null;
         productDataSheet?.forEach(async (product, i) => {
-            const tags = String(product.tags || "").split(",").map((t) => String(t || "").trim()).filter((t) => t.length > 0);
+            // const tags = String(product.tags || "").split(",").map((t) => String(t || "").trim()).filter((t) => t.length > 0);
             const existingProduct = await readByUniqueKeyFunction(String(product.code).trim());
             if (existingProduct) {
                 Object.assign(product, {
-                    tags: tags,
+                    // tags: tags,
                     status: product.status || "Draft",
                     updatedBy: user?._id || null,
                 })
@@ -65,7 +66,7 @@ const upload = async (req, res) => {
             }
             else {
                 Object.assign(product, {
-                    tags: tags,
+                    // tags: tags,
                     status: product.status || "Draft",
                     createdBy: user?._id || null,
                 })
@@ -74,7 +75,6 @@ const upload = async (req, res) => {
             }
         });
         if (productDataSheet?.length > 0) {
-            console.log(productDataSheet);
             return res.status(201).json({
                 success: true,
                 message: "Product bulk imported done",

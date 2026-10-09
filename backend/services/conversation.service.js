@@ -47,7 +47,10 @@ const generateConversationTitle = (message) => {
  *
  * @returns {Promise<Object>}
  */
-export const createConversation = async ({ userId, title = "New Conversation" }) => {
+export const createConversation = async ({
+    userId,
+    title = "New Conversation"
+}) => {
     if (!userId) throw new Error("User ID is required");
     const conversation = await Conversation.create({
         conversationId: generateConversationId(),
@@ -74,10 +77,16 @@ export const createConversation = async ({ userId, title = "New Conversation" })
  *
  * @returns {Promise<Object|null>}
  */
-export const getConversationById = async ({ userId, conversationId }) => {
+export const getConversationById = async ({
+    userId,
+    conversationId
+}) => {
     if (!userId) throw new Error("User ID is required");
     if (!conversationId) throw new Error("Conversation ID is required");
-    return Conversation.findOne({ conversationId, user: userId }).lean();
+    return Conversation.findOne({
+        conversationId,
+        user: userId
+    }).lean();
 };
 
 
@@ -86,8 +95,14 @@ export const getConversationById = async ({ userId, conversationId }) => {
  *
  * Throws an error if the conversation does not exist.
  */
-export const getRequiredConversation = async ({ userId, conversationId }) => {
-    const conversation = await getConversationById({ userId, conversationId });
+export const getRequiredConversation = async ({
+    userId,
+    conversationId
+}) => {
+    const conversation = await getConversationById({
+        userId,
+        conversationId
+    });
     if (!conversation) throw new Error("Conversation not found");
     return conversation;
 };
@@ -119,7 +134,10 @@ export const createMessage = async ({
     if (!conversationId) throw new Error("Conversation ID is required");
     if (!sender) throw new Error("Message sender is required");
     if (!messageType) throw new Error("Message type is required");
-    const conversation = await Conversation.findOne({ conversationId, user: userId });
+    const conversation = await Conversation.findOne({
+        conversationId,
+        user: userId
+    });
 
     if (!conversation) throw new Error("Conversation not found");
     if (conversation.status !== "Active") throw new Error("Conversation is archived");
@@ -134,9 +152,15 @@ export const createMessage = async ({
     });
 
     await Conversation.findByIdAndUpdate(conversation._id, {
-        $inc: { messageCount: 1 },
-        $set: { lastMessageAt: message.createdAt },
-    }, { new: false });
+        $inc: {
+            messageCount: 1
+        },
+        $set: {
+            lastMessageAt: message.createdAt
+        },
+    }, {
+        new: false
+    });
 
     return message;
 };
@@ -151,10 +175,16 @@ export const createMessage = async ({
  *
  * @returns {Promise<Array>}
  */
-export const getRecentConversations = async ({ userId, limit = 20 }) => {
+export const getRecentConversations = async ({
+    userId,
+    limit = 20
+}) => {
     if (!userId) throw new Error("User ID is required");
     const safeLimit = normalizeLimit(limit, 20, 50);
-    return Conversation.find({ user: userId, status: "Active" }).select([
+    return Conversation.find({
+        user: userId,
+        status: "Active"
+    }).select([
         "_id",
         "conversationId",
         "title",
@@ -163,7 +193,57 @@ export const getRecentConversations = async ({ userId, limit = 20 }) => {
         "messageCount",
         "createdAt",
         "updatedAt",
-    ]).sort({ lastMessageAt: -1 }).limit(safeLimit).lean();
+    ]).sort({
+        lastMessageAt: -1
+    }).limit(safeLimit).lean();
+};
+
+
+/** * ========================================================== * CREATE CONVERSATION + FIRST USER MESSAGE * ========================================================== * * This is the important new method. * * The frontend sends: * * conversationId: null * message: "Show me all published products" * * Backend creates: * * CONV-xxxxx * MSG-xxxxx * * and returns the public conversation ID. * ========================================================== */
+export const createConversationWithMessage = async ({
+    userId,
+    message,
+    metadata = null,
+}) => {
+    if (!userId) {
+        throw new Error("User ID is required");
+    }
+    if (!message || typeof message !== "string") {
+        throw new Error("Message is required");
+    }
+    const normalizedMessage = message.replace(/\s+/g, " ").trim();
+    if (!normalizedMessage) {
+        throw new Error("Message cannot be empty");
+    }
+    const title = generateConversationTitle(normalizedMessage);
+    const conversation = await Conversation.create({
+        conversationId: generateConversationId(),
+        user: userId,
+        title,
+        status: "Active",
+        lastMessageAt: new Date(),
+        messageCount: 0,
+    });
+    const userMessage = await ConversationMessage.create({
+        messageId: generateMessageId(),
+        conversation: conversation._id,
+        sender: "user",
+        messageType: "text",
+        content: normalizedMessage,
+        metadata,
+    });
+    await Conversation.findByIdAndUpdate(conversation._id, {
+        $inc: {
+            messageCount: 1,
+        },
+        $set: {
+            lastMessageAt: userMessage.createdAt,
+        },
+    });
+    return {
+        conversation,
+        message: userMessage,
+    };
 };
 
 
@@ -178,10 +258,15 @@ export const getRecentConversations = async ({ userId, limit = 20 }) => {
  *
  * @returns {Promise<Array>}
  */
-export const getAllConversations = async ({ userId, limit = 50 }) => {
+export const getAllConversations = async ({
+    userId,
+    limit = 50
+}) => {
     if (!userId) throw new Error("User ID is required");
     const safeLimit = normalizeLimit(limit, 50, 100);
-    return Conversation.find({ user: userId }).select([
+    return Conversation.find({
+        user: userId
+    }).select([
         "_id",
         "conversationId",
         "title",
@@ -190,7 +275,9 @@ export const getAllConversations = async ({ userId, limit = 50 }) => {
         "messageCount",
         "createdAt",
         "updatedAt",
-    ]).sort({ lastMessageAt: -1 }).limit(safeLimit).lean();
+    ]).sort({
+        lastMessageAt: -1
+    }).limit(safeLimit).lean();
 };
 
 
@@ -206,10 +293,21 @@ export const getAllConversations = async ({ userId, limit = 50 }) => {
  *
  * @returns {Promise<Array>}
  */
-export const getConversationMessages = async ({ userId, conversationId, limit = 50 }) => {
-    const conversation = await getRequiredConversation({ userId, conversationId });
+export const getConversationMessages = async ({
+    userId,
+    conversationId,
+    limit = 50
+}) => {
+    const conversation = await getRequiredConversation({
+        userId,
+        conversationId
+    });
     const safeLimit = normalizeLimit(limit, 50, 100);
-    return ConversationMessage.find({ conversation: conversation._id }).sort({ createdAt: -1 }).limit(safeLimit).lean();
+    return ConversationMessage.find({
+        conversation: conversation._id
+    }).sort({
+        createdAt: -1
+    }).limit(safeLimit).lean();
 };
 
 
@@ -229,10 +327,21 @@ export const getConversationMessages = async ({ userId, conversationId, limit = 
  *
  * @returns {Promise<Array>}
  */
-export const getConversationContext = async ({ userId, conversationId, limit = 20 }) => {
-    const conversation = await getRequiredConversation({ userId, conversationId });
+export const getConversationContext = async ({
+    userId,
+    conversationId,
+    limit = 20
+}) => {
+    const conversation = await getRequiredConversation({
+        userId,
+        conversationId
+    });
     const safeLimit = normalizeLimit(limit, 20, 50);
-    const messages = await ConversationMessage.find({ conversation: conversation._id }).sort({ createdAt: -1 }).limit(safeLimit).select([
+    const messages = await ConversationMessage.find({
+        conversation: conversation._id
+    }).sort({
+        createdAt: -1
+    }).limit(safeLimit).select([
         "messageId",
         "sender",
         "messageType",
@@ -259,7 +368,12 @@ export const getConversationContext = async ({ userId, conversationId, limit = 2
  *
  * @returns {Promise<Object>}
  */
-export const updateConversation = async ({ userId, conversationId, title, status }) => {
+export const updateConversation = async ({
+    userId,
+    conversationId,
+    title,
+    status
+}) => {
     if (!userId) throw new Error("User ID is required");
     if (!conversationId) throw new Error("Conversation ID is required");
     const updateData = {};
@@ -274,7 +388,14 @@ export const updateConversation = async ({ userId, conversationId, title, status
         updateData.status = status;
     }
     if (Object.keys(updateData).length === 0) throw new Error("No conversation data provided for update");
-    const conversation = await Conversation.findOneAndUpdate({ conversationId, user: userId }, { $set: updateData }, { new: true }).lean();
+    const conversation = await Conversation.findOneAndUpdate({
+        conversationId,
+        user: userId
+    }, {
+        $set: updateData
+    }, {
+        new: true
+    }).lean();
     if (!conversation) throw new Error("Conversation not found");
     return conversation;
 };
@@ -292,8 +413,15 @@ export const updateConversation = async ({ userId, conversationId, title, status
  *
  * @returns {Promise<Object>}
  */
-export const archiveConversation = async ({ userId, conversationId }) => {
-    return updateConversation({ userId, conversationId, status: "Archived" });
+export const archiveConversation = async ({
+    userId,
+    conversationId
+}) => {
+    return updateConversation({
+        userId,
+        conversationId,
+        status: "Archived"
+    });
 };
 
 
@@ -306,8 +434,15 @@ export const archiveConversation = async ({ userId, conversationId }) => {
  *
  * @returns {Promise<Object>}
  */
-export const restoreConversation = async ({ userId, conversationId }) => {
-    return updateConversation({ userId, conversationId, status: "Active" });
+export const restoreConversation = async ({
+    userId,
+    conversationId
+}) => {
+    return updateConversation({
+        userId,
+        conversationId,
+        status: "Active"
+    });
 };
 
 
@@ -323,8 +458,16 @@ export const restoreConversation = async ({ userId, conversationId }) => {
  *
  * @returns {Promise<Object>}
  */
-export const updateConversationTitle = async ({ userId, conversationId, title }) => {
-    return updateConversation({ userId, conversationId, title });
+export const updateConversationTitle = async ({
+    userId,
+    conversationId,
+    title
+}) => {
+    return updateConversation({
+        userId,
+        conversationId,
+        title
+    });
 };
 
 
@@ -342,8 +485,15 @@ export const updateConversationTitle = async ({ userId, conversationId, title })
  *
  * @param {Object} params
  */
-export const generateConversationTitleFromMessage = async ({ userId, conversationId, message }) => {
-    const conversation = await getRequiredConversation({ userId, conversationId });
+export const generateConversationTitleFromMessage = async ({
+    userId,
+    conversationId,
+    message
+}) => {
+    const conversation = await getRequiredConversation({
+        userId,
+        conversationId
+    });
 
     /**
      * Only generate a title when the conversation still
@@ -352,7 +502,11 @@ export const generateConversationTitleFromMessage = async ({ userId, conversatio
     if (conversation.title && conversation.title !== "New Conversation") return conversation;
     const title = generateConversationTitle(message);
 
-    return updateConversationTitle({ userId, conversationId, title });
+    return updateConversationTitle({
+        userId,
+        conversationId,
+        title
+    });
 };
 
 
@@ -371,12 +525,25 @@ export const generateConversationTitleFromMessage = async ({ userId, conversatio
  *
  * @returns {Promise<Object>}
  */
-export const deleteConversation = async ({ userId, conversationId }) => {
-    const conversation = await Conversation.findOne({ conversationId, user: userId });
+export const deleteConversation = async ({
+    userId,
+    conversationId
+}) => {
+    const conversation = await Conversation.findOne({
+        conversationId,
+        user: userId
+    });
     if (!conversation) throw new Error("Conversation not found");
-    await ConversationMessage.deleteMany({ conversation: conversation._id });
-    await Conversation.deleteOne({ _id: conversation._id,});
-    return { success: true, conversationId };
+    await ConversationMessage.deleteMany({
+        conversation: conversation._id
+    });
+    await Conversation.deleteOne({
+        _id: conversation._id,
+    });
+    return {
+        success: true,
+        conversationId
+    };
 };
 
 
@@ -391,20 +558,39 @@ export const deleteConversation = async ({ userId, conversationId }) => {
  *
  * @returns {Promise<Object>}
  */
-export const getConversationStats = async ({ userId, conversationId }) => {
-    const conversation = await getRequiredConversation({ userId, conversationId });
-    const conversationMessagePipeline = [
-        { $match: { conversation: conversation._id } },
-        { $group: {
-            _id: "$sender",
-            count: { $sum: 1 },
-        }},
+export const getConversationStats = async ({
+    userId,
+    conversationId
+}) => {
+    const conversation = await getRequiredConversation({
+        userId,
+        conversationId
+    });
+    const conversationMessagePipeline = [{
+            $match: {
+                conversation: conversation._id
+            }
+        },
+        {
+            $group: {
+                _id: "$sender",
+                count: {
+                    $sum: 1
+                },
+            }
+        },
     ]
     const [messageCount, senderStats] = await Promise.all([
-        ConversationMessage.countDocuments({ conversation: conversation._id }),
+        ConversationMessage.countDocuments({
+            conversation: conversation._id
+        }),
         ConversationMessage.aggregate(conversationMessagePipeline),
     ]);
-    const stats = { user: 0, assistant: 0, system: 0 };
+    const stats = {
+        user: 0,
+        assistant: 0,
+        system: 0
+    };
     senderStats.forEach((item) => {
         if (Object.prototype.hasOwnProperty.call(stats, item._id)) {
             stats[item._id] = item.count;

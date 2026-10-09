@@ -2,6 +2,7 @@ import express from "express";
 const productRouter = express.Router();
 import Product from "../controllers/product.controller.js";
 import { unifiedAuthProtect } from "../middlewares/auth.middleware.js";
+import { requirePermission } from "../middlewares/permission.middleware.js";
 import fileUpload from "../middlewares/filUpload.middleware.js";
 
 productRouter.use(unifiedAuthProtect);

@@ -2,6 +2,7 @@ import express from "express";
 const schemeRouter = express.Router();
 import Scheme from "../controllers/scheme.controller.js";
 import { unifiedAuthProtect } from "../middlewares/auth.middleware.js";
+import { requirePermission } from "../middlewares/permission.middleware.js";
 import fileUpload from "../middlewares/filUpload.middleware.js";
 
 schemeRouter.use(unifiedAuthProtect);

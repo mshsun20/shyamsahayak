@@ -2,6 +2,7 @@ import express from "express";
 const conversationRouter = express.Router();
 import Conversation from "../controllers/conversation.controller.js";
 import { unifiedAuthProtect } from "../middlewares/auth.middleware.js";
+import { requirePermission } from "../middlewares/permission.middleware.js";
 
 
 

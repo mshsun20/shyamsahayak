@@ -2,6 +2,7 @@ import express from "express";
 const knowledgeBaseRouter = express.Router();
 import KnowledgeBase from "../controllers/KnowledgeBase.controller.js";
 import { unifiedAuthProtect } from "../middlewares/auth.middleware.js";
+import { requirePermission } from "../middlewares/permission.middleware.js";
 import fileUpload from "../middlewares/filUpload.middleware.js";
 
 knowledgeBaseRouter.use(unifiedAuthProtect);

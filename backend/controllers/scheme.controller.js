@@ -79,7 +79,6 @@ const upload = async (req, res) => {
             }
         });
         if (schemeDataSheet?.length > 0) {
-            console.log(schemeDataSheet);
             return res.status(201).json({
                 success: true,
                 message: "Scheme bulk imported done",
