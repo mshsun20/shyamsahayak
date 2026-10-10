@@ -118,6 +118,9 @@ const ChatScreen = ({
     const pendingMessageRef = useRef(null);
     const activeConversationIdRef = useRef(initialConversationId);
     const typingRef = useRef(false);
+    const [isListening, setIsListening] = useState(false);
+    const recognitionRef = useRef(null);
+    const voiceTranscriptRef = useRef("");
 
     const updateConversationId = useCallback((id) => {
         if (!id) return;
@@ -156,7 +159,11 @@ const ChatScreen = ({
                 updateConversationId(id);
             }
 
-            const userMessageId = payload?.userMessageId || payload?.data?.userMessageId;
+            const userMessageId = payload?.userMessageId ||
+                payload?.messageId ||
+                payload?.data?.userMessageId ||
+                payload?.data?.messageId;
+
             if (userMessageId && pendingMessageRef.current) {
                 const pendingId = pendingMessageRef.current;
                 setMessages((previous) => previous.map((message) =>
@@ -278,35 +285,53 @@ const ChatScreen = ({
         };
     }, [initialConversationId]);
 
+
     /*
      * Send a message through the backend AI socket handler.
      */
     const sendMessage = useCallback((text) => {
         const trimmed = String(text || "").trim();
-
-        console.log("[CHAT UI] Send requested:", trimmed);
-        console.log("[CHAT UI] socket.connected:", socket.connected);
-        console.log("[CHAT UI] socket.id:", socket.id);
-
-        if (!trimmed || typingRef.current) {
-            console.log("[CHAT UI] Sending blocked:", {
-                emptyMessage: !trimmed,
-                alreadyTyping: typingRef.current,
-            });
-            return;
-        }
-
+        if (!trimmed || typingRef.current) return;
         if (!socket.connected) {
-            console.error("[CHAT UI] Socket is disconnected.");
-            setChatError(
-                "The chat connection is unavailable. Please wait for it to reconnect."
-            );
+            setChatError("The chat connection is unavailable. Please wait for it to reconnect.");
             return;
         }
 
-        console.log("[CHAT UI] Emitting chat:query");
+        const optimisticId = `user-${Date.now()}`;
+        pendingMessageRef.current = optimisticId;
+        setMessages((previous) => [
+            ...previous,
+            {
+                id: optimisticId,
+                from: "user",
+                text: trimmed,
+                time: formatTime(),
+                metadata: null,
+            },
+        ]);
 
-        // Keep the remainder of your existing sendMessage function here.
+        setInput("");
+        setChatError("");
+        setTyping(true);
+
+        const payload = {
+            message: trimmed,
+            ...(activeConversationIdRef.current
+                ? { conversationId: activeConversationIdRef.current }
+                : {}),
+        };
+        console.log("[CHAT UI] Emitting chat:query:", payload);
+        socket.timeout(10000).emit("chat:query", payload, (error, acknowledgement) => {
+            if (error) {
+                console.error("[CHAT UI] Server acknowledgement timed out.");
+                setChatError("The server did not acknowledge your message. Please try again.");
+                pendingMessageRef.current = null;
+                setTyping(false);
+                return;
+            }
+
+            console.log("[CHAT UI] Backend acknowledgement:", acknowledgement);
+        });
     }, [setTyping]);
 
 
@@ -341,6 +366,85 @@ const ChatScreen = ({
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isTyping, isLoadingHistory]);
+
+
+    // Voice search    
+    const handleVoiceInput = useCallback(() => {
+        if (isListening) {
+            recognitionRef.current?.stop();
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            setChatError("Voice recognition is not supported in this browser. Please use Chrome or Edge.");
+            return;
+        }
+
+        try {
+            const recognition = new SpeechRecognition();
+            recognition.lang = "en-IN";
+            recognition.interimResults = false;
+            recognition.continuous = false;
+
+            recognition.onstart = () => {
+                voiceTranscriptRef.current = "";
+                setIsListening(true);
+                setChatError("");
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .slice(event.resultIndex)
+                    .map((result) => result[0]?.transcript || "")
+                    .join(" ")
+                    .trim();
+
+                if (transcript) {
+                    voiceTranscriptRef.current = transcript;
+                    setInput(transcript);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                setIsListening(false);
+
+                if (event.error !== "aborted") {
+                    setChatError(event.error === "not-allowed"
+                        ? "Microphone access was denied. Please allow microphone access in your browser."
+                        : "Voice recognition failed. Please try again."
+                    );
+                }
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+                recognitionRef.current = null;
+                const transcript = voiceTranscriptRef.current.trim();
+                voiceTranscriptRef.current = "";
+                if (transcript) {
+                    sendMessage(transcript);
+                }
+            };
+
+            recognitionRef.current = recognition;
+            recognition.start();
+        } catch (error) {
+            console.error("Voice input error:", error);
+            recognitionRef.current = null;
+            setIsListening(false);
+            setChatError("Unable to start voice recognition.");
+        }
+    }, [isListening, sendMessage]);
+
+    // voice recognition cleanup
+    useEffect(() => {
+        return () => {
+            recognitionRef.current?.abort();
+            recognitionRef.current = null;
+        };
+    }, []);
+
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -593,12 +697,19 @@ const ChatScreen = ({
                             className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
                         />
                     </div>
-
+                    
                     <button
                         type="button"
-                        className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 shrink-0"
-                        aria-label="Voice input"
-                        title="Voice input is not connected yet"
+                        onClick={handleVoiceInput}
+                        disabled={isTyping || isLoadingHistory}
+                        aria-label={isListening ? "Stop voice input" : "Start voice input"}
+                        aria-pressed={isListening}
+                        title={isListening ? "Stop voice input" : "Voice input"}
+                        className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-colors disabled:opacity-50 ${
+                            isListening
+                                ? "bg-red-100 text-red-600"
+                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                        }`}
                     >
                         <Mic className="w-5 h-5" />
                     </button>

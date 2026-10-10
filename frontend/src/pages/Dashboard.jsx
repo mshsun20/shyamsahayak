@@ -1149,7 +1149,10 @@ const HomeScreen = ({ onOpenChat, onOpenHistory }) => {
     const [isLoadingRecent, setIsLoadingRecent] = React.useState(true);
     const [recentError, setRecentError] = React.useState(null);
     const [isListening, setIsListening] = React.useState(false);
+    const [voiceError, setVoiceError] = React.useState("");
     const recognitionRef = React.useRef(null);
+    const voiceTranscriptRef = React.useRef("");
+    const voiceRecognitionFailedRef = React.useRef(false);
     const userFirstName = String(user?.fullName || "").split(" ")[0];
 
 
@@ -1208,91 +1211,92 @@ const HomeScreen = ({ onOpenChat, onOpenHistory }) => {
     }, [fetchRecentConversations]);
 
 
+    
     /*
     |--------------------------------------------------------------------------
     | Voice Search
     |--------------------------------------------------------------------------
+    | Collect the complete spoken question, then open ChatScreen once
+    | speech recognition ends.
     */
-
     const handleVoiceSearch = () => {
-
-        if (isListening) {
-            recognitionRef.current?.stop();
-            setIsListening(false);
+        // Clicking the microphone again stops the current recording.
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
             return;
         }
 
-
-        const SpeechRecognition =
-            window.SpeechRecognition ||
-            window.webkitSpeechRecognition;
-
-
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            alert(
-                "Voice recognition is not supported in this browser. Please use Chrome or Edge."
-            );
-
+            setVoiceError("Voice recognition is not supported in this browser. Please use Chrome or Edge.");
             return;
         }
 
+        try {
+            const recognition = new SpeechRecognition();
+            recognition.lang = "en-IN";
+            recognition.interimResults = false;
+            recognition.continuous = false;
+            voiceTranscriptRef.current = "";
+            voiceRecognitionFailedRef.current = false;
 
-        const recognition =
-            new SpeechRecognition();
+            recognition.onstart = () => {
+                setIsListening(true);
+                setVoiceError("");
+            };
 
-        recognition.lang = "en-IN";
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map((result) => result[0]?.transcript || "")
+                    .join(" ")
+                    .trim();
 
-        recognition.interimResults = false;
+                if (transcript) {
+                    voiceTranscriptRef.current = transcript;
+                    setInput(transcript);
+                }
+            };
 
-        recognition.continuous = true;
+            recognition.onerror = (event) => {
+                voiceRecognitionFailedRef.current = true;
+                setIsListening(false);
 
+                if (event.error !== "aborted") {
+                    setVoiceError(event.error === "not-allowed"
+                        ? "Microphone access was denied. Please allow microphone access in your browser."
+                        : `Voice recognition failed: ${event.error}`
+                    );
+                }
+            };
 
-        recognition.onstart = () => {
-            setIsListening(true);
-        };
+            recognition.onend = () => {
+                setIsListening(false);
+                if (recognitionRef.current === recognition) {
+                    recognitionRef.current = null;
+                }
 
+                const transcript = voiceTranscriptRef.current.trim();
+                voiceTranscriptRef.current = "";
 
-        recognition.onresult = (event) => {
+                // Do not navigate after a recognition error.
+                if (voiceRecognitionFailedRef.current) return;
+                if (transcript) {
+                    setInput("");
+                    // Open ChatScreen once with the complete question.
+                    onOpenChat(transcript);
+                }
+            };
 
-            const transcript =
-                event.results[
-                    event.results.length - 1
-                ][0].transcript;
-
-
-            setInput(transcript);
-
-
-            if (!transcript.trim()) {
-                return;
-            }
-
-
-            onOpenChat(
-                transcript.trim()
-            );
-
-            setInput("");
-        };
-
-
-        recognition.onerror = () => {
+            recognitionRef.current = recognition;
+            recognition.start();
+        } catch (error) {
+            console.error("Dashboard voice search error:", error);
+            recognitionRef.current = null;
+            voiceTranscriptRef.current = "";
             setIsListening(false);
-        };
-
-
-        recognition.onend = () => {
-            setIsListening(false);
-        };
-
-
-        recognitionRef.current =
-            recognition;
-
-
-        recognition.start();
+            setVoiceError("Unable to start voice recognition. Please try again.");
+        }
     };
-
 
     React.useEffect(() => {
         return () => {
@@ -1304,14 +1308,8 @@ const HomeScreen = ({ onOpenChat, onOpenHistory }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (!input.trim()) {
-            return;
-        }
-
-        onOpenChat(
-            input.trim()
-        );
-
+        if (!input.trim()) return;
+        onOpenChat(input.trim());
         setInput("");
     };
 
@@ -1354,19 +1352,19 @@ const HomeScreen = ({ onOpenChat, onOpenHistory }) => {
                             className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
                         />
 
-
                         <button
                             type="button"
-                            className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 shrink-0"
-                            aria-label="Voice input"
-                            title="Voice Search"
-                            onClick={
-                                handleVoiceSearch
-                            }
+                            className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors ${isListening
+                                ? "bg-red-100 text-red-600"
+                                : "bg-gray-200 text-gray-500 hover:bg-gray-300"
+                            }`}
+                            aria-label={isListening ? "Stop voice search" : "Start voice search"}
+                            aria-pressed={isListening}
+                            title={isListening ? "Stop voice search" : "Voice Search"}
+                            onClick={handleVoiceSearch}
                         >
                             <Mic className="w-4 h-4" />
                         </button>
-
 
                         <button
                             type="submit"
@@ -1390,9 +1388,7 @@ const HomeScreen = ({ onOpenChat, onOpenHistory }) => {
 
                     <span
                         className="text-orange-500 font-medium cursor-pointer"
-                        onClick={
-                            handleVoiceSearch
-                        }
+                        onClick={handleVoiceSearch}
                     >
                         Voice to ask
                     </span>

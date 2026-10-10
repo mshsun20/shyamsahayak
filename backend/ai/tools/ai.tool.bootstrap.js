@@ -8,7 +8,7 @@
  */
 
 // Test tool
-import "./test/test.tool.js";
+// import "./test/test.tool.js";
 
 // Product tools
 import "./product/product.tool.js";

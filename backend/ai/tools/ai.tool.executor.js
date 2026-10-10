@@ -39,18 +39,17 @@ export const executeTools = async ({ toolUses = [], context = {} }) => {
     if (!Array.isArray(toolUses)) throw new Error("Tool uses must be an array");
 
     const results = await Promise.all(toolUses.map(async (toolUse) => {
-            const execution = await executeTool({
-                toolName: toolUse.name,
-                input: toolUse.input,
-                context,
-            });
-            return {
-                toolUseId: toolUse.id,
-                toolName: toolUse.name,
-                ...execution,
-            };
-        })
-    );
+        const execution = await executeTool({
+            toolName: toolUse.name,
+            input: toolUse.input,
+            context,
+        });
+        return {
+            toolUseId: toolUse.id,
+            toolName: toolUse.name,
+            ...execution,
+        };
+    }));
     return results;
 };
 

@@ -20,10 +20,13 @@ export const registerChatSocket = (io, socket) => {
             console.log("[CHAT] Received chat:query:", {
                 socketId: socket.id,
                 message: payload.message,
+                conversationId: payload.conversationId,
             });
-
             if (typeof acknowledge === "function") {
-                acknowledge({ received: true, socketId: socket.id });
+                acknowledge({
+                    received: true,
+                    socketId: socket.id,
+                });
             }
             // Always derive identity from authenticated socket.
             const userId = socket.auth?.userId;
@@ -60,6 +63,9 @@ export const registerChatSocket = (io, socket) => {
             if (!conversationId) {
                 const conversation = await createConversation({ userId });
                 conversationId = conversation.conversationId;
+                console.log("[CHAT] New conversation created:", conversationId);
+            } else {
+                console.log("[CHAT] Continuing conversation:", conversationId);
             }
             const conversation = await getRequiredConversation({ userId, conversationId });
             if (conversation.status !== "Active") throw new Error("Conversation is archived");
