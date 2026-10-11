@@ -293,22 +293,21 @@ export const getAllConversations = async ({
  *
  * @returns {Promise<Array>}
  */
+
 export const getConversationMessages = async ({
     userId,
     conversationId,
-    limit = 50
+    limit = 50,
 }) => {
-    const conversation = await getRequiredConversation({
-        userId,
-        conversationId
-    });
+    const conversation = await getRequiredConversation({ userId, conversationId });
     const safeLimit = normalizeLimit(limit, 50, 100);
-    return ConversationMessage.find({
-        conversation: conversation._id
-    }).sort({
-        createdAt: -1
-    }).limit(safeLimit).lean();
+    const messages = await ConversationMessage.find({ conversation: conversation._id }).sort({ createdAt: -1 }).limit(safeLimit).lean();
+
+    // The query retrieves the latest messages first.
+    // Reverse them so the chat displays oldest to newest.
+    return messages.reverse();
 };
+
 
 
 /**
@@ -388,14 +387,9 @@ export const updateConversation = async ({
         updateData.status = status;
     }
     if (Object.keys(updateData).length === 0) throw new Error("No conversation data provided for update");
-    const conversation = await Conversation.findOneAndUpdate({
-        conversationId,
-        user: userId
-    }, {
+    const conversation = await Conversation.findOneAndUpdate({ conversationId, user: userId }, {
         $set: updateData
-    }, {
-        new: true
-    }).lean();
+    }, { returnDocument: "after" }).lean();
     if (!conversation) throw new Error("Conversation not found");
     return conversation;
 };

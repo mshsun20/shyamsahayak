@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+
+import React from "react";
 import {
     ArrowLeft,
     Search,
@@ -10,179 +11,316 @@ import {
     Briefcase,
     Truck,
     Sparkles,
-} from 'lucide-react';
+} from "lucide-react";
 
-/**
- * RecentConversationsScreen
- * --------------------------
- * Opens when the user taps "View all" next to Recent Conversations on the
- * home screen (Screen 3). Shows the full conversation history with search
- * and date filters.
- *
- * Drop this component into your app and wire up:
- *  - onBack               -> called when the back arrow is tapped
- *  - onSelectConversation -> called with the tapped conversation object,
- *                            typically used to re-open that chat thread
- */
-
-const CONVERSATIONS = [
-    {
-        id: 'c1',
-        title: 'Best roofing sheet for coastal areas',
-        snippet: 'You: Which roofing sheet is best for salty, coastal weather?',
-        time: '10:24 AM',
-        category: 'today',
-        icon: Layers,
-    },
-    {
-        id: 'c2',
-        title: 'Weight calculation for AZ150',
-        snippet: 'You: Calculate the weight of 12 ft, 0.5 mm sheet',
-        time: 'Yesterday',
-        category: 'yesterday',
-        icon: Calculator,
-    },
-    {
-        id: 'c3',
-        title: 'Warranty of Tiger Premium Sheets',
-        snippet: 'You: What is the warranty period for Tiger sheets?',
-        time: 'Yesterday',
-        category: 'yesterday',
-        icon: ShieldCheck,
-    },
-    {
-        id: 'c4',
-        title: 'Installation guidelines',
-        snippet: 'You: How to install roofing sheets properly?',
-        time: '26 May 2025',
-        category: 'week',
-        icon: Wrench,
-    },
-    {
-        id: 'c5',
-        title: 'About SEL Tiger product range',
-        snippet: 'You: Tell me about the Tiger range of products',
-        time: '25 May 2025',
-        category: 'week',
-        icon: Briefcase,
-    },
-    {
-        id: 'c6',
-        title: 'Delivery time to Gujarat',
-        snippet: 'You: What is the delivery time for an order?',
-        time: '24 May 2025',
-        category: 'week',
-        icon: Truck,
-    },
-];
+import axiosInstance from "../config/axiosInstance";
 
 const FILTERS = [
-    { id: 'all', label: 'All' },
-    { id: 'today', label: 'Today' },
-    { id: 'yesterday', label: 'Yesterday' },
-    { id: 'week', label: 'This Week' },
+    { id: "all", label: "All" },
+    { id: "today", label: "Today" },
+    { id: "yesterday", label: "Yesterday" },
+    { id: "week", label: "This Week" },
 ];
 
-const RecentConversationsScreen = ({ onBack = () => { }, onSelectConversation = () => { } }) => {
-    const [query, setQuery] = useState('');
-    const [filter, setFilter] = useState('all');
+const CONVERSATION_ICONS = [
+    Layers,
+    Calculator,
+    ShieldCheck,
+    Wrench,
+    Briefcase,
+    Truck,
+];
 
-    const filtered = useMemo(() => {
-        return CONVERSATIONS.filter((c) => {
-            const matchesQuery = c.title.toLowerCase().includes(query.toLowerCase());
+const getDateCategory = (dateValue) => {
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) return "older";
+
+    const now = new Date();
+    const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
+
+    const startOfDate = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+    );
+
+    const dayDifference = Math.floor(
+        (startOfToday.getTime() - startOfDate.getTime()) /
+            (24 * 60 * 60 * 1000)
+    );
+
+    if (dayDifference === 0) return "today";
+    if (dayDifference === 1) return "yesterday";
+    if (dayDifference >= 2 && dayDifference < 7) return "week";
+
+    return "older";
+};
+
+const formatConversationTime = (dateValue) => {
+    if (!dateValue) return "";
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) return "";
+
+    const category = getDateCategory(dateValue);
+
+    if (category === "today" || category === "yesterday") {
+        return `${category === "today" ? "Today" : "Yesterday"}, ${date.toLocaleTimeString(
+            "en-IN",
+            {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+            }
+        )}`;
+    }
+
+    return date.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
+};
+
+const normalizeConversation = (conversation, index) => {
+    const conversationId =
+        conversation?.conversationId || conversation?._id;
+
+    const lastActivity =
+        conversation?.lastMessageAt ||
+        conversation?.updatedAt ||
+        conversation?.createdAt;
+
+    return {
+        id: conversationId,
+        conversationId,
+        title: conversation?.title || "New Conversation",
+        snippet:
+            conversation?.lastMessage ||
+            conversation?.title ||
+            "No messages yet",
+        time: formatConversationTime(lastActivity),
+        category: getDateCategory(lastActivity),
+        Icon: CONVERSATION_ICONS[index % CONVERSATION_ICONS.length],
+        messageCount: conversation?.messageCount || 0,
+        status: conversation?.status || "Active",
+    };
+};
+
+const RecentConversationMessage = ({
+    onBack = () => {},
+    onSelectConversation = () => {},
+    limit = 50,
+}) => {
+    const [query, setQuery] = React.useState("");
+    const [filter, setFilter] = React.useState("all");
+    const [conversations, setConversations] = React.useState([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [error, setError] = React.useState("");
+
+    const fetchConversations = React.useCallback(async () => {
+        try {
+            setIsLoading(true);
+            setError("");
+
+            const response = await axiosInstance.get("/conversations", { params: { limit } });
+
+            const apiData = response?.data?.data;
+
+            if (!Array.isArray(apiData)) {
+                throw new Error("Invalid conversations response from server.");
+            }
+
+            setConversations(apiData.map(normalizeConversation));
+        } catch (err) {
+            console.error("Failed to fetch conversations:", err);
+
+            setError(
+                err?.response?.data?.message ||
+                    err?.message ||
+                    "Unable to load conversations."
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    }, [limit]);
+
+    React.useEffect(() => {
+        fetchConversations();
+    }, [fetchConversations]);
+
+    const filteredConversations = React.useMemo(() => {
+        const normalizedQuery = query.trim().toLowerCase();
+
+        return conversations.filter((conversation) => {
+            const matchesQuery =
+                !normalizedQuery ||
+                conversation.title.toLowerCase().includes(normalizedQuery) ||
+                conversation.snippet.toLowerCase().includes(normalizedQuery);
+
             let matchesFilter = true;
-            if (filter === 'today') matchesFilter = c.category === 'today';
-            else if (filter === 'yesterday') matchesFilter = c.category === 'yesterday';
-            else if (filter === 'week') matchesFilter = ['today', 'yesterday', 'week'].includes(c.category);
+
+            if (filter === "today" || filter === "yesterday") {
+                matchesFilter = conversation.category === filter;
+            } else if (filter === "week") {
+                matchesFilter = ["today", "yesterday", "week"].includes(
+                    conversation.category
+                );
+            }
+
             return matchesQuery && matchesFilter;
         });
-    }, [query, filter]);
+    }, [conversations, query, filter]);
 
     return (
-        <div className="w-full max-w-md mx-auto min-h-screen bg-gray-50 flex flex-col">
-            <style>{`.no-scrollbar::-webkit-scrollbar { display: none; }`}</style>
-
+        <div className="flex min-h-screen w-full flex-col bg-gray-50">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
-                <button onClick={onBack} className="p-1 -ml-1 text-gray-900" aria-label="Go back">
-                    <ArrowLeft className="w-5 h-5" />
+            <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-gray-100 bg-white px-4 py-3">
+                <button
+                    type="button"
+                    onClick={onBack}
+                    className="-ml-1 p-1 text-gray-900"
+                    aria-label="Go back"
+                >
+                    <ArrowLeft className="h-5 w-5" />
                 </button>
-                <p className="font-bold text-gray-900 text-lg">Recent Conversations</p>
+
+                <h1 className="text-lg font-bold text-gray-900">
+                    Recent Conversations
+                </h1>
             </div>
 
-            <div className="px-4 pt-4 pb-2">
-                {/* Search */}
-                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-3">
-                    <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            {/* Search and filters */}
+            <div className="px-4 pb-2 pt-4">
+                <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-3">
+                    <Search className="h-4 w-4 shrink-0 text-gray-400" />
+
                     <input
+                        type="search"
                         value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        type="text"
+                        onChange={(event) => setQuery(event.target.value)}
                         placeholder="Search conversations..."
-                        className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
+                        aria-label="Search conversations"
+                        className="min-w-0 flex-1 bg-transparent text-sm text-gray-800 outline-none placeholder:text-gray-400"
                     />
                 </div>
 
-                {/* Filters */}
-                <div className="flex gap-2 mt-4 overflow-x-auto no-scrollbar" style={{ scrollbarWidth: 'none' }}>
-                    {FILTERS.map((f) => (
+                <div
+                    className="no-scrollbar mt-4 flex gap-2 overflow-x-auto"
+                    style={{ scrollbarWidth: "none" }}
+                >
+                    {FILTERS.map((item) => (
                         <button
-                            key={f.id}
-                            onClick={() => setFilter(f.id)}
-                            className={
-                                'flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ' +
-                                (filter === f.id ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700')
-                            }
+                            key={item.id}
+                            type="button"
+                            onClick={() => setFilter(item.id)}
+                            aria-pressed={filter === item.id}
+                            className={`shrink-0 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium transition-colors ${
+                                filter === item.id
+                                    ? "bg-orange-500 text-white"
+                                    : "bg-gray-100 text-gray-700"
+                            }`}
                         >
-                            {f.label}
+                            {item.label}
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* List */}
-            <div className="flex-1 px-4 pb-4 space-y-3 overflow-y-auto">
-                {filtered.length === 0 && (
-                    <div className="text-center py-16">
-                        <Search className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                        <p className="text-sm text-gray-400">No conversations found</p>
+            {/* Conversation list */}
+            <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-4">
+                {isLoading && (
+                    <div className="py-16 text-center text-sm text-gray-400">
+                        Loading conversations...
                     </div>
                 )}
 
-                {filtered.map((c) => {
-                    const Icon = c.icon;
-                    return (
-                        <button
-                            key={c.id}
-                            onClick={() => onSelectConversation(c)}
-                            className="w-full text-left bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 hover:border-orange-200 transition-colors"
-                        >
-                            <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
-                                <Icon className="w-5 h-5 text-orange-500" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <div className="flex items-start justify-between gap-2">
-                                    <p className="font-semibold text-gray-900 truncate">{c.title}</p>
-                                    <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0 mt-0.5">{c.time}</span>
-                                </div>
-                                <p className="text-sm text-gray-500 truncate mt-0.5">{c.snippet}</p>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
-                        </button>
-                    );
-                })}
+                {!isLoading && error && (
+                    <div className="py-16 text-center">
+                        <p className="text-sm text-red-500">{error}</p>
 
-                <div className="rounded-2xl bg-orange-50 border border-orange-100 p-4 flex items-center gap-3 mt-2">
-                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="w-5 h-5 text-orange-500" />
+                        <button
+                            type="button"
+                            onClick={fetchConversations}
+                            className="mt-3 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                            Try again
+                        </button>
                     </div>
-                    <p className="text-sm font-medium text-gray-600">
-                        Tap on any conversation to continue chatting with Sahayak.
-                    </p>
-                </div>
+                )}
+
+                {!isLoading &&
+                    !error &&
+                    filteredConversations.length === 0 && (
+                        <div className="py-16 text-center">
+                            <Search className="mx-auto mb-2 h-8 w-8 text-gray-300" />
+                            <p className="text-sm text-gray-500">
+                                No conversations found
+                            </p>
+                        </div>
+                    )}
+
+                {!isLoading &&
+                    !error &&
+                    filteredConversations.map((conversation) => {
+                        const Icon = conversation.Icon;
+
+                        return (
+                            <button
+                                key={conversation.id}
+                                type="button"
+                                disabled={!conversation.conversationId}
+                                onClick={() =>
+                                    onSelectConversation(conversation)
+                                }
+                                className="flex w-full items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 text-left shadow-sm transition-colors hover:border-orange-200 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-50">
+                                    <Icon className="h-5 w-5 text-orange-500" />
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <p className="truncate font-semibold text-gray-900">
+                                            {conversation.title}
+                                        </p>
+
+                                        <span className="mt-0.5 shrink-0 whitespace-nowrap text-xs text-gray-400">
+                                            {conversation.time}
+                                        </span>
+                                    </div>
+
+                                    <p className="mt-0.5 truncate text-sm text-gray-500">
+                                        {conversation.snippet}
+                                    </p>
+                                </div>
+
+                                <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" />
+                            </button>
+                        );
+                    })}
+
+                {!isLoading && !error && conversations.length > 0 && (
+                    <div className="mt-2 flex items-center gap-3 rounded-2xl border border-orange-100 bg-orange-50 p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                            <Sparkles className="h-5 w-5 text-orange-500" />
+                        </div>
+
+                        <p className="text-sm font-medium text-gray-600">
+                            Select a conversation to continue chatting with
+                            Sahayak AI.
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );
-}
+};
 
-export default React.memo(RecentConversationsScreen)
+export default React.memo(RecentConversationMessage);

@@ -67,7 +67,7 @@ const create = async (req, res) => {
  */
 const readRecent = async (req, res) => {
     try {
-        const userId = req.user?._id;
+        const userId = req.auth?.userId;
         console.log("User ID from auth:", userId);
 
         if (!userId) {

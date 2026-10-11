@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { fadeBottom } from "../animations/allVariants";
 import axiosInstance from "../config/axiosInstance";
 import { socket } from "../socket/socket";
+import MarkdownRenderer from "../components/chat/MarkdownRenderer";
 
 const QUICK_ACTIONS = [
     "How to install?",
@@ -562,7 +563,7 @@ const ChatScreen = ({
                                     className="bg-orange-100 rounded-2xl rounded-br-md px-4 py-3"
                                     style={{ maxWidth: "80%" }}
                                 >
-                                    <p className="text-sm text-gray-900 whitespace-pre-wrap break-words">
+                                    <p className="text-sm text-gray-900 whitespace-pre-wrap wrap-break-word">
                                         {message.text}
                                     </p>
 
@@ -586,9 +587,9 @@ const ChatScreen = ({
                                     style={{ maxWidth: "85%" }}
                                 >
                                     <div className="bg-white rounded-2xl rounded-tl-md border border-gray-100 shadow-sm px-4 py-3">
-                                        <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">
-                                            {message.text}
-                                        </p>
+                                        <div className="text-sm text-gray-800 whitespace-pre-wrap wrap-break-word">
+                                            <MarkdownRenderer content={message.text} />
+                                        </div>
 
                                         <p className="text-xs text-gray-400 text-right mt-2">
                                             {message.time}

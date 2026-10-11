@@ -12,9 +12,10 @@ const Topbar = () => {
   return (
     <div className="nav-topbar">
         <div className="nav-top-wrapper">
-            <div className="nav-top-logo">
+            <NavLink to={"/dashboard"} className="nav-top-logo">
                 <img src={companyLogo} alt="company logo" />
-            </div>
+            </NavLink>
+            
             <div className="nav-top-items">
                 {topNavItems?.length > 0
                 && topNavItems?.map(item => (
