@@ -8,7 +8,19 @@
  */
 
 // Test tool
-// import "./test/test.tool.js";
+import "./system/system.tool.js";
 
 // Product tools
 import "./product/product.tool.js";
+
+// Scheme tools
+import "./scheme/scheme.tool.js";
+
+// Account tools
+import "./account/account.tool.js";
+
+// Visit tools
+import "./visit/visit.tool.js";
+
+// Counter tools
+import "./counter/counter.tool.js";

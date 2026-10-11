@@ -9,10 +9,7 @@ import "../../../models/file.model.js";
  * Normalize a value so that comparisons remain safe.
  */
 const normalizeValue = (value) => {
-    if (value === null || value === undefined) {
-        return "";
-    }
-
+    if (value === null || value === undefined) return "";
     return String(value).trim().toLowerCase();
 };
 
@@ -20,12 +17,8 @@ const normalizeValue = (value) => {
  * Check whether the product matches the supplied search term.
  */
 const matchesSearch = (product, search) => {
-    if (!search) {
-        return true;
-    }
-
+    if (!search) return true;
     const searchValue = normalizeValue(search);
-
     const searchableValues = [
         product.code,
         product.name,
@@ -35,34 +28,22 @@ const matchesSearch = (product, search) => {
         product.description,
         ...(Array.isArray(product.tags) ? product.tags : []),
     ];
-
-    return searchableValues.some((value) =>
-        normalizeValue(value).includes(searchValue)
-    );
+    return searchableValues.some((value) => normalizeValue(value).includes(searchValue));
 };
 
 /**
  * Check whether the product matches the requested category.
  */
 const matchesCategory = (product, category) => {
-    if (!category) {
-        return true;
-    }
-
-    return (
-        normalizeValue(product.category) ===
-        normalizeValue(category)
-    );
+    if (!category) return true;
+    return normalizeValue(product.category) === normalizeValue(category);
 };
 
 /**
  * Check whether the product matches the requested status.
  */
 const matchesStatus = (product, status) => {
-    if (!status) {
-        return true;
-    }
-
+    if (!status) return true;
     return (normalizeValue(product.status) === normalizeValue(status));
 };
 
@@ -71,10 +52,7 @@ const matchesStatus = (product, status) => {
  * product data to Claude.
  */
 const sanitizeProduct = (product) => {
-    if (!product) {
-        return null;
-    }
-
+    if (!product) return null;
     return {
         id: product._id || null,
         code: product.code || null,
@@ -107,11 +85,7 @@ export const getProducts = async ({
     status = "",
     limit = 10,
 }) => {
-    const safeLimit = Math.min(
-        Math.max(Number(limit) || 10, 1),
-        25
-    );
-
+    const safeLimit = Math.min(Math.max(Number(limit) || 10, 1), 25);
     let products = [];
 
     /**
@@ -120,7 +94,6 @@ export const getProducts = async ({
      */
     if (code) {
         const product = await readByUniqueKeyFunction(code);
-
         if (product) {
             products = [product];
         }

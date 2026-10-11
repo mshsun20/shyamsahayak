@@ -19,23 +19,19 @@ const productTool = {
                 type: "string",
                 description: "Optional text to search across product code, name, category, descriptions, unit, and tags.",
             },
-
             code: {
                 type: "string",
                 description: "Optional exact product code. Use this when the user provides or clearly refers to a specific product code.",
             },
-
             category: {
                 type: "string",
                 description: "Optional product category filter.",
             },
-
             status: {
                 type: "string",
                 enum: ["Draft", "Published", "Archived"],
                 description: "Optional product publication status filter.",
             },
-
             limit: {
                 type: "integer",
                 minimum: 1,
@@ -67,10 +63,7 @@ const productTool = {
          *
          * We intentionally do NOT accept userId from Claude input.
          */
-        if (!context.userId) {
-            throw new Error("Authenticated user context is required.");
-        }
-
+        if (!context.userId) throw new Error("Authenticated user context is required.");
         return getProducts({
             search: input.search || "",
             code: input.code || "",
