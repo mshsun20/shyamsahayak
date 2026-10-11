@@ -158,9 +158,7 @@ export const createMessage = async ({
         $set: {
             lastMessageAt: message.createdAt
         },
-    }, {
-        new: false
-    });
+    }, { returnDocument: "before" });
 
     return message;
 };

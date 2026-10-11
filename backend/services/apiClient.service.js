@@ -117,7 +117,7 @@ export const updateApiClient = async (id, payload) => {
             $set: updateData,
         },
         {
-            new: true,
+            returnDocument: "after",
             runValidators: true,
         }
     )
@@ -172,7 +172,7 @@ export const addApiClientPermissions = async (
             },
         },
         {
-            new: true,
+            returnDocument: "after",
             runValidators: true,
         }
     )
@@ -192,7 +192,7 @@ export const removeApiClientPermission = async (
             },
         },
         {
-            new: true,
+            returnDocument: true,
         }
     )
         .select("-keyHash")
@@ -208,7 +208,7 @@ export const revokeApiClient = async (id) => {
             },
         },
         {
-            new: true,
+            returnDocument: "after",
         }
     )
         .select("-keyHash")

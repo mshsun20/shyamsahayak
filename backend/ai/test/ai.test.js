@@ -110,6 +110,67 @@ const runTest = async () => {
             usage: schemeResult.usage,
         });
 
+        // ----------------------------------------
+        // TEST 2: Account AI Tool
+        // ----------------------------------------
+        console.log("\n========================================");
+        console.log("TEST 2: ACCOUNT TOOL");
+        console.log("========================================\n");
+        const accountResult = await runAI({
+            message: "Use the account tool to retrieve available schemes. Only accounts information returned by the tool.",
+            context: {
+                userId: "TEST-USER-001",
+                permissions: ["account:read"],
+            },
+        });
+
+        console.log("AI RESPONSE:");
+        console.log(accountResult.text);
+        console.log("\nAI METADATA:");
+        console.log({
+            type: accountResult.type,
+            stopReason: accountResult.stopReason,
+            toolRounds: accountResult.toolRounds,
+            usage: accountResult.usage,
+        });
+
+        // console.log("\n========================================");
+        // console.log("Sahayak AI Account Tool Test");
+        // console.log("========================================");
+
+        // const tool = getTool("get_accounts");
+
+        // assert.ok(tool, "get_accounts should be registered");
+        // assert.equal(typeof tool.execute, "function");
+
+        // const definitions = getClaudeToolDefinitions();
+        // const definition = definitions.find(
+        //     (item) => item.name === "get_accounts"
+        // );
+
+        // assert.ok(definition, "Claude Account tool definition should exist");
+        // assert.ok(definition.input_schema.properties.role);
+        // assert.ok(definition.input_schema.properties.privilege);
+        // assert.ok(definition.input_schema.properties.permission);
+        // assert.ok(definition.input_schema.properties.excludePermission);
+        // assert.equal(definition.input_schema.additionalProperties, false);
+
+        // await assert.rejects(() => tool.execute({ input: {}, context: {} }), /Authenticated user context is required/);
+
+        // await assert.rejects(() => tool.execute({
+        //     input: {},
+        //     context: {
+        //         userId: "TEST-USER",
+        //         permissions: [],
+        //     },
+        // }), /not authorized/);
+
+        // console.log("PASS: Account tool is registered.");
+        // console.log("PASS: Role, Privilege, and Permission filters are available.");
+        // console.log("PASS: Missing authentication context is rejected.");
+        // console.log("PASS: Missing account:read permission is rejected.");
+        // console.log("========================================");
+
         console.log("\n========================================");
         console.log("AI TESTS COMPLETED");
         console.log("========================================\n");

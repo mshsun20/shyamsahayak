@@ -66,7 +66,7 @@ export const updateFunction = async (
     }
     updateData.updatedBy = userId;
 
-    return Permission.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true })
+    return Permission.findByIdAndUpdate(id, { $set: updateData }, { returnDocument: "after", runValidators: true })
         .populate("createdBy", "userId fullName username")
         .populate("updatedBy", "userId fullName username")
         .lean();

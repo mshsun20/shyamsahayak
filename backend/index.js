@@ -8,24 +8,31 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import env from "./config/env.js";
 import connectDB from "./config/dbcon.js";
+
+// scoket imports
 import socketAuth from "./middlewares/socketAuth.middleware.js";
 import { setupSocketAuthLifecycle, clearSocketAuthLifecycle } from "./sockets/socketAuthLifecycle.js";
 import { registerChatSocket } from "./sockets/chat/chat.socket.js";
-import "./ai/tools/ai.tool.bootstrap.js"; // Import the AI tool bootstrap to register tools
 
+// Import the AI tool bootstrap to register tools
+import "./ai/tools/ai.tool.bootstrap.js";
+
+// route imports
 import authRouter from "./routes/auth.route.js";
 import permissionRouter from "./routes/permission.route.js";
 import apiClientRouter from "./routes/apiClient.route.js";
 import accountRouter from "./routes/account.route.js";
 import privilegeRouter from "./routes/privilege.route.js";
 import roleRouter from "./routes/role.route.js";
-import districtRouter from "./routes/location/district.route.js";
 import productRouter from "./routes/product.route.js";
 import schemeRouter from "./routes/scheme.route.js";
 import knowledgeBaseRouter from "./routes/KnowledgeBase.route.js";
 import conversationRouter from "./routes/conversation.route.js";
 
 
+
+
+// environment origins
 const allowedOrigins = [env.adminUrl, env.appUrl]
 
 // path resolution
@@ -71,7 +78,6 @@ app.use("/api/api-clients", apiClientRouter);
 app.use("/api/accounts", accountRouter);
 app.use("/api/privileges", privilegeRouter);
 app.use("/api/roles", roleRouter);
-app.use("/api/districts", districtRouter);
 app.use("/api/products", productRouter);
 app.use("/api/schemes", schemeRouter);
 app.use("/api/knowledge-bases", knowledgeBaseRouter);
