@@ -34,11 +34,11 @@ const bulkFields = [
   { key: "price", type: "number", sample: "560" },
   { key: "priceUnit", sample: "Sheet" },
   { key: "gstRate", type: "number", sample: "18" },
-  { key: "tags", type: "list", sample: "Roofing Sheet;Industrial" },
+  { key: "tags", type: "list", sample: "Roofing Sheet,Industrial" },
   { key: "sortOrder", type: "number", sample: "1" },
   { key: "metaTitle", sample: "Tiger Roofing Sheet" },
   { key: "metaDescription", sample: "High strength roofing sheet" },
-  { key: "status", sample: "Active" },
+  { key: "status", sample: "Draft" },
 ];
 
 const filterDefaults = {
@@ -139,7 +139,7 @@ export default function Products() {
       const q = search.toLowerCase();
       const matchesSearch =
         p.name?.toLowerCase().includes(q) ||
-        p.sku?.toLowerCase().includes(q) ||
+        p.code?.toLowerCase().includes(q) ||
         p.shortDescription?.toLowerCase().includes(q);
       const matchesCategory = category === "All Categories" || p.category === category;
       const matchesStatus =
@@ -171,7 +171,7 @@ export default function Products() {
     const rows = filteredProducts.map((p) => [
       p.name,
       p.category,
-      p.sku,
+      p.code,
       `${p.price} / ${p.priceUnit}`,
       p.status === "Active" ? "Published" : "Draft",
       p.featured ? "Yes" : "No",
@@ -374,7 +374,7 @@ export default function Products() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{product.category}</td>
-                  <td className="px-4 py-3 text-gray-600">{product.sku}</td>
+                  <td className="px-4 py-3 text-gray-600">{product.code}</td>
                   <td className="px-4 py-3 text-gray-600">
                     ₹{product.price} / {product.priceUnit}
                   </td>
@@ -383,7 +383,7 @@ export default function Products() {
                   </td>
                   <td className="px-4 py-3 text-gray-600">{product.featured ? "Yes" : "No"}</td>
                   <td className="px-4 py-3">
-                    <p className="text-gray-700">{product.lastUpdated}</p>
+                    <p className="text-gray-700">{product.updatedAt.split('T')[0]}</p>
                     <p className="text-xs text-gray-400">
                       {product.lastUpdatedTime} · {product.lastUpdatedBy}
                     </p>
@@ -425,7 +425,7 @@ export default function Products() {
         <Modal title="Product Details" onClose={() => setViewProduct(null)}>
           <div className="space-y-2.5 text-sm">
             <div className="flex justify-between"><span className="text-gray-400">Product Name</span><span className="text-gray-800 font-medium">{viewProduct.name}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">SKU / Code</span><span className="text-gray-800">{viewProduct.sku}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">SKU / Code</span><span className="text-gray-800">{viewProduct.code}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Category</span><span className="text-gray-800">{viewProduct.category}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Unit Type</span><span className="text-gray-800">{viewProduct.unitType}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Price</span><span className="text-gray-800">₹{viewProduct.price} / {viewProduct.priceUnit}</span></div>

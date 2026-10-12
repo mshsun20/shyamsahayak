@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Plus, Download, SlidersHorizontal, Search, Link2, Pencil, MoreVertical, Trash2 } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
 import Modal from "../../../components/Modal";
-import { deleteMapping } from "../../../redux/store";
+// import { deleteMapping } from "../../../redux/store";
 import { states, districtsByState, tmOptions, dgoOptions } from "../../../data/masterData";
 
 const filterDefaults = { state: "All States", district: "All Districts", tm: "All TMs", dgo: "All DGOs", search: "" };
@@ -39,7 +39,7 @@ function ActionsMenu({ onDelete }) {
 }
 
 export default function DistrictMaster() {
-  const mappings = useSelector((state) => state.districtMappings);
+  const mappings = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -85,7 +85,7 @@ export default function DistrictMaster() {
 
   const confirmDelete = () => {
     if (deleteTarget) {
-      dispatch(deleteMapping(deleteTarget.id));
+      // dispatch(deleteMapping(deleteTarget.id));
       setDeleteTarget(null);
     }
   };

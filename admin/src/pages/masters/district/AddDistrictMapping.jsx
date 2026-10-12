@@ -2,29 +2,10 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import {
-  ChevronRight,
-  ArrowLeft,
-  CheckCircle2,
-  Map,
-  Landmark,
-  Factory,
-  UserCircle2,
-  Users,
-  Home,
-  ArrowLeftRight,
-} from "lucide-react";
+import { ChevronRight, ArrowLeft, CheckCircle2, Map, Landmark, Factory, UserCircle2, Users, Home, ArrowLeftRight, } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
-import { addMapping, updateMapping } from "../../../redux/store";
-import {
-  states,
-  districtsByState,
-  fabricatorOptions,
-  dgoOptions,
-  tmOptions,
-  dealerOptions,
-  distributorOptions,
-} from "../../../data/masterData";
+// import { addMapping, updateMapping } from "../../../redux/store";
+import { states, districtsByState, fabricatorOptions, dgoOptions, tmOptions, dealerOptions, distributorOptions, } from "../../../data/masterData";
 
 const emptyForm = {
   state: "",
@@ -49,7 +30,7 @@ const previewSteps = [
 export default function AddDistrictMapping() {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const mappings = useSelector((state) => state.districtMappings);
+  const mappings = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -71,9 +52,9 @@ export default function AddDistrictMapping() {
 
   const onSubmit = (data) => {
     if (isEdit) {
-      dispatch(updateMapping({ ...data, id: Number(id) }));
+      // dispatch(updateMapping({ ...data, id: Number(id) }));
     } else {
-      dispatch(addMapping({ ...data, id: Date.now() }));
+      // dispatch(addMapping({ ...data, id: Date.now() }));
     }
     navigate("/district-master");
   };
