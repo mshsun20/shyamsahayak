@@ -3,7 +3,7 @@ import env from "./env.js";
 
 mongoose.set("strictQuery", false); // Disable strict query mode
 const connectDB = async () => {
-    // console.log(env.dbUrl);
+    console.log(env.dbUrl);
     try {
         await mongoose.connect(env.dbUrl, {
             dbName: env.dbName,

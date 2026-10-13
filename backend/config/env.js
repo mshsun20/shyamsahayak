@@ -84,9 +84,9 @@ const dbName = nodeEnv === "production"
 : process.env.DB_NAME_DEV;
 
 const dbUrl = nodeEnv === "production"
-? process.env.ONLN_DBURL_PRD
+? `${process.env.ONLN_DBURL_PRD}${dbName}?authSource=admin`
 : nodeEnv === "quality"
-? process.env.ONLN_DBURL_QAS
+? `${process.env.ONLN_DBURL_QAS}${dbName}?authSource=admin`
 : `${process.env.ONLN_DBURL_DEV}${dbName}?authSource=admin`
 
 const jwtAccessSecret = process.env.JWT_ACCESS_SECRET;
