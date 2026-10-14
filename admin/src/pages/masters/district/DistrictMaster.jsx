@@ -63,7 +63,7 @@ export default function DistrictMaster() {
     setIsLoading(true);
     try {
       const [locationResponse, accountResponse] = await Promise.allSettled([
-        axiosInstance.get(`/locations`),
+        axiosInstance.get(`/location-mapping`),
         axiosInstance.get(`/accounts`),
       ]);
       if (locationResponse.status === "fulfilled") {
@@ -142,7 +142,7 @@ export default function DistrictMaster() {
     setDeleteTarget(null);
     setIsLoading(true);
     try {
-      await axiosInstance.delete(`/locations/${target._id}`);
+      await axiosInstance.delete(`/location-mapping/${target._id}`);
       dispatch(showSnackbar({ message: "Mapping deleted successfully", type: "success" }));
       await fetchData();
     } catch (error) {

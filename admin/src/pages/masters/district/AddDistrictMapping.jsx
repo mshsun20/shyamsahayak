@@ -73,7 +73,7 @@ export default function AddDistrictMapping() {
     try {
       const [accountResponse, mappingResponse] = await Promise.allSettled([
         axiosInstance.get(`/accounts`),
-        isEdit ? axiosInstance.get(`/locations/${id}`) : Promise.resolve(null),
+        isEdit ? axiosInstance.get(`/location-mapping/${id}`) : Promise.resolve(null),
       ]);
       [accountResponse, mappingResponse].forEach((result) => {
         if (result.status === "rejected") {
@@ -135,9 +135,9 @@ export default function AddDistrictMapping() {
 
     try {
       if (isEdit) {
-        await axiosInstance.patch(`/locations/${id}`, payload);
+        await axiosInstance.patch(`/location-mapping/${id}`, payload);
       } else {
-        await axiosInstance.post(`/locations`, payload);
+        await axiosInstance.post(`/location-mapping`, payload);
       }
       dispatch(showSnackbar({ message: isEdit ? "Mapping updated successfully" : "Mapping created successfully", type: "success" }));
       navigate("/district-master");
