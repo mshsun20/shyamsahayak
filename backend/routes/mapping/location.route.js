@@ -1,8 +1,8 @@
 import express from "express";
 const locationRouter = express.Router();
 import Location from "../../controllers/mapping/location.controller.js";
-import { unifiedAuthProtect } from "../middlewares/auth.middleware.js";
-import { requirePermission } from "../middlewares/permission.middleware.js";
+import { unifiedAuthProtect } from "../../middlewares/auth.middleware.js";
+import { requirePermission } from "../../middlewares/permission.middleware.js";
 
 locationRouter.use(unifiedAuthProtect);
 

@@ -31,6 +31,7 @@ const create = async (req, res) => {
         })
     }
 }
+const upload = async (req, res) => {}
 const read = async (req, res) => {}
 const readById = async (req, res) => {
     try {
@@ -117,5 +118,5 @@ const remove = async (req, res) => {
     }
 }
 
-const Location = { create, read, readById, readByUniqueKey, update, remove };
+const Location = { create, upload, read, readById, readByUniqueKey, update, remove };
 export default Location;
