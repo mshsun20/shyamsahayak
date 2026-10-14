@@ -28,6 +28,19 @@ const FabricatorTracker = React.lazy(() => import("../pages/field/FabricatorTrac
 const Profile = React.lazy(() => import("../pages/profile/Profile"));
 const Placeholder = React.lazy(() => import("../pages/shared/Placeholder"));
 
+const PrivilegeMaster = React.lazy(() => import("../pages/configuration/privilege/PrivilegeMaster"));
+const PrivilegeForm = React.lazy(() => import("../pages/configuration/privilege/PrivilegeForm"));
+const PrivilegeDetails = React.lazy(() => import("../pages/configuration/privilege/PrivilegeDetails"));
+const RoleMaster = React.lazy(() => import("../pages/configuration/role/RoleMaster"));
+const RoleForm = React.lazy(() => import("../pages/configuration/role/RoleForm"));
+const RoleDetails = React.lazy(() => import("../pages/configuration/role/RoleDetails"));
+const PermissionMaster = React.lazy(() => import("../pages/configuration/permission/PermissionMaster"));
+const PermissionForm = React.lazy(() => import("../pages/configuration/permission/PermissionForm"));
+const PermissionDetails = React.lazy(() => import("../pages/configuration/permission/PermissionDetails"));
+const ThicknessMaster = React.lazy(() => import("../pages/configuration/thickness/ThicknessMaster"));
+const ThicknessForm = React.lazy(() => import("../pages/configuration/thickness/ThicknessForm"));
+const ThicknessDetails = React.lazy(() => import("../pages/configuration/thickness/ThicknessDetails"));
+
 
 
 // export default function Router() {
@@ -130,6 +143,29 @@ const router = createBrowserRouter([
       // PROFILE
       // =========================
       { path: "profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
+      // =========================
+      // CONFIGURATION
+      // =========================
+      // Privilege Master
+      { path: "privilege-master", element: <ProtectedRoute><PrivilegeMaster /></ProtectedRoute> },
+      { path: "privilege-master/add", element: <ProtectedRoute><PrivilegeForm /></ProtectedRoute> },
+      { path: "privilege-master/edit/:id", element: <ProtectedRoute><PrivilegeForm /></ProtectedRoute> },
+      { path: "privilege-master/:id", element: <ProtectedRoute><PrivilegeDetails /></ProtectedRoute> },
+      // Role Master
+      { path: "role-master", element: <ProtectedRoute><RoleMaster /></ProtectedRoute> },
+      { path: "role-master/add", element: <ProtectedRoute><RoleForm /></ProtectedRoute> },
+      { path: "role-master/edit/:id", element: <ProtectedRoute><RoleForm /></ProtectedRoute> },
+      { path: "role-master/:id", element: <ProtectedRoute><RoleDetails /></ProtectedRoute> },
+      // Permission Master
+      { path: "permission-master", element: <ProtectedRoute><PermissionMaster /></ProtectedRoute> },
+      { path: "permission-master/add", element: <ProtectedRoute><PermissionForm /></ProtectedRoute> },
+      { path: "permission-master/edit/:id", element: <ProtectedRoute><PermissionForm /></ProtectedRoute> },
+      { path: "permission-master/:id", element: <ProtectedRoute><PermissionDetails /></ProtectedRoute> },
+      // Thickness Master
+      { path: "thickness-master", element: <ProtectedRoute><ThicknessMaster /></ProtectedRoute> },
+      { path: "thickness-master/add", element: <ProtectedRoute><ThicknessForm /></ProtectedRoute> },
+      { path: "thickness-master/edit/:id", element: <ProtectedRoute><ThicknessForm /></ProtectedRoute> },
+      { path: "thickness-master/:id", element: <ProtectedRoute><ThicknessDetails /></ProtectedRoute> },
     ],
   },
 

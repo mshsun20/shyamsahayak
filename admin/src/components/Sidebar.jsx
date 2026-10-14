@@ -16,6 +16,7 @@ import {
   Shield,
   ClipboardList,
   LogOut,
+  Settings,
 } from "lucide-react";
 import Logo from "./Logo";
 import { logout } from "../redux/slices/authSlice"
@@ -28,6 +29,11 @@ const navItemActive = "bg-primary-light text-primary";
 const subLinkClass = ({ isActive }) =>
   `flex items-center gap-2 px-2 py-2 rounded-md text-sm ${
     isActive ? "text-primary font-medium" : "text-gray-500 hover:text-gray-800"
+  }`;
+
+const configLinkClass = ({ isActive }) =>
+  `block px-4 py-2 rounded-lg text-sm ${
+    isActive ? "bg-primary-light text-primary font-medium" : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
   }`;
 
 function NavItem({ to, icon: Icon, label, end = false }) {
@@ -78,12 +84,15 @@ export default function Sidebar() {
     "/fabricator",
   ];
   const fieldVisitPaths = ["/retailer-profiler", "/fabricator"];
+  const configurationPaths = ["/privilege-master", "/role-master", "/permission-master", "/thickness-master"];
 
   const isContentActive =
     location.pathname === "/content" ||
     contentPaths.some((p) => location.pathname.startsWith(p));
   const isMasterDataActive = masterDataPaths.some((p) => location.pathname.startsWith(p));
 
+  const isConfigurationActive = configurationPaths.some((p) => location.pathname.startsWith(p));
+  const [configurationOpen, setConfigurationOpen] = useState(isConfigurationActive);
   const [contentOpen, setContentOpen] = useState(isContentActive);
   const [masterDataOpen, setMasterDataOpen] = useState(isMasterDataActive);
   const [fieldVisitOpen, setFieldVisitOpen] = useState(
@@ -195,6 +204,38 @@ export default function Sidebar() {
         </div>
 
         <NavItem to="/profile" icon={UserCircle} label="Profile" />
+
+        <div>
+          <button
+            onClick={() => setConfigurationOpen((v) => !v)}
+            className={`${navItemBase} ${isConfigurationActive ? "text-primary font-semibold hover:bg-gray-100" : navItemInactive} w-full justify-between`}
+          >
+            <span className="flex items-center gap-3">
+              <Settings size={18} />
+              Configuration
+            </span>
+            <ChevronDown
+              size={16}
+              className={`transition-transform ${configurationOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {configurationOpen && (
+            <div className="mt-1 space-y-1 pl-2">
+              <NavLink to="/privilege-master" className={configLinkClass}>
+                Privilege Master
+              </NavLink>
+              <NavLink to="/role-master" className={configLinkClass}>
+                Role Master
+              </NavLink>
+              <NavLink to="/permission-master" className={configLinkClass}>
+                Permission Master
+              </NavLink>
+              <NavLink to="/thickness-master" className={configLinkClass}>
+                Thickness Master
+              </NavLink>
+            </div>
+          )}
+        </div>
 
         <button
           onClick={handleLogout}

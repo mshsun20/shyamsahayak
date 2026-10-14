@@ -1,13 +1,28 @@
-import { useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ChevronRight, ArrowLeft, CheckCircle2, Map, Landmark, Factory, UserCircle2, Users, Home, ArrowLeftRight, } from "lucide-react";
+import {
+  ChevronRight,
+  ArrowLeft,
+  CheckCircle2,
+  Map,
+  Landmark,
+  Factory,
+  UserCircle2,
+  Users,
+  Home,
+  ArrowLeftRight,
+} from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
-// import { addMapping, updateMapping } from "../../../redux/store";
-import { states, districtsByState, fabricatorOptions, dgoOptions, tmOptions, dealerOptions, distributorOptions, } from "../../../data/masterData";
+import Loader from "../../../components/Loader";
+import axiosInstance from "../../../config/axiosInstance";
+import { showSnackbar } from "../../../redux/slices/snackbarSlice";
+import { states, districtsByState } from "../../../data/masterData";
 
 const emptyForm = {
+  code: "",
+  status: "Active",
   state: "",
   district: "",
   fabricator: "",
@@ -27,39 +42,116 @@ const previewSteps = [
   { key: "distributor", label: "DB (Distributor)", icon: ArrowLeftRight },
 ];
 
+// account role used to narrow each selector (all accounts are shown if none has that role)
+const accountRoles = { fabricator: "Fabricator", dgo: "DGO", tm: "TM", dealer: "Dealer", distributor: "Distributor" };
+const optionalAccounts = ["dgo", "tm", "dealer", "distributor"];
+
+// the API may return an Account as a populated object or just its id
+const refId = (value) => (value && typeof value === "object" ? value._id : value || "");
+
+// keep a saved value selectable even if it is not in the static list
+const withCurrent = (list, value) => (value && !list.includes(value) ? [...list, value] : list);
+
 export default function AddDistrictMapping() {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const mappings = [];
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [mapping, setMapping] = useState(null);
+  const [accounts, setAccounts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { register, handleSubmit, watch, reset, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, reset, setValue, formState: { errors, isSubmitting } } = useForm({
     defaultValues: emptyForm,
     mode: "onSubmit",
   });
 
   const values = watch();
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [accountResponse, mappingResponse] = await Promise.allSettled([
+        axiosInstance.get(`/accounts`),
+        isEdit ? axiosInstance.get(`/locations/${id}`) : Promise.resolve(null),
+      ]);
+      [accountResponse, mappingResponse].forEach((result) => {
+        if (result.status === "rejected") {
+          console.error(result.reason.message);
+          dispatch(showSnackbar({ message: result.reason.response?.data?.message || result.reason.message, type: "error" }));
+        }
+      });
+      if (accountResponse.status === "fulfilled") {
+        setAccounts(accountResponse.value?.data?.data?.accounts || []);
+      }
+      if (mappingResponse.status === "fulfilled") {
+        setMapping(mappingResponse.value?.data?.data || null);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id, isEdit, dispatch]);
   useEffect(() => {
-    if (isEdit) {
-      const existing = mappings.find((m) => String(m.id) === id);
-      if (existing) reset({ ...emptyForm, ...existing });
-    }
-  }, [id, isEdit, mappings, reset]);
+    fetchData();
+  }, [fetchData]);
 
-  const availableDistricts = values.state ? districtsByState[values.state] || [] : [];
-
-  const onSubmit = (data) => {
-    if (isEdit) {
-      // dispatch(updateMapping({ ...data, id: Number(id) }));
-    } else {
-      // dispatch(addMapping({ ...data, id: Date.now() }));
+  // runs again when the accounts arrive so the saved selections are applied to loaded options
+  useEffect(() => {
+    if (isEdit && mapping) {
+      reset({
+        code: mapping.code || "",
+        status: mapping.status || "Active",
+        state: mapping.state || "",
+        district: mapping.district || "",
+        fabricator: refId(mapping.fabricator),
+        dgo: refId(mapping.dgo),
+        tm: refId(mapping.tm),
+        dealer: refId(mapping.dealer),
+        distributor: refId(mapping.distributor),
+      });
     }
-    navigate("/district-master");
+  }, [isEdit, mapping, accounts, reset]);
+
+  const availableDistricts = withCurrent(values.state ? districtsByState[values.state] || [] : [], values.district);
+
+  const accountOptions = (key) => {
+    const sameRole = accounts.filter((a) => a.role?.name?.toLowerCase() === accountRoles[key].toLowerCase());
+    return sameRole.length ? sameRole : accounts;
   };
 
-  const allFilled = previewSteps.every((s) => Boolean(values[s.key]));
+  const onSubmit = async (data) => {
+    const payload = {
+      code: data.code.trim(),
+      state: data.state,
+      district: data.district,
+      fabricator: data.fabricator,
+      status: data.status,
+    };
+    optionalAccounts.forEach((key) => {
+      if (data[key]) payload[key] = data[key];
+      // clear a reference that was saved before; never send an empty id
+      else if (isEdit && refId(mapping?.[key])) payload[key] = null;
+    });
+
+    try {
+      if (isEdit) {
+        await axiosInstance.patch(`/locations/${id}`, payload);
+      } else {
+        await axiosInstance.post(`/locations`, payload);
+      }
+      dispatch(showSnackbar({ message: isEdit ? "Mapping updated successfully" : "Mapping created successfully", type: "success" }));
+      navigate("/district-master");
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    }
+  };
+
+  const requiredFilled = ["state", "district", "fabricator"].every((k) => Boolean(values[k]));
+
+  // preview shows account names, not ids
+  const previewValue = (key) =>
+    accountRoles[key] ? accounts.find((a) => a._id === values[key])?.fullName || "" : values[key];
 
   const selectClass = (field) =>
     `w-full text-sm border rounded-lg px-3 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30 ${
@@ -68,6 +160,7 @@ export default function AddDistrictMapping() {
 
   return (
     <AdminLayout title="Master Data">
+      {isLoading && <Loader />}
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1.5">
@@ -90,6 +183,32 @@ export default function AddDistrictMapping() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-4xl" noValidate>
+        {/* Details */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr_1fr_auto] gap-4 items-start">
+            <div>
+              <p className="text-sm font-semibold text-gray-800">Mapping Details</p>
+              <p className="text-xs text-gray-400 mt-1">Enter code and status</p>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Code *</label>
+              <input
+                {...register("code", { required: "Code is required.", validate: (v) => v.trim() !== "" || "Code is required." })}
+                placeholder="Enter mapping code"
+                className={selectClass("code")}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Status</label>
+              <select {...register("status")} className={selectClass("status")}>
+                <option>Active</option>
+                <option>Inactive</option>
+              </select>
+            </div>
+            <div />
+          </div>
+        </div>
+
         {/* Location */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr_1fr_auto] gap-4 items-start">
@@ -108,7 +227,7 @@ export default function AddDistrictMapping() {
                 className={selectClass("state")}
               >
                 <option value="">Select State</option>
-                {states.map((s) => (
+                {withCurrent(states, values.state).map((s) => (
                   <option key={s}>{s}</option>
                 ))}
               </select>
@@ -151,8 +270,8 @@ export default function AddDistrictMapping() {
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Fabricator *</label>
               <select {...register("fabricator", { required: "Fabricator is required." })} className={selectClass("fabricator")}>
                 <option value="">Select Fabricator</option>
-                {fabricatorOptions.map((f) => (
-                  <option key={f}>{f}</option>
+                {accountOptions("fabricator").map((a) => (
+                  <option key={a._id} value={a._id}>{a.fullName}</option>
                 ))}
               </select>
             </div>
@@ -176,20 +295,20 @@ export default function AddDistrictMapping() {
               <p className="text-xs text-gray-400 mt-1">Select DGO and TM under the fabricator</p>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">DGO *</label>
-              <select {...register("dgo", { required: "DGO is required." })} className={selectClass("dgo")}>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">DGO</label>
+              <select {...register("dgo")} className={selectClass("dgo")}>
                 <option value="">Select DGO</option>
-                {dgoOptions.map((d) => (
-                  <option key={d}>{d}</option>
+                {accountOptions("dgo").map((a) => (
+                  <option key={a._id} value={a._id}>{a.fullName}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">TM *</label>
-              <select {...register("tm", { required: "TM is required." })} className={selectClass("tm")}>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">TM</label>
+              <select {...register("tm")} className={selectClass("tm")}>
                 <option value="">Select TM</option>
-                {tmOptions.map((t) => (
-                  <option key={t}>{t}</option>
+                {accountOptions("tm").map((a) => (
+                  <option key={a._id} value={a._id}>{a.fullName}</option>
                 ))}
               </select>
             </div>
@@ -215,20 +334,20 @@ export default function AddDistrictMapping() {
               <p className="text-xs text-gray-400 mt-1">Select dealer and DB under the TM</p>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Dealer *</label>
-              <select {...register("dealer", { required: "Dealer is required." })} className={selectClass("dealer")}>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Dealer</label>
+              <select {...register("dealer")} className={selectClass("dealer")}>
                 <option value="">Select Dealer</option>
-                {dealerOptions.map((d) => (
-                  <option key={d}>{d}</option>
+                {accountOptions("dealer").map((a) => (
+                  <option key={a._id} value={a._id}>{a.fullName}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">DB (Distributor) *</label>
-              <select {...register("distributor", { required: "Distributor is required." })} className={selectClass("distributor")}>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">DB (Distributor)</label>
+              <select {...register("distributor")} className={selectClass("distributor")}>
                 <option value="">Select DB</option>
-                {distributorOptions.map((d) => (
-                  <option key={d}>{d}</option>
+                {accountOptions("distributor").map((a) => (
+                  <option key={a._id} value={a._id}>{a.fullName}</option>
                 ))}
               </select>
             </div>
@@ -253,7 +372,7 @@ export default function AddDistrictMapping() {
             Mapping Preview
           </p>
           <p className="text-xs text-gray-400 mt-1 mb-4">
-            {allFilled ? "Full mapping is ready to be saved." : "Please complete all selections to preview the full mapping."}
+            {requiredFilled ? "Mapping is ready to be saved." : "Please complete the required selections to preview the mapping."}
           </p>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-4">
             {previewSteps.map((step, i) => (
@@ -261,14 +380,14 @@ export default function AddDistrictMapping() {
                 <div className="flex flex-col items-center gap-1 w-24 text-center">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      values[step.key] ? "bg-primary text-white" : "bg-white text-gray-300 border border-gray-200"
+                      previewValue(step.key) ? "bg-primary text-white" : "bg-white text-gray-300 border border-gray-200"
                     }`}
                   >
                     <step.icon size={16} />
                   </div>
                   <span className="text-[11px] text-gray-500">{step.label}</span>
-                  {values[step.key] && (
-                    <span className="text-[11px] font-medium text-gray-700 truncate w-24">{values[step.key]}</span>
+                  {previewValue(step.key) && (
+                    <span className="text-[11px] font-medium text-gray-700 truncate w-24">{previewValue(step.key)}</span>
                   )}
                 </div>
                 {i < previewSteps.length - 1 && <ChevronRight size={14} className="text-gray-300 mb-4" />}
@@ -285,7 +404,11 @@ export default function AddDistrictMapping() {
           >
             Cancel
           </button>
-          <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark disabled:opacity-60"
+          >
             {isEdit ? "Save Changes" : "Save Mapping"}
           </button>
         </div>
