@@ -28,6 +28,7 @@ import productRouter from "./routes/product.route.js";
 import schemeRouter from "./routes/scheme.route.js";
 import knowledgeBaseRouter from "./routes/KnowledgeBase.route.js";
 import conversationRouter from "./routes/conversation.route.js";
+import locationRouter from "./routes/mapping/location.route.js";
 
 
 
@@ -82,6 +83,7 @@ app.use("/api/products", productRouter);
 app.use("/api/schemes", schemeRouter);
 app.use("/api/knowledge-bases", knowledgeBaseRouter);
 app.use("/api/conversations", conversationRouter);
+app.use("/api/location-mapping", locationRouter);
 
 // UI Static Serving
 if (['quality', 'production'].includes(env.nodeEnv)) {    

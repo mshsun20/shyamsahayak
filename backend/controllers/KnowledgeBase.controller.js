@@ -27,19 +27,15 @@ const create = async (req, res) => {
         const allFiles = req.files?.attachments || [];
         if (allFiles.length > 0) {
             const attachmentUploadReport = await uploadMultipleFiles(allFiles)
-            console.log(attachmentUploadReport);
+            // console.log(attachmentUploadReport);
             knowledgeBasePayload.attachments = attachmentUploadReport?.uploaded?.map((f) => f._id) || [];
         }
         const bannerFile = req.files?.banner?.[0] || null;
         if (bannerFile) {
             const bannerUploadReport = await uploadMultipleFiles([bannerFile])
-            console.log(bannerUploadReport);
+            // console.log(bannerUploadReport);
             knowledgeBasePayload.banner = bannerUploadReport?.uploaded?._id || null;
         }
-        // const attachmentUploadReport = allFiles.length ? await uploadMultipleFiles(allFiles) : null;
-        // const bannerUploadReport = bannerFile ? await uploadMultipleFiles([bannerFile]) : null;
-        // console.log(attachmentUploadReport);
-        // console.log(bannerUploadReport);
 
         const kbCode = codeGenerator(`${knowledgeBasePayload.category}${knowledgeBasePayload.title}`);
         const existingKnowledgeBase = await readByUniqueKeyFunction(String(kbCode).trim());
@@ -47,8 +43,6 @@ const create = async (req, res) => {
         
         Object.assign(knowledgeBasePayload, {
             code: kbCode,
-            // attachments: attachmentUploadReport?.uploaded?.map((f) => f._id) || [],
-            // banner: bannerUploadReport?.uploaded?._id || null,
             status: knowledgeBasePayload.status || "Draft",
             createdBy: user?._id || null,
         })
@@ -60,7 +54,7 @@ const create = async (req, res) => {
             data: knowledgeBase
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -72,7 +66,6 @@ const upload = async (req, res) => {
         const knowledgeBaseDataSheet = req.body?.knowledgeBases || [];
         const user = req.user || null;
         knowledgeBaseDataSheet?.forEach(async (knowledgeBase, i) => {
-            // const tags = String(knowledgeBase.tags || "").split(",").map((t) => String(t || "").trim()).filter((t) => t.length > 0);
             const existingKnowledgeBase = await readByUniqueKeyFunction(String(knowledgeBase.code).trim());
             if (existingKnowledgeBase) {
                 Object.assign(knowledgeBase, {
@@ -82,7 +75,6 @@ const upload = async (req, res) => {
                 })
                 const { code, title, category, ...newPayload } = knowledgeBase;
                 const updatedUpload = await updateFunction(existingKnowledgeBase?._id, newPayload);
-                // console.log(updatedUpload);
                 knowledgeBaseDataSheet[i].uploadReport = updatedUpload;
             }
             else {
@@ -103,7 +95,7 @@ const upload = async (req, res) => {
             })
         }
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -119,7 +111,7 @@ const read = async (req, res) => {
             data: knowledgeBases
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -136,7 +128,7 @@ const readById = async (req, res) => {
             data: knowledgeBaseDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -153,7 +145,7 @@ const readByUniqueKey = async (req, res) => {
             data: knowledgeBaseDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -168,13 +160,13 @@ const update = async (req, res) => {
         const allFiles = req.files?.attachments || [];
         if (allFiles.length > 0) {
             const attachmentUploadReport = await uploadMultipleFiles(allFiles)
-            console.log(attachmentUploadReport);
+            // console.log(attachmentUploadReport);
             knowledgeBasePayload.attachments = attachmentUploadReport?.uploaded?.map((f) => f._id) || [];
         }
         const bannerFile = req.files?.banner?.[0] || null;
         if (bannerFile !== null) {
             const bannerUploadReport = await uploadMultipleFiles([bannerFile])
-            console.log(bannerUploadReport);
+            // console.log(bannerUploadReport);
             knowledgeBasePayload.banner = bannerUploadReport?.uploaded?._id || null;
         }
 
@@ -186,8 +178,6 @@ const update = async (req, res) => {
             delete knowledgeBasePayload[key]
         }
         Object.assign(knowledgeBasePayload, {
-            // attachments: attachmentUploadReport?.uploaded?.map((f) => f._id) || [],
-            // banner: bannerUploadReport?.uploaded?._id || null,
             status: knowledgeBasePayload.status || "Draft",
             createdBy: user?._id || null,
         })
@@ -199,7 +189,7 @@ const update = async (req, res) => {
             data: updatedKnowledgeBase
         })
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -220,7 +210,7 @@ const remove = async (req, res) => {
             data: removalDetails
         })
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,

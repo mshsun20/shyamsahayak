@@ -59,7 +59,7 @@ export const basicAuth = async (req, res, next) => {
                 select: "code name module action status",
             },
         ])
-        .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+        .populate({ path: "reportingManagers", select: "-password -passwordBackup" })
         .populate({ path: "createdBy", select: "-password -passwordBackup" })
         .populate({ path: "updatedBy", select: "-password -passwordBackup" })
         .lean();
@@ -121,7 +121,7 @@ export const jwtHybridProtect = async (req, res, next) => {
                     select: "code name module action status",
                 },
             ])
-            .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+            .populate({ path: "reportingManagers", select: "-password -passwordBackup" })
             .populate({ path: "createdBy", select: "-password -passwordBackup" })
             .populate({ path: "updatedBy", select: "-password -passwordBackup" })
             .lean();

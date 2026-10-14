@@ -28,7 +28,7 @@ const create = async (req, res) => {
             data: privilege
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -44,7 +44,7 @@ const read = async (req, res) => {
             data: privileges
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -61,7 +61,7 @@ const readById = async (req, res) => {
             data: privilegeDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -78,7 +78,7 @@ const readByUniqueKey = async (req, res) => {
             data: privilegeDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -109,7 +109,7 @@ const update = async (req, res) => {
             data: updatedPrivilege
         })
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -130,7 +130,7 @@ const remove = async (req, res) => {
             data: removalDetails
         })
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,

@@ -6,13 +6,116 @@ import {
     updateFunction,
     deleteFunction
 } from "../../services/mapping/location.service.js";
+import { mapValidObjectId } from "../../utils/objectValidation.util.js";
 
-const create = async (req, res) => {}
+const create = async (req, res) => {
+    try {
+        const payload = req.body;
+        const existingData = await readByUniqueKeyFunction(payload?.code);
+        if (existingData) {
+            return res.status(409).json({ success: false, message: "Location mapping already exist", data: existingData });
+        }
+
+        const data = await createFunction(payload);
+        if (data) {
+            return res.status(201).json({ success: true, message: "Location mapping created successfully", data: data });
+        }
+        else {
+            return res.status(401).json({ success: false, message: "Location mapping failed" });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
 const read = async (req, res) => {}
-const readById = async (req, res) => {}
-const readByUniqueKey = async (req, res) => {}
-const update = async (req, res) => {}
-const remove = async (req, res) => {}
+const readById = async (req, res) => {
+    try {
+        const id = mapValidObjectId(req.params.id)
+        const data = await readByIdFunction(id);
+        res.status(200).json({
+            success: true,
+            message: "Location mapping details fetched successfully",
+            data: data
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+const readByUniqueKey = async (req, res) => {
+    try {
+        const uniqueKey = String(req.params.key || "").trim();
+        const data = await readByUniqueKeyFunction(uniqueKey);
+        res.status(200).json({
+            success: true,
+            message: "Location mapping details fetched successfully",
+            data: data
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+const update = async (req, res) => {
+    try {
+        const id = mapValidObjectId(req.params.id);
+        const payload = req.body;
+        const user = req.user || null;
+        const existingData = await readByIdFunction(id);
+        if (!existingData) return res.status(404).json({ success: true, message: "Location mapping doesn't exist" });
+        const items = ["_id", "code"];
+        for (const key of items) {
+            delete payload[key];
+        }
+        Object.assign(payload, {
+            update: user?._id || null,
+            status: "Active",
+        })
+        const updatedData = await updateFunction(id, payload);
+        if (!updatedData) return res.status(401).json({ success: false, message: "Location mapping update failed." });
+        return res.status(201).json({
+            success: true,
+            message: "Location mapping updated successfully",
+            data: updatedData
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+const remove = async (req, res) => {
+    try {
+        const id = mapValidObjectId(req.params.id);
+        const existingData = await readByIdFunction(id);
+        if (!existingData) return res.status(404).json({ success: true, message: "Location mapping doesn't exist" });
+        const removedData = await deleteFunction(id);
+        if (!removedData) return res.status(400).json({ success: false, message: "Location mapping removal failed" });
+        return res.status(200).json({
+            success: true,
+            message: "Location mapping removed successfully",
+            data: removedData
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
 
 const Location = { create, read, readById, readByUniqueKey, update, remove };
 export default Location;

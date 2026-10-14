@@ -22,10 +22,9 @@ const create = async (req, res) => {
         const schemePayload = req.body;
         const user = req.user || null;
         const file = req.file || null;
-        console.log(file);
         if (file && file?.size > 0) {
             const uploadReport = await uploadSingleFile(file)
-            console.log(uploadReport);
+            // console.log(uploadReport);
             schemePayload.banner = uploadReport?.uploaded?._id || null;
         }
 
@@ -46,7 +45,7 @@ const create = async (req, res) => {
             data: scheme
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -86,7 +85,7 @@ const upload = async (req, res) => {
             })
         }
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -102,7 +101,7 @@ const read = async (req, res) => {
             data: schemes
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -119,7 +118,7 @@ const readById = async (req, res) => {
             data: schemeDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -136,7 +135,7 @@ const readByUniqueKey = async (req, res) => {
             data: schemeDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -149,10 +148,9 @@ const update = async (req, res) => {
         const schemePayload = req.body;
         const user = req.user || null;
         const file = req.file || null;
-        console.log(file);
         if (file && file?.size > 0) {
             const uploadReport = await uploadSingleFile(file)
-            console.log(uploadReport);
+            // console.log(uploadReport);
             schemePayload.banner = uploadReport?.uploaded?._id || null;
         }
 
@@ -175,7 +173,7 @@ const update = async (req, res) => {
             data: updatedScheme
         })
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -196,7 +194,7 @@ const remove = async (req, res) => {
             data: removalDetails
         })
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,

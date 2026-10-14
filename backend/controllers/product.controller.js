@@ -38,7 +38,7 @@ const create = async (req, res) => {
             data: product
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -48,25 +48,20 @@ const create = async (req, res) => {
 const upload = async (req, res) => {
     try {
         const productDataSheet = req.body || [];
-        // console.log(productDataSheet);
         const user = req.user || null;
         productDataSheet?.forEach(async (product, i) => {
-            // const tags = String(product.tags || "").split(",").map((t) => String(t || "").trim()).filter((t) => t.length > 0);
             const existingProduct = await readByUniqueKeyFunction(String(product.code).trim());
             if (existingProduct) {
                 Object.assign(product, {
-                    // tags: tags,
                     status: product.status || "Draft",
                     updatedBy: user?._id || null,
                 })
                 const { code, ...newPayload } = product;
                 const updatedUpload = await updateFunction(existingProduct?._id, newPayload);
-                // console.log(updatedUpload);
                 productDataSheet[i].uploadReport = updatedUpload;
             }
             else {
                 Object.assign(product, {
-                    // tags: tags,
                     status: product.status || "Draft",
                     createdBy: user?._id || null,
                 })
@@ -82,7 +77,7 @@ const upload = async (req, res) => {
             })
         }
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -98,7 +93,7 @@ const read = async (req, res) => {
             data: products
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -115,7 +110,7 @@ const readById = async (req, res) => {
             data: productDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -132,7 +127,7 @@ const readByUniqueKey = async (req, res) => {
             data: productDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -145,10 +140,9 @@ const update = async (req, res) => {
         const productPayload = req.body;
         const user = req.user || null;
         const file = req.file || null;
-        console.log(file);
         if (file && file?.size > 0) {
             const uploadReport = await uploadSingleFile(file)
-            console.log(uploadReport);
+            // console.log(uploadReport);
             productPayload.image = uploadReport?.uploaded?._id || null;
         }
         
@@ -171,7 +165,7 @@ const update = async (req, res) => {
             data: updatedProduct
         })
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -192,7 +186,7 @@ const remove = async (req, res) => {
             data: removalDetails
         })
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,

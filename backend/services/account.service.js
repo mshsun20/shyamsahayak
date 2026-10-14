@@ -31,7 +31,7 @@ export const readFunction = async (filter={}, { page=1, limit=0 }={}) => {
                 select: "code name module action status",
             },
         ])
-        .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+        .populate({ path: "reportingManagers", select: "-password -passwordBackup" })
         .populate({ path: "createdBy", select: "-password -passwordBackup" })
         .populate({ path: "updatedBy", select: "-password -passwordBackup" })
         .skip(skip)
@@ -65,7 +65,7 @@ export const readByIdFunction = async (id) => {
             select: "code name module action status",
         },
     ])
-    .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+    .populate({ path: "reportingManagers", select: "-password -passwordBackup" })
     .populate({ path: "createdBy", select: "-password -passwordBackup" })
     .populate({ path: "updatedBy", select: "-password -passwordBackup" })
     .lean();
@@ -94,7 +94,7 @@ export const readByUniqueKeyFunction = async (uniqueKey) => {
             select: "code name module action status",
         },
     ])
-    .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+    .populate({ path: "reportingManagers", select: "-password -passwordBackup" })
     .populate({ path: "createdBy", select: "-password -passwordBackup" })
     .populate({ path: "updatedBy", select: "-password -passwordBackup" })
     .lean();

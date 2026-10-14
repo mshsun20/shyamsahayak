@@ -49,7 +49,7 @@ const create = async (req, res) => {
             data: account
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -96,7 +96,7 @@ const upload = async (req, res) => {
             })
         }
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -129,7 +129,7 @@ const read = async (req, res) => {
             data: accounts
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -146,7 +146,7 @@ const readById = async (req, res) => {
             data: accountDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -155,15 +155,15 @@ const readById = async (req, res) => {
 }
 const readByUniqueKey = async (req, res) => {
     try {
-        const uniqueKey = String(req.params.key || "").trim();
         const accountDetails = await readByUniqueKeyFunction(uniqueKey);
+        const uniqueKey = String(req.params.key || "").trim();
         res.status(200).json({
             success: true,
             message: "Account details fetched successfully",
             data: accountDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -194,7 +194,7 @@ const update = async (req, res) => {
             data: updatedAccount
         })
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,
@@ -215,7 +215,7 @@ const remove = async (req, res) => {
             data: removalDetails
         })
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({
             success: false,
             message: error.message,

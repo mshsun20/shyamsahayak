@@ -31,7 +31,7 @@ const login = async (req, res) => {
             data: verifiedData.accountDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({ success: false, message: error.message });
     }
 };
@@ -46,7 +46,7 @@ const checkAuth = async (req, res) => {
             data: accountDetails
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({ success: false, message: error.message });
     }
 };
@@ -64,7 +64,7 @@ const regenerateAccessToken = async (req, res) => {
             data: newAccessToken
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({ success: false, message: error.message });
     }
 };
@@ -80,7 +80,7 @@ const logout = async (req, res) => {
             message: 'Logout successful'
         });
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({ success: false, message: error.message });
     }
 };
@@ -120,7 +120,7 @@ const changePassword = async (req, res) => {
             throw new Error('Wrong password provided');
         }
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         res.status(400).json({ success: false, message: error.message });
     }
 }
