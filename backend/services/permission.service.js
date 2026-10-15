@@ -1,33 +1,17 @@
 import Permission from "../models/permission.model.js";
 
+const generateCode = (payload) => {
+    const normalizedModule = String(payload?.module || "")?.trim()?.toLowerCase();
+    const normalizedAction = String(payload?.action || "")?.trim()?.toLowerCase();
+    return `${normalizedModule}:${normalizedAction}`;
+}
+
 export const createFunction = async (payload, userId = null) => {
-    const {
-        code,
-        name,
-        description = "",
-        module,
-        action,
-        status = "Active",
-    } = payload;
-    const normalizedCode = String(payload?.code)?.trim().toLowerCase();
-
-    const existingPermission = await Permission.findOne({ code: normalizedCode });
-    if (existingPermission) {
-        throw new Error("Permission code already exists");
-    }
-
-    Object.assign(payload, {})
-
-    const permission = await Permission.create({
-        code: normalizedCode,
-        name,
-        description,
-        module,
-        action,
-        status,
-        createdBy: userId,
-        updatedBy: userId,
-    });
+    const code = generateCode(payload);
+    const existingPermission = await Permission.findOne({ code });
+    if (existingPermission) throw new Error("Permission code already exists");
+    Object.assign(payload, { code, status: "Active", createdBy: userId })
+    const permission = await Permission.create(payload);
     return permission;
 };
 
@@ -35,7 +19,7 @@ export const readFunction = async (filter = {}) => {
     return Permission.find(filter)
         .populate("createdBy", "userId fullName username")
         .populate("updatedBy", "userId fullName username")
-        .sort({ module: 1, action: 1 })
+        .sort({ code: 1, module: 1, action: 1 })
         .lean();
 };
 
@@ -46,16 +30,10 @@ export const readFunctionById = async (id) => {
         .lean();
 };
 
-export const updateFunction = async (
-    id,
-    payload,
-    userId = null
-) => {
+export const updateFunction = async (id, payload, userId = null) => {
     const allowedFields = [
         "name",
         "description",
-        "module",
-        "action",
         "status",
     ];
     const updateData = {};

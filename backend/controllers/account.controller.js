@@ -6,13 +6,10 @@ import {
     updateFunction,
     deleteFunction
 } from "../services/account.service.js";
-import {
-    readByIdFunction as readPrivilegeById
-} from "../services/privilege.service.js";
+import { assignAccountPermissions } from "../services/permissionAssignment.service.js";
+import { readByIdFunction as readPrivilegeById } from "../services/privilege.service.js";
 import { mapValidObjectId } from "../utils/objectValidation.util.js";
-import {
-    hashPassword
-} from "../utils/passwordHash.util.js";
+import { hashPassword } from "../utils/passwordHash.util.js";
 
 // reusable functions
 const uniqueIdGen = async (payload) => {
@@ -222,6 +219,32 @@ const remove = async (req, res) => {
         });
     }
 }
+const assignPermissions = async (req, res) => {
+    try {
+        const id = mapValidObjectId(req.params.id);
+        const { permissions = [] } = req.body;
 
-const Account = { create, upload, read, readById, readByUniqueKey, update, remove };
+        if (!Array.isArray(permissions)) {
+            return res.status(400).json({
+                success: false,
+                message: "permissions must be an array",
+            });
+        }
+
+        const account = await assignAccountPermissions(id, permissions);
+        return res.status(200).json({
+            success: true,
+            message: "Account permissions updated successfully",
+            data: account,
+        });
+    } catch (error) {
+        console.error("Assign account permissions error:", error);
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Internal server error",
+        });
+    }
+}
+
+const Account = { create, upload, read, readById, readByUniqueKey, update, remove, assignPermissions };
 export default Account;

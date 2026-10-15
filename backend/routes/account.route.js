@@ -13,5 +13,6 @@ accountRouter.get("/unique/:key", requirePermission("account:read"), Account.rea
 accountRouter.get("/:id", requirePermission("account:read"), Account.readById);
 accountRouter.patch("/:id", requirePermission("account:update"), Account.update);
 accountRouter.delete("/:id", requirePermission("account:delete"), Account.remove);
+accountRouter.put("/:id/permissions", requirePermission("account:update"), Account.assignPermissions);
 
 export default accountRouter;

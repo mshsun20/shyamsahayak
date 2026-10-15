@@ -8,6 +8,8 @@ import {
 
 const create = async (req, res) => {
     try {
+        const payload = req.body;
+        const user = req.auth?.userId || null
         const permission = await createFunction(
             req.body,
             req.auth?.userId || null
