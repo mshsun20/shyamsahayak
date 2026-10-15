@@ -73,7 +73,11 @@ export default function PermissionForm() {
       const permission = response?.data?.data;
       if (permission) {
         if (permission.module) {
-          setModuleOptions((prev) => (prev.includes(permission.module) ? prev : [...prev, permission.module]));
+          setModuleOptions((prev) =>
+            prev.some((m) => m.value === permission.module)
+              ? prev
+              : [...prev, { label: permission.module, value: permission.module }]
+          );
         }
         if (permission.action) {
           setActionOptions((prev) => (prev.includes(permission.action) ? prev : [...prev, permission.action]));
@@ -181,8 +185,8 @@ export default function PermissionForm() {
                 Select module
               </option>
               {moduleOptions.map((m) => (
-                <option key={m} value={m} className="text-gray-800">
-                  {m}
+                <option key={m.value} value={m.value} className="text-gray-800">
+                  {m.label}
                 </option>
               ))}
             </select>

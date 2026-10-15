@@ -12,7 +12,7 @@ const DESCRIPTION_MAX = 250;
 
 const emptyForm = {
   name: "",
-  hierarchy: "",
+  heirarchy: "",
   sameLevel: false,
   description: "",
   permissions: [],
@@ -180,7 +180,7 @@ export default function PrivilegeForm() {
         reset({
           ...emptyForm,
           name: privilege.name ?? "",
-          hierarchy: privilege.hierarchy ?? "",
+          heirarchy: privilege.heirarchy ?? "",
           sameLevel: Boolean(privilege.sameLevel),
           description: privilege.description ?? "",
           permissions: permissionIds,
@@ -208,18 +208,19 @@ export default function PrivilegeForm() {
   const onSubmit = async (data) => {
     const payload = {
       name: data.name.trim(),
-      hierarchy: Number(data.hierarchy),
+      heirarchy: Number(data.heirarchy),
       sameLevel: Boolean(data.sameLevel),
       description: data.description?.trim() || "",
-      permissions: data.permissions || [],
       status: data.status,
     };
 
     try {
       if (isEdit) {
         await axiosInstance.patch(`/privileges/${id}`, payload);
+        // permissions are assigned through their own endpoint
+        await axiosInstance.put(`/privileges/${id}/permissions`, { permissions: data.permissions || [] });
       } else {
-        await axiosInstance.post(`/privileges`, payload);
+        await axiosInstance.post(`/privileges`, { ...payload, permissions: data.permissions || [] });
       }
       dispatch(
         showSnackbar({
@@ -281,14 +282,14 @@ export default function PrivilegeForm() {
                 min={1}
                 step={1}
                 placeholder="Enter hierarchy level"
-                {...register("hierarchy", {
+                {...register("heirarchy", {
                   required: "Hierarchy is required.",
                   min: { value: 1, message: "Hierarchy must be 1 or more." },
                   validate: (v) => Number.isInteger(Number(v)) || "Hierarchy must be a whole number.",
                 })}
-                className={`${inputClass("hierarchy")} max-w-[260px]`}
+                className={`${inputClass("heirarchy")} max-w-[260px]`}
               />
-              {errors.hierarchy && <p className="text-xs text-danger mt-1">{errors.hierarchy.message}</p>}
+              {errors.heirarchy && <p className="text-xs text-danger mt-1">{errors.heirarchy.message}</p>}
             </FieldRow>
 
             <FieldRow label="Same Level" required alignTop>

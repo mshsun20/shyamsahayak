@@ -99,7 +99,7 @@ export default function PrivilegeDetails() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-5 px-7 py-6">
               <div className="space-y-5">
                 <InfoRow label="Name">{privilege.name}</InfoRow>
-                <InfoRow label="Hierarchy">{privilege.hierarchy}</InfoRow>
+                <InfoRow label="Hierarchy">{privilege.heirarchy}</InfoRow>
                 <InfoRow label="Same Level">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
                     {privilege.sameLevel ? "Yes" : "No"}

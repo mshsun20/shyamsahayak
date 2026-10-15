@@ -227,7 +227,6 @@ export default function RoleForm() {
       name: data.name.trim(),
       level: Number(data.level),
       description: data.description?.trim() || "",
-      permissions: data.permissions || [],
       status: data.status,
     };
     // role code is fixed once created
@@ -236,8 +235,10 @@ export default function RoleForm() {
     try {
       if (isEdit) {
         await axiosInstance.patch(`/roles/${id}`, payload);
+        // permissions are assigned through their own endpoint
+        await axiosInstance.put(`/roles/${id}/permissions`, { permissions: data.permissions || [] });
       } else {
-        await axiosInstance.post(`/roles`, payload);
+        await axiosInstance.post(`/roles`, { ...payload, permissions: data.permissions || [] });
       }
       dispatch(
         showSnackbar({

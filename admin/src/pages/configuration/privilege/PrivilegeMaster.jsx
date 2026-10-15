@@ -2,8 +2,9 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Eye, Pencil, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Plus, Eye, Pencil, Trash2, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
+import Modal from "../../../components/Modal";
 import Loader from "../../../components/Loader";
 import axiosInstance from "../../../config/axiosInstance";
 import { showSnackbar } from "../../../redux/slices/snackbarSlice";
@@ -13,7 +14,7 @@ const filterDefaults = { search: "" };
 
 const columns = [
   { key: "name", label: "Name" },
-  { key: "hierarchy", label: "Hierarchy" },
+  { key: "heirarchy", label: "Hierarchy" },
   { key: "description", label: "Description" },
   { key: "status", label: "Status" },
   { key: "createdAt", label: "Created On" },
@@ -31,7 +32,8 @@ function SortIcon({ active, dir }) {
 export default function PrivilegeMaster() {
   const [privileges, setPrivileges] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [sort, setSort] = useState({ key: "hierarchy", dir: "asc" });
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [sort, setSort] = useState({ key: "heirarchy", dir: "asc" });
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -55,6 +57,19 @@ export default function PrivilegeMaster() {
     fetchData();
   }, [fetchData]);
 
+  const confirmDelete = async () => {
+    try {
+      await axiosInstance.delete(`/privileges/${deleteTarget._id}`);
+      dispatch(showSnackbar({ message: "Privilege deleted successfully", type: "success" }));
+      setDeleteTarget(null);
+      await fetchData();
+    } catch (error) {
+      console.error(error.message);
+      setDeleteTarget(null);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+    }
+  };
+
   const filteredPrivileges = useMemo(() => {
     const q = search.trim().toLowerCase();
     const list = privileges.filter(
@@ -65,7 +80,7 @@ export default function PrivilegeMaster() {
     return [...list].sort((a, b) => {
       let av = a[key];
       let bv = b[key];
-      if (key === "hierarchy") {
+      if (key === "heirarchy") {
         av = Number(av) || 0;
         bv = Number(bv) || 0;
       } else if (key === "createdAt") {
@@ -145,7 +160,7 @@ export default function PrivilegeMaster() {
                 <tr key={privilege._id} className="hover:bg-gray-50">
                   <td className="px-4 py-3.5 text-gray-600">{index + 1}</td>
                   <td className="px-4 py-3.5 text-gray-800">{privilege.name}</td>
-                  <td className="px-4 py-3.5 text-gray-600">{privilege.hierarchy}</td>
+                  <td className="px-4 py-3.5 text-gray-600">{privilege.heirarchy}</td>
                   <td className="px-4 py-3.5 text-gray-600">{privilege.description || "-"}</td>
                   <td className="px-4 py-3.5">
                     <PrivilegeStatusBadge status={privilege.status} />
@@ -167,6 +182,13 @@ export default function PrivilegeMaster() {
                       >
                         <Pencil size={15} />
                       </button>
+                      <button
+                        onClick={() => setDeleteTarget(privilege)}
+                        title="Delete"
+                        className="p-1.5 text-gray-500 hover:text-danger hover:bg-red-50 rounded-md"
+                      >
+                        <Trash2 size={15} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -186,6 +208,33 @@ export default function PrivilegeMaster() {
           Showing {filteredPrivileges.length} of {privileges.length} privileges
         </div>
       </div>
+
+      {deleteTarget && (
+        <Modal
+          title="Delete Privilege"
+          onClose={() => setDeleteTarget(null)}
+          footer={
+            <>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </>
+          }
+        >
+          <p className="text-sm text-gray-600">
+            Are you sure you want to delete <span className="font-semibold text-gray-800">{deleteTarget.name}</span>? This action cannot be undone.
+          </p>
+        </Modal>
+      )}
     </AdminLayout>
   );
 }
