@@ -32,7 +32,39 @@ const create = async (req, res) => {
     }
 }
 const upload = async (req, res) => {}
-const read = async (req, res) => {}
+const read = async (req, res) => {
+    try {
+        const search = String(req.query.search || "").trim();
+        const status = String(req.query.status || "").trim();
+        const filter = {}
+        if (search !== "") {
+            filter.$or = [
+                { userId: { $regex: search, $options: "i" } },
+                { fullName: { $regex: search, $options: "i" } },
+                { email: { $regex: search, $options: "i" } },
+                { phone: { $regex: search, $options: "i" } },
+                { username: { $regex: search, $options: "i" } },
+                { employeeId: { $regex: search, $options: "i" } },
+            ]
+        }
+        if (status !== "") {
+            filter.status = { $regex: `^${status}$`, $options: "i" };
+        }
+
+        const data = await readFunction(filter);
+        res.status(200).json({
+            success: true,
+            message: "All Location mapping details fetched successfully",
+            data: data
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
 const readById = async (req, res) => {
     try {
         const id = mapValidObjectId(req.params.id)

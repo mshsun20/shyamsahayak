@@ -4,7 +4,7 @@ const { Schema, model, Types } = mongoose
 const KnowledgeBaseSchema = new Schema({
     code: { type: String, required: true, trim: true },
     title: { type: String, required: true, trim: true },
-    category: { type: String, required: true, trim: true },
+    category: { type: String, required: true, enum:["Products", "Installation", "Warranty", "Videos"], trim: true },
     shortDescription: { type: String, trim: true },
     content: { type: String, trim: true },
     author: { type: Types.ObjectId, ref: "Account" },
