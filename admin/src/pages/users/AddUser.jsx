@@ -1,5 +1,5 @@
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Eye, EyeOff, ChevronRight, Plus } from "lucide-react";
@@ -7,6 +7,8 @@ import AdminLayout from "../../layouts/AdminLayout";
 // import { addUser, updateUser } from "../../redux/store";
 import { reportingManagers, territories, districts } from "../../data/users";
 import axiosInstance from "../../config/axiosInstance";
+import { showSnackbar } from "../../redux/slices/snackbarSlice";
+import PermissionTable from "../configuration/PermissionTable";
 
 const emptyForm = {
   fullName: "",
@@ -23,6 +25,7 @@ const emptyForm = {
   confirmPassword: "",
   mustChangePassword: false,
   remarks: "",
+  permissions: [],
 };
 
 const AddUser = () => {
@@ -32,6 +35,7 @@ const AddUser = () => {
   const [user, setUser] = React.useState(null);
   const [accounts, setAccounts] = React.useState([]);
   const [roles, setRoles] = React.useState([]);
+  const [permissionOptions, setPermissionOptions] = React.useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -40,10 +44,19 @@ const AddUser = () => {
 
   const fetchAllMasters = React.useCallback(async () => {
     try {
-      const [accountResponse, roleResponse] = await Promise.allSettled([
+      const [accountResponse, roleResponse, permissionResponse] = await Promise.allSettled([
         axiosInstance.get(`/accounts`).then(res => res.data.data?.accounts),
         axiosInstance.get(`/roles`).then(res => res.data.data),
+        axiosInstance.get(`/permissions`).then(res => res.data.data),
       ])
+      if (permissionResponse.status === "fulfilled") {
+        const list = Array.isArray(permissionResponse.value) ? permissionResponse.value : permissionResponse.value?.permissions || [];
+        const active = list.filter((p) => !p.status || p.status === "Active");
+        setPermissionOptions((prev) => {
+          const ids = new Set(active.map((p) => p._id));
+          return [...active, ...prev.filter((p) => !ids.has(p._id))];
+        });
+      }
 
       // console.log(accountResponse);
       // console.log(roleResponse);
@@ -74,7 +87,8 @@ const AddUser = () => {
     handleSubmit,
     watch,
     reset,
-    formState: { errors },
+    control,
+    formState: { errors, isSubmitting },
   } = useForm({ defaultValues: emptyForm, mode: "onSubmit" });
 
   const passwordValue = watch("password");
@@ -100,9 +114,18 @@ const AddUser = () => {
   React.useEffect(() => {
     if (isEdit) {
       if (user !== null) {
+        const assigned = user.permissions || [];
+        const populated = assigned.filter((p) => typeof p === "object");
+        if (populated.length) {
+          setPermissionOptions((prev) => {
+            const ids = new Set(prev.map((p) => p._id));
+            return [...prev, ...populated.filter((p) => !ids.has(p._id))];
+          });
+        }
         reset({
           ...emptyForm,
           ...user,
+          permissions: assigned.map((p) => (typeof p === "object" ? p._id : p)),
           password: "",
           confirmPassword: "",
           mustChangePassword: false,
@@ -111,7 +134,19 @@ const AddUser = () => {
     }
   }, [id, isEdit, user, reset]);
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
+    // Only permission assignment is wired up; account create/update is not integrated yet.
+    if (isEdit) {
+      try {
+        await axiosInstance.put(`/accounts/${id}/permissions`, { permissions: data.permissions || [] });
+        dispatch(showSnackbar({ message: "Permissions updated successfully", type: "success" }));
+        navigate("/users");
+      } catch (error) {
+        console.error(error.message);
+        dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+      }
+      return;
+    }
     // const manager = reportingManagers.find((m) => m.id === data.reportingManagerId);
     // const payload = {
     //   ...data,
@@ -166,9 +201,10 @@ const AddUser = () => {
           <button
             type="submit"
             form="user-form"
-            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark"
+            disabled={isSubmitting}
+            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark disabled:opacity-60"
           >
-            Save
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -323,6 +359,19 @@ const AddUser = () => {
               User must change password on next login
             </label>
           </div>
+        </div>
+
+        {/* Permissions */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <p className="text-sm font-semibold text-gray-800">{isEdit ? "Assigned Permissions" : "Assign Permissions"}</p>
+          <p className="text-xs text-gray-500 mt-0.5 mb-4">Select one or more permissions from Permission Master.</p>
+          <Controller
+            name="permissions"
+            control={control}
+            render={({ field }) => (
+              <PermissionTable options={permissionOptions} value={field.value} onChange={field.onChange} />
+            )}
+          />
         </div>
 
         {/* Additional Information */}

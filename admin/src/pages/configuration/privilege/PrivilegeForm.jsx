@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ChevronRight, ChevronDown, X, Search, Check } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import AdminLayout from "../../../layouts/AdminLayout";
 import Loader from "../../../components/Loader";
 import axiosInstance from "../../../config/axiosInstance";
 import { showSnackbar } from "../../../redux/slices/snackbarSlice";
+import PermissionTable from "../PermissionTable";
 
 const DESCRIPTION_MAX = 250;
 
@@ -18,106 +19,6 @@ const emptyForm = {
   permissions: [],
   status: "Active",
 };
-
-// Multi-select dropdown for permissions coming from Permission Master.
-// `value` is an array of permission ids.
-function PermissionSelect({ options, value = [], onChange }) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-
-  const selectedOptions = useMemo(
-    () => value.map((id) => options.find((o) => o._id === id) || { _id: id, name: id }),
-    [options, value]
-  );
-
-  const visibleOptions = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return options.filter((o) => !q || o.name?.toLowerCase().includes(q));
-  }, [options, query]);
-
-  const toggle = (id) => {
-    onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id]);
-  };
-
-  return (
-    <div>
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="w-full flex items-center justify-between px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-        >
-          <span className="text-gray-700">
-            {value.length ? `${value.length} permission${value.length > 1 ? "s" : ""} selected` : "Select permissions"}
-          </span>
-          <ChevronDown size={16} className={`text-gray-500 transition-transform ${open ? "rotate-180" : ""}`} />
-        </button>
-
-        {open && (
-          <>
-            <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-            <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-              <div className="p-2 border-b border-gray-100">
-                <div className="relative">
-                  <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    autoFocus
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search permissions..."
-                    className="w-full pl-8 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                </div>
-              </div>
-              <div className="max-h-60 overflow-y-auto py-1">
-                {visibleOptions.map((option) => {
-                  const checked = value.includes(option._id);
-                  return (
-                    <button
-                      type="button"
-                      key={option._id}
-                      onClick={() => toggle(option._id)}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-gray-50"
-                    >
-                      <span
-                        className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                          checked ? "bg-primary border-primary text-white" : "border-gray-300"
-                        }`}
-                      >
-                        {checked && <Check size={11} />}
-                      </span>
-                      <span className="text-gray-700">{option.name}</span>
-                    </button>
-                  );
-                })}
-                {visibleOptions.length === 0 && (
-                  <p className="px-3 py-3 text-xs text-gray-400 text-center">No permissions found.</p>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {selectedOptions.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          {selectedOptions.map((option) => (
-            <span
-              key={option._id}
-              className="flex items-center gap-1.5 bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded"
-            >
-              {option.name}
-              <button type="button" onClick={() => toggle(option._id)} className="text-gray-400 hover:text-gray-700">
-                <X size={12} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-      <p className="text-[11px] text-gray-400 mt-1.5">Select one or more permissions from Permission Master.</p>
-    </div>
-  );
-}
 
 function FieldRow({ label, required, children, alignTop }) {
   return (
@@ -155,7 +56,12 @@ export default function PrivilegeForm() {
       const response = await axiosInstance.get(`/permissions`);
       const data = response?.data?.data;
       const list = Array.isArray(data) ? data : data?.permissions || [];
-      setPermissionOptions(list.filter((p) => !p.status || p.status === "Active"));
+      const active = list.filter((p) => !p.status || p.status === "Active");
+      setPermissionOptions((prev) => {
+        // keep any already-assigned permissions that came from the privilege itself
+        const ids = new Set(active.map((p) => p._id));
+        return [...active, ...prev.filter((p) => !ids.has(p._id))];
+      });
     } catch (error) {
       console.error(error.message);
       dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
@@ -327,7 +233,7 @@ export default function PrivilegeForm() {
                 name="permissions"
                 control={control}
                 render={({ field }) => (
-                  <PermissionSelect options={permissionOptions} value={field.value} onChange={field.onChange} />
+                  <PermissionTable options={permissionOptions} value={field.value} onChange={field.onChange} />
                 )}
               />
             </FieldRow>
