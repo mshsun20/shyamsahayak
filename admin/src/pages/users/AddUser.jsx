@@ -15,8 +15,9 @@ const emptyForm = {
   employeeId: "",
   email: "",
   phone: "",
-  status: "Active",
+  privilege: "",
   role: "DGO",
+  status: "Active",
   reportingManagerId: reportingManagers[0].id,
   territory: territories[0],
   district: districts[0],
@@ -35,6 +36,7 @@ const AddUser = () => {
   const [user, setUser] = React.useState(null);
   const [accounts, setAccounts] = React.useState([]);
   const [roles, setRoles] = React.useState([]);
+  const [privileges, setPrivileges] = React.useState([]);
   const [permissionOptions, setPermissionOptions] = React.useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -44,11 +46,20 @@ const AddUser = () => {
 
   const fetchAllMasters = React.useCallback(async () => {
     try {
-      const [accountResponse, roleResponse, permissionResponse] = await Promise.allSettled([
+      const [accountResponse, roleResponse, permissionResponse, privilegeResponse] = await Promise.allSettled([
         axiosInstance.get(`/accounts`).then(res => res.data.data?.accounts),
         axiosInstance.get(`/roles`).then(res => res.data.data),
         axiosInstance.get(`/permissions`).then(res => res.data.data),
+        axiosInstance.get(`/privileges`).then(res => res.data.data),
       ])
+      if (privilegeResponse.status === "fulfilled") {
+        const list = Array.isArray(privilegeResponse.value) ? privilegeResponse.value : privilegeResponse.value?.privileges || [];
+        const active = list.filter((p) => !p.status || p.status === "Active");
+        setPrivileges((prev) => {
+          const ids = new Set(active.map((p) => p._id));
+          return [...active, ...prev.filter((p) => !ids.has(p._id))];
+        });
+      }
       if (permissionResponse.status === "fulfilled") {
         const list = Array.isArray(permissionResponse.value) ? permissionResponse.value : permissionResponse.value?.permissions || [];
         const active = list.filter((p) => !p.status || p.status === "Active");
@@ -88,10 +99,15 @@ const AddUser = () => {
     watch,
     reset,
     control,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm({ defaultValues: emptyForm, mode: "onSubmit" });
 
   const passwordValue = watch("password");
+
+  // "General" privilege users sign in with Employee ID; everyone else needs a username
+  const selectedPrivilege = privileges.find((p) => p._id === watch("privilege"));
+  const isGeneral = selectedPrivilege?.name?.trim().toLowerCase() === "general";
 
   const fetchData = React.useCallback(async () => {
     try {
@@ -122,9 +138,15 @@ const AddUser = () => {
             return [...prev, ...populated.filter((p) => !ids.has(p._id))];
           });
         }
+        // privilege may come back populated or as a plain id
+        const userPrivilege = user.privilege;
+        if (userPrivilege && typeof userPrivilege === "object") {
+          setPrivileges((prev) => (prev.some((p) => p._id === userPrivilege._id) ? prev : [...prev, userPrivilege]));
+        }
         reset({
           ...emptyForm,
           ...user,
+          privilege: (typeof userPrivilege === "object" ? userPrivilege?._id : userPrivilege) ?? "",
           permissions: assigned.map((p) => (typeof p === "object" ? p._id : p)),
           password: "",
           confirmPassword: "",
@@ -135,18 +157,27 @@ const AddUser = () => {
   }, [id, isEdit, user, reset]);
 
   const onSubmit = async (data) => {
-    // Only permission assignment is wired up; account create/update is not integrated yet.
-    if (isEdit) {
-      try {
+    const payload = { fullName: data.fullName.trim(), status: data.status, privilege: data.privilege };
+    ["employeeId", "email", "phone", "username", "remarks"].forEach((key) => {
+      const value = data[key]?.trim();
+      if (value) payload[key] = value;
+    });
+    if (data.password) payload.password = data.password;
+
+    try {
+      if (isEdit) {
+        await axiosInstance.patch(`/accounts/${id}`, payload);
         await axiosInstance.put(`/accounts/${id}/permissions`, { permissions: data.permissions || [] });
-        dispatch(showSnackbar({ message: "Permissions updated successfully", type: "success" }));
-        navigate("/users");
-      } catch (error) {
-        console.error(error.message);
-        dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
+      } else {
+        await axiosInstance.post(`/accounts`, { ...payload, permissions: data.permissions || [] });
       }
-      return;
+      dispatch(showSnackbar({ message: isEdit ? "User updated successfully" : "User created successfully", type: "success" }));
+      navigate("/users");
+    } catch (error) {
+      console.error(error.message);
+      dispatch(showSnackbar({ message: error.response?.data?.message || error.message, type: "error" }));
     }
+    return;
     // const manager = reportingManagers.find((m) => m.id === data.reportingManagerId);
     // const payload = {
     //   ...data,
@@ -220,8 +251,8 @@ const AddUser = () => {
               {errors.fullName && <p className="text-xs text-danger mt-1">{errors.fullName.message}</p>}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Employee ID *</label>
-              <input {...register("employeeId", { required: "Employee ID is required." })} className={inputClass("employeeId")} />
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Employee ID{isGeneral && " *"}</label>
+              <input {...register("employeeId", { required: isGeneral ? "Employee ID is required." : false })} className={inputClass("employeeId")} />
               {errors.employeeId && <p className="text-xs text-danger mt-1">{errors.employeeId.message}</p>}
             </div>
             <div>
@@ -240,11 +271,20 @@ const AddUser = () => {
               <input {...register("phone")} className={inputClass("phone")} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Status *</label>
-              <select {...register("status", { required: true })} className={inputClass("status")}>
-                <option>Active</option>
-                <option>Inactive</option>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Privilege *</label>
+              <select
+                {...register("privilege", {
+                  required: "Privilege is required.",
+                  onChange: () => clearErrors(["employeeId", "username"]),
+                })}
+                className={inputClass("privilege")}
+              >
+                <option value="" disabled>Select privilege</option>
+                {privileges.map((p) => (
+                  <option key={p._id} value={p._id}>{p.name}</option>
+                ))}
               </select>
+              {errors.privilege && <p className="text-xs text-danger mt-1">{errors.privilege.message}</p>}
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Role *</label>
@@ -252,6 +292,13 @@ const AddUser = () => {
                 {roles.map((r) => (
                   <option key={r}>{r}</option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Status *</label>
+              <select {...register("status", { required: true })} className={inputClass("status")}>
+                <option>Active</option>
+                <option>Inactive</option>
               </select>
             </div>
           </div>
@@ -262,12 +309,13 @@ const AddUser = () => {
           <p className="text-sm font-semibold text-gray-800 mb-4">Reporting & Territory</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Reporting Manager *</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Reporting Manager</label>
               <div className="flex gap-2">
                 <select
-                  {...register("reportingManagerId", { required: true })}
+                  {...register("reportingManagerId")}
                   className={inputClass("reportingManagerId")}
                 >
+                  <option value="">Select reporting manager</option>
                   {accounts.map((m) => (
                     <option key={m} value={m}>{m}</option>
                   ))}
@@ -278,9 +326,10 @@ const AddUser = () => {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Territory *</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Territory</label>
               <div className="flex gap-2">
-                <select {...register("territory", { required: true })} className={inputClass("territory")}>
+                <select {...register("territory")} className={inputClass("territory")}>
+                  <option value="">Select territory</option>
                   {territories.map((t) => (
                     <option key={t}>{t}</option>
                   ))}
@@ -291,9 +340,10 @@ const AddUser = () => {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">District *</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">District</label>
               <div className="flex gap-2">
-                <select {...register("district", { required: true })} className={inputClass("district")}>
+                <select {...register("district")} className={inputClass("district")}>
+                  <option value="">Select district</option>
                   {districts.map((d) => (
                     <option key={d}>{d}</option>
                   ))}
@@ -311,8 +361,8 @@ const AddUser = () => {
           <p className="text-sm font-semibold text-gray-800 mb-4">Access & Security</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="">
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Username *</label>
-              <input {...register("username", { required: "Username is required." })} className={inputClass("username")} />
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Username{!isGeneral && " *"}</label>
+              <input {...register("username", { required: isGeneral ? false : "Username is required." })} className={inputClass("username")} />
               {errors.username && <p className="text-xs text-danger mt-1">{errors.username.message}</p>}
             </div>
             <div>
