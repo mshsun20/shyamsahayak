@@ -17,7 +17,7 @@ const AccountSchema = new Schema({
     permissions: [{ type: Types.ObjectId, ref: "Permission" }],
     state: { type: String, trim: true }, // new
     district: { type: String, trim: true }, // new
-    reportingManagers: [{ type: Types.ObjectId, ref: "Account" }], // new
+    reportingManagers: { type: Types.ObjectId, ref: "Account" }, // new
     identityType: { type: String, trim: true }, // new
     identityNumber: { type: String, trim: true }, // new
     image: { type: Types.ObjectId, ref: "File" }, // new
