@@ -5,7 +5,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { Eye, EyeOff, ChevronRight, Plus } from "lucide-react";
 import AdminLayout from "../../layouts/AdminLayout";
 // import { addUser, updateUser } from "../../redux/store";
-import { reportingManagers, territories, districts } from "../../data/users";
+import { territories, districts } from "../../data/users";
 import axiosInstance from "../../config/axiosInstance";
 import { showSnackbar } from "../../redux/slices/snackbarSlice";
 import PermissionTable from "../configuration/PermissionTable";
@@ -18,8 +18,8 @@ const emptyForm = {
   privilege: "",
   role: "DGO",
   status: "Active",
-  reportingManagerId: reportingManagers[0].id,
-  territory: territories[0],
+  reportingManagerId: "",
+  state: territories[0],
   district: districts[0],
   username: "",
   password: "",
@@ -73,8 +73,8 @@ const AddUser = () => {
       // console.log(roleResponse);
 
       if (accountResponse.status === "fulfilled" || roleResponse.status === "fulfilled") {
-        const allAccounts = accountResponse?.value?.length>0 ? accountResponse?.value?.map(acc => acc?.fullName) : [];
-        const allRoles = roleResponse?.value?.length>0 ? roleResponse?.value?.map(rol => rol?.name) : []
+        const allAccounts = accountResponse?.value?.length>0 ? accountResponse?.value : [];
+        const allRoles = Array.isArray(roleResponse?.value) ? roleResponse.value : roleResponse?.value?.roles || []
         setAccounts(allAccounts);
         setRoles(allRoles);
       }
@@ -98,6 +98,7 @@ const AddUser = () => {
     handleSubmit,
     watch,
     reset,
+    setValue,
     control,
     clearErrors,
     formState: { errors, isSubmitting },
@@ -105,11 +106,20 @@ const AddUser = () => {
 
   const passwordValue = watch("password");
 
+  // role and reporting manager are saved as ids; default new users to the DGO role
+  React.useEffect(() => {
+    if (!isEdit && roles.length > 0) {
+      const defaultRole = roles.find((r) => r.name?.toLowerCase() === "dgo") || roles[0];
+      setValue("role", defaultRole._id);
+    }
+  }, [isEdit, roles, setValue]);
+
   // "General" privilege users sign in with Employee ID; everyone else needs a username
   const selectedPrivilege = privileges.find((p) => p._id === watch("privilege"));
   const isGeneral = selectedPrivilege?.name?.trim().toLowerCase() === "general";
 
   const fetchData = React.useCallback(async () => {
+    if (!id) return;
     try {
       const respone = await axiosInstance.get(`/accounts/${id}`);
       // console.log(respone.data?.data);
@@ -122,7 +132,7 @@ const AddUser = () => {
     } catch (error) {
       console.error(error.message);
     }
-  }, []);
+  }, [id]);
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -147,17 +157,30 @@ const AddUser = () => {
           ...emptyForm,
           ...user,
           privilege: (typeof userPrivilege === "object" ? userPrivilege?._id : userPrivilege) ?? "",
+          role: (typeof user.role === "object" ? user.role?._id : user.role) ?? "",
+          reportingManagerId: (typeof user.reportingManagers === "object" ? user.reportingManagers?._id : user.reportingManagers) ?? "",
+          district: user.district || emptyForm.district,
           permissions: assigned.map((p) => (typeof p === "object" ? p._id : p)),
           password: "",
           confirmPassword: "",
-          mustChangePassword: false,
+          mustChangePassword: Boolean(user.passwordChangeFlag),
         });
       }
     }
   }, [id, isEdit, user, reset]);
 
   const onSubmit = async (data) => {
-    const payload = { fullName: data.fullName.trim(), status: data.status, privilege: data.privilege };
+    const payload = {
+      fullName: data.fullName.trim(),
+      status: data.status,
+      privilege: data.privilege,
+      role: data.role,
+      passwordChangeFlag: Boolean(data.mustChangePassword),
+      state: data.state,
+      district: data.district,
+    };
+    // the Account model has no state field, so state is not sent
+    if (data.reportingManagerId) payload.reportingManagers = data.reportingManagerId;
     ["employeeId", "email", "phone", "username", "remarks"].forEach((key) => {
       const value = data[key]?.trim();
       if (value) payload[key] = value;
@@ -290,7 +313,7 @@ const AddUser = () => {
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Role *</label>
               <select {...register("role", { required: true })} className={inputClass("role")}>
                 {roles.map((r) => (
-                  <option key={r}>{r}</option>
+                  <option key={r._id} value={r._id}>{r.name}</option>
                 ))}
               </select>
             </div>
@@ -316,8 +339,8 @@ const AddUser = () => {
                   className={inputClass("reportingManagerId")}
                 >
                   <option value="">Select reporting manager</option>
-                  {accounts.map((m) => (
-                    <option key={m} value={m}>{m}</option>
+                  {accounts.filter((m) => m._id !== id).map((m) => (
+                    <option key={m._id} value={m._id}>{m.fullName}</option>
                   ))}
                 </select>
                 <button type="button" title="Add manager" className="shrink-0 w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-400 hover:text-primary hover:border-primary">
@@ -328,13 +351,13 @@ const AddUser = () => {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Territory</label>
               <div className="flex gap-2">
-                <select {...register("territory")} className={inputClass("territory")}>
-                  <option value="">Select territory</option>
+                <select {...register("state")} className={inputClass("state")}>
+                  <option value="">Select state</option>
                   {territories.map((t) => (
                     <option key={t}>{t}</option>
                   ))}
                 </select>
-                <button type="button" title="Add territory" className="shrink-0 w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-400 hover:text-primary hover:border-primary">
+                <button type="button" title="Add state" className="shrink-0 w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-400 hover:text-primary hover:border-primary">
                   <Plus size={15} />
                 </button>
               </div>
