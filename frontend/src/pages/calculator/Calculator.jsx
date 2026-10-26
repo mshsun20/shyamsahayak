@@ -1,84 +1,116 @@
 import React from "react";
+import { useDispatch } from "react-redux";
 import { Calculator as CalcIcon, ChevronDown, RotateCcw } from "lucide-react";
+import axiosInstance from "../../config/axiosInstance";
+import { showSnackbar } from "../../redux/slices/snackbarSlice";
+import Loader from "../../components/Loader";
 
-// kg weight per 1 unit of quantity, by thickness + metric
-const productWeights = [
-  {
-    code: "AZ150",
-    name: "TIGER Premium Roofing Sheet",
-    shortDescription: "Zinc-Aluminium Coated",
-    image: "https://picsum.photos/seed/roofing-sheet/1000/1000",
-    weights: [
-      { thickness: "0.30 mm", metrics: [{ metric: "RMT", value: 2.3, uom: "kg" }, { metric: "Sq.ft", value: 1.38, uom: "kg" }, { metric: "Sq.m", value: 14.85, uom: "kg" }] },
-      { thickness: "0.32 mm", metrics: [{ metric: "RMT", value: 2.46, uom: "kg" }, { metric: "Sq.ft", value: 1.48, uom: "kg" }, { metric: "Sq.m", value: 15.9, uom: "kg" }] },
-      { thickness: "0.35 mm", metrics: [{ metric: "RMT", value: 2.69, uom: "kg" }, { metric: "Sq.ft", value: 1.61, uom: "kg" }, { metric: "Sq.m", value: 17.35, uom: "kg" }] },
-      { thickness: "0.40 mm", metrics: [{ metric: "RMT", value: 3.07, uom: "kg" }, { metric: "Sq.ft", value: 1.84, uom: "kg" }, { metric: "Sq.m", value: 19.8, uom: "kg" }] },
-      { thickness: "0.45 mm", metrics: [{ metric: "RMT", value: 3.45, uom: "kg" }, { metric: "Sq.ft", value: 2.07, uom: "kg" }, { metric: "Sq.m", value: 22.3, uom: "kg" }] },
-      { thickness: "0.50 mm", metrics: [{ metric: "RMT", value: 3.84, uom: "kg" }, { metric: "Sq.ft", value: 2.3, uom: "kg" }, { metric: "Sq.m", value: 24.8, uom: "kg" }] },
-    ]
-  },
-  {
-    code: "PDT2",
-    name: "Pdt 2",
-  },
-  {
-    code: "PDT3",
-    name: "Pdt 3",
-  },
-]
+// ---- API response helpers ----
+// API shape: { success, message, data: [...] }
+const toList = (res) => (Array.isArray(res?.data?.data) ? res.data.data : []);
+// Reference field is a populated object (allocation) or a record (product)
+const refId = (ref) => (ref && typeof ref === "object" ? ref._id ?? ref.id : ref);
+// Populated thickness = { value, unit } (e.g. "0.32 mm"); populated metric = { value } (e.g. "RMT")
+const refLabel = (ref, key) => (key === "thickness" ? `${ref?.value ?? ""} ${ref?.unit ?? ""}`.trim() : String(ref?.value ?? ""));
+// Unique { id, label } options from allocation records
+const uniqueOptions = (records, key) => {
+  const seen = new Map();
+  records.forEach((record) => {
+    const id = refId(record[key]);
+    if (id !== undefined && id !== null && !seen.has(String(id))) {
+      seen.set(String(id), { id: String(id), label: refLabel(record[key], key) });
+    }
+  });
+  return [...seen.values()];
+};
+
+const UNIT_UOM = "kg";
 
 const Calculator = () => {
-  const [productCode, setProductCode] = React.useState(productWeights[0]?.code || "");
-  const [thickness, setThickness] = React.useState(productWeights[0]?.weights?.[1]?.thickness || productWeights[0]?.weights?.[0]?.thickness || "");
-  const [metric, setMetric] = React.useState(productWeights[0]?.weights?.[1]?.metrics?.[0]?.metric || productWeights[0]?.weights?.[0]?.metrics?.[0]?.metric || "");
+  const dispatch = useDispatch();
+  const [products, setProducts] = React.useState([]);
+  const [allocations, setAllocations] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [productId, setProductId] = React.useState("");
+  const [thicknessId, setThicknessId] = React.useState("");
+  const [metricId, setMetricId] = React.useState("");
   const [quantity, setQuantity] = React.useState(1000);
   const [calculated, setCalculated] = React.useState(true);
 
+  // Fetch products + product weight allocations
+  React.useEffect(() => {
+    let active = true;
+    const fetchData = async () => {
+      try {
+        const [productRes, allocationRes] = await Promise.all([
+          axiosInstance.get("/products"),
+          axiosInstance.get("/product-weight-allocations", { params: { status: "Active" } }),
+        ]);
+        if (!active) return;
+        setProducts(toList(productRes).filter((product) => product.status === "Published"));
+        setAllocations(toList(allocationRes));
+      } catch (error) {
+        if (!active) return;
+        dispatch(showSnackbar({
+          message: error.response?.data?.message || error.message || "Failed to load calculator data",
+          type: "error",
+        }));
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    fetchData();
+    return () => { active = false; };
+  }, [dispatch]);
+
   // Selected product
-  const selectedProduct = React.useMemo(() => productWeights.find((product) => product.code === productCode) || productWeights[0], [productCode]);
+  const selectedProduct = React.useMemo(() => products.find((product) => String(refId(product)) === productId), [products, productId]);
+  // Allocation records of the selected product
+  const productAllocations = React.useMemo(() => allocations.filter((a) => productId && String(refId(a.product)) === productId), [allocations, productId]);
   // Available thicknesses for selected product
-  const thicknesses = React.useMemo(() => selectedProduct?.weights?.map((weight) => weight.thickness) || [], [selectedProduct]);
-  // Selected thickness mapping
-  const selectedThickness = React.useMemo(() => selectedProduct?.weights?.find((weight) => weight.thickness === thickness) || selectedProduct?.weights?.[0], [selectedProduct, thickness]);
+  const thicknesses = React.useMemo(() => uniqueOptions(productAllocations, "thickness"), [productAllocations]);
   // Available metrics for selected product + thickness
-  const metrics = React.useMemo(() => selectedThickness?.metrics?.map((item) => item.metric) || [], [selectedThickness]);
-  // Selected metric mapping
-  const selectedMetric = React.useMemo(() => selectedThickness?.metrics?.find((item) => item.metric === metric) || selectedThickness?.metrics?.[0], [selectedThickness, metric]);
+  const metrics = React.useMemo(
+    () => uniqueOptions(productAllocations.filter((a) => thicknessId && String(refId(a.thickness)) === thicknessId), "metric"),
+    [productAllocations, thicknessId]
+  );
+  // Matching allocation for selected product + thickness + metric
+  const selectedAllocation = React.useMemo(
+    () => (thicknessId && metricId ? productAllocations.find((a) => String(refId(a.thickness)) === thicknessId && String(refId(a.metric)) === metricId) : undefined),
+    [productAllocations, thicknessId, metricId]
+  );
   // Unit kg weight based on selected product + thickness + metric
-  const unitWeight = selectedMetric?.value || 0;
-  const unitUom = selectedMetric?.uom || "";
+  const unitWeight = Number(selectedAllocation?.unitWeight) || 0;
+  const unitUom = UNIT_UOM;
+  const metricLabel = metrics.find((m) => m.id === metricId)?.label || "";
   // Total calculated weight
   const calculatedWeight = React.useMemo(() => unitWeight * Number(quantity || 0), [unitWeight, quantity]);
 
-  // Handle product change
-  const handleProductChange = (productCodeValue) => {
-    const product = productWeights.find((item) => item.code === productCodeValue);
-    setProductCode(productCodeValue);
-    const firstThickness = product?.weights?.[0];
-    setThickness(firstThickness?.thickness || "");
-    setMetric(firstThickness?.metrics?.[0]?.metric || "");
+  // Handle product change: reset dependent fields
+  const handleProductChange = (value) => {
+    setProductId(value);
+    setThicknessId("");
+    setMetricId("");
   };
 
-  // Handle thickness change
-  const handleThicknessChange = (thicknessValue) => {
-    setThickness(thicknessValue);
-    const thicknessData = selectedProduct?.weights?.find((weight) => weight.thickness === thicknessValue);
-    setMetric(thicknessData?.metrics?.[0]?.metric || "");
+  // Handle thickness change: reset metric (unit weight derives from selection)
+  const handleThicknessChange = (value) => {
+    setThicknessId(value);
+    setMetricId("");
   };
 
   // Reset calculator
   const handleReset = () => {
-    const defaultProduct = productWeights[0];
-    const defaultThickness = defaultProduct?.weights?.find((weight) => weight.thickness === "0.32 mm") || defaultProduct?.weights?.[0];
-    setProductCode(defaultProduct?.code || "");
-    setThickness(defaultThickness?.thickness || "");
-    setMetric(defaultThickness?.metrics?.[0]?.metric || "RMT");
+    setProductId("");
+    setThicknessId("");
+    setMetricId("");
     setQuantity(1000);
     setCalculated(true);
   };
 
   return (
-    <div className="min-h-dvh px-4 pt-6 pb-10">
+    <div className="relative min-h-dvh px-4 pt-6 pb-10">
+      {loading && <Loader />}
       {/* Header */}
       <div className="flex items-start gap-3 mb-5">
         <div className="w-11 h-11 rounded-2xl bg-brand flex items-center justify-center shrink-0 shadow-sm shadow-orange-200">
@@ -122,16 +154,16 @@ const Calculator = () => {
 
         <div className="relative mt-1.5">
           <select
-            value={productCode}
+            value={productId}
             onChange={(e) => handleProductChange(e.target.value)}
+            disabled={loading}
             className="w-full appearance-none rounded-xl border border-neutral-200 p-3.5 pr-10 text-[14px] font-medium text-neutral-900 bg-white"
           >
-            {productWeights.map((product) => (
-              <option
-                key={product.code || product.name}
-                value={product.code || ""}
-                disabled={!product.code}
-              >
+            <option value="" disabled>
+              {loading ? "Loading products..." : products.length ? "Select product" : "No products available"}
+            </option>
+            {products.map((product) => (
+              <option key={refId(product)} value={String(refId(product))}>
                 {product.name}
               </option>
             ))}
@@ -146,11 +178,13 @@ const Calculator = () => {
         {/* Selected Product Information */}
         {selectedProduct && (
           <div className="flex items-center gap-3 mt-2.5">
-            <img
-              src={selectedProduct.image}
-              alt={selectedProduct.name}
-              className="w-11 h-11 rounded-lg object-cover shrink-0"
-            />
+            {selectedProduct.image?.relativePath && (
+              <img
+                src={selectedProduct.image?.relativePath}
+                alt={selectedProduct.name}
+                className="w-11 h-11 rounded-lg object-cover shrink-0"
+              />
+            )}
 
             <div className="flex-1 min-w-0">
               <p className="text-[14px] font-semibold text-neutral-900 leading-snug">
@@ -158,9 +192,7 @@ const Calculator = () => {
               </p>
 
               <p className="text-[12px] text-neutral-500">
-                {selectedProduct.code
-                  ? `${selectedProduct.code}${selectedProduct.shortDescription ? ` • ${selectedProduct.shortDescription}` : ""}`
-                  : selectedProduct.shortDescription ? ` • ${selectedProduct.shortDescription}` : ""}
+                {[selectedProduct.code, selectedProduct.shortDescription].filter(Boolean).join(" • ")}
               </p>
             </div>
           </div>
@@ -173,13 +205,17 @@ const Calculator = () => {
 
         <div className="relative mt-1.5">
           <select
-            value={thickness}
+            value={thicknessId}
             onChange={(e) => handleThicknessChange(e.target.value)}
+            disabled={loading || !productId || !thicknesses.length}
             className="w-full appearance-none rounded-xl border border-neutral-200 p-3.5 text-[14px] font-medium text-neutral-900 bg-white"
           >
+            <option value="" disabled>
+              {!productId ? "Select product first" : thicknesses.length ? "Select thickness" : "No thickness available"}
+            </option>
             {thicknesses.map((t) => (
-              <option key={t} value={t}>
-                {t}
+              <option key={t.id} value={t.id}>
+                {t.label}
               </option>
             ))}
           </select>
@@ -197,13 +233,17 @@ const Calculator = () => {
 
         <div className="relative mt-1.5">
           <select
-            value={metric}
-            onChange={(e) => setMetric(e.target.value)}
+            value={metricId}
+            onChange={(e) => setMetricId(e.target.value)}
+            disabled={loading || !thicknessId || !metrics.length}
             className="w-full appearance-none rounded-xl border border-neutral-200 p-3.5 text-[14px] font-medium text-neutral-900 bg-white"
           >
+            <option value="" disabled>
+              {!thicknessId ? "Select thickness first" : metrics.length ? "Select metric" : "No metric available"}
+            </option>
             {metrics.map((m) => (
-              <option key={m} value={m}>
-                {m}
+              <option key={m.id} value={m.id}>
+                {m.label}
               </option>
             ))}
           </select>
@@ -229,7 +269,7 @@ const Calculator = () => {
           />
 
           <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] text-neutral-400 font-medium">
-            {metric}
+            {metricLabel}
           </span>
         </div>
 

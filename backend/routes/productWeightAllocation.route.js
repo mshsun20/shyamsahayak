@@ -6,11 +6,11 @@ import { requirePermission } from "../middlewares/permission.middleware.js";
 
 productWeightAllocationRouter.use(unifiedAuthProtect);
 
-productWeightAllocationRouter.post("/", requirePermission("product-weight-allocation:create"), ProductWeightAllocation.create);
-productWeightAllocationRouter.get("/", requirePermission("product-weight-allocation:read"), ProductWeightAllocation.read);
-productWeightAllocationRouter.get("/unique/:key", requirePermission("product-weight-allocation:read"), ProductWeightAllocation.readByUniqueKey);
-productWeightAllocationRouter.get("/:id", requirePermission("product-weight-allocation:read"), ProductWeightAllocation.readById);
-productWeightAllocationRouter.patch("/:id", requirePermission("product-weight-allocation:update"), ProductWeightAllocation.update);
-productWeightAllocationRouter.delete("/:id", requirePermission("product-weight-allocation:delete"), ProductWeightAllocation.remove);
+productWeightAllocationRouter.post("/", ProductWeightAllocation.create);
+productWeightAllocationRouter.get("/", ProductWeightAllocation.read);
+productWeightAllocationRouter.get("/unique/:key", ProductWeightAllocation.readByUniqueKey);
+productWeightAllocationRouter.get("/:id", ProductWeightAllocation.readById);
+productWeightAllocationRouter.patch("/:id", ProductWeightAllocation.update);
+productWeightAllocationRouter.delete("/:id", ProductWeightAllocation.remove);
 
 export default productWeightAllocationRouter;

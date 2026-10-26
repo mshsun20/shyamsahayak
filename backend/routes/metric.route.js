@@ -6,11 +6,11 @@ import { requirePermission } from "../middlewares/permission.middleware.js";
 
 metricRouter.use(unifiedAuthProtect);
 
-metricRouter.post("/", requirePermission("metric:create"), Metric.create);
-metricRouter.get("/", requirePermission("metric:read"), Metric.read);
-metricRouter.get("/unique/:key", requirePermission("metric:read"), Metric.readByUniqueKey);
-metricRouter.get("/:id", requirePermission("metric:read"), Metric.readById);
-metricRouter.patch("/:id", requirePermission("metric:update"), Metric.update);
-metricRouter.delete("/:id", requirePermission("metric:delete"), Metric.remove);
+metricRouter.post("/", Metric.create);
+metricRouter.get("/", Metric.read);
+metricRouter.get("/unique/:key", Metric.readByUniqueKey);
+metricRouter.get("/:id", Metric.readById);
+metricRouter.patch("/:id", Metric.update);
+metricRouter.delete("/:id", Metric.remove);
 
 export default metricRouter;

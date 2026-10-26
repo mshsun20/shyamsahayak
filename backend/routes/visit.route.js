@@ -6,11 +6,11 @@ import { requirePermission } from "../middlewares/permission.middleware.js";
 
 visitRouter.use(unifiedAuthProtect);
 
-visitRouter.post("/", requirePermission("visit:create"), Visit.create);
-visitRouter.get("/", requirePermission("visit:read"), Visit.read);
-visitRouter.get("/unique/:key", requirePermission("visit:read"), Visit.readByUniqueKey);
-visitRouter.get("/:id", requirePermission("visit:read"), Visit.readById);
-visitRouter.patch("/:id", requirePermission("visit:update"), Visit.update);
-visitRouter.delete("/:id", requirePermission("visit:delete"), Visit.remove);
+visitRouter.post("/", Visit.create);
+visitRouter.get("/", Visit.read);
+visitRouter.get("/unique/:key", Visit.readByUniqueKey);
+visitRouter.get("/:id", Visit.readById);
+visitRouter.patch("/:id", Visit.update);
+visitRouter.delete("/:id", Visit.remove);
 
 export default visitRouter;
