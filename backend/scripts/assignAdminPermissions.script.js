@@ -27,6 +27,23 @@ const assignAdminPermissions = async () => {
             "privilege:read",
             "privilege:update",
             "privilege:delete",
+
+            "thickness:create",
+            "thickness:read",
+            "thickness:update",
+            "thickness:delete",
+            "metric:create",
+            "metric:read",
+            "metric:update",
+            "metric:delete",
+            "product-weight-allocation:create",
+            "product-weight-allocation:read",
+            "product-weight-allocation:update",
+            "product-weight-allocation:delete",
+            "visit:create",
+            "visit:read",
+            "visit:update",
+            "visit:delete",
         ];
 
         const permissions = await Permission.find({

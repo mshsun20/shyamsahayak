@@ -29,6 +29,10 @@ import schemeRouter from "./routes/scheme.route.js";
 import knowledgeBaseRouter from "./routes/KnowledgeBase.route.js";
 import conversationRouter from "./routes/conversation.route.js";
 import locationRouter from "./routes/mapping/location.route.js";
+import thicknessRouter from "./routes/thickness.route.js";
+import metricRouter from "./routes/metric.route.js";
+import productWeightAllocationRouter from "./routes/productWeightAllocation.route.js";
+import visitRouter from "./routes/visit.route.js";
 
 
 
@@ -84,6 +88,10 @@ app.use("/api/schemes", schemeRouter);
 app.use("/api/knowledge-bases", knowledgeBaseRouter);
 app.use("/api/conversations", conversationRouter);
 app.use("/api/location-mapping", locationRouter);
+app.use("/api/thicknesses", thicknessRouter);
+app.use("/api/metrics", metricRouter);
+app.use("/api/product-weight-allocations", productWeightAllocationRouter);
+app.use("/api/visits", visitRouter);
 
 // UI Static Serving
 if (['quality', 'production'].includes(env.nodeEnv)) {    

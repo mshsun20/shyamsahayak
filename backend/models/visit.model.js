@@ -17,6 +17,8 @@ const VisitSchema = new Schema({
     state: { type: String, trim: true },
     district: { type: String, trim: true },
     pinCode: { type: String, trim: true },
+    createdBy: { type: Types.ObjectId, ref: "Account" },
+    updatedBy: { type: Types.ObjectId, ref: "Account" },
 }, { timestamps: true });
 
 const Visit = model("Visit", VisitSchema)

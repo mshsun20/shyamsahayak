@@ -27,6 +27,10 @@ const RetailerProfiler = React.lazy(() => import("../pages/field/RetailerProfile
 const FabricatorTracker = React.lazy(() => import("../pages/field/FabricatorTracker"));
 const Profile = React.lazy(() => import("../pages/profile/Profile"));
 const Placeholder = React.lazy(() => import("../pages/shared/Placeholder"));
+const Visits = React.lazy(() => import("../pages/activities/visit/Visits"));
+const ProductWeightAllocation = React.lazy(() => import("../pages/masters/product-weight/ProductWeightAllocation"));
+const ProductWeightForm = React.lazy(() => import("../pages/masters/product-weight/ProductWeightForm"));
+const ProductWeightDetails = React.lazy(() => import("../pages/masters/product-weight/ProductWeightDetails"));
 
 const PrivilegeMaster = React.lazy(() => import("../pages/configuration/privilege/PrivilegeMaster"));
 const PrivilegeForm = React.lazy(() => import("../pages/configuration/privilege/PrivilegeForm"));
@@ -40,6 +44,9 @@ const PermissionDetails = React.lazy(() => import("../pages/configuration/permis
 const ThicknessMaster = React.lazy(() => import("../pages/configuration/thickness/ThicknessMaster"));
 const ThicknessForm = React.lazy(() => import("../pages/configuration/thickness/ThicknessForm"));
 const ThicknessDetails = React.lazy(() => import("../pages/configuration/thickness/ThicknessDetails"));
+const MetricMaster = React.lazy(() => import("../pages/configuration/metric/MetricMaster"));
+const MetricForm = React.lazy(() => import("../pages/configuration/metric/MetricForm"));
+const MetricDetails = React.lazy(() => import("../pages/configuration/metric/MetricDetails"));
 
 
 
@@ -133,12 +140,23 @@ const router = createBrowserRouter([
       { path: "store-type-breakup", element: <ProtectedRoute><StoreTypeBreakup /></ProtectedRoute> },
       // Universe
       { path: "universe-master", element: <ProtectedRoute><UniverseMaster /></ProtectedRoute> },
+      // Product Weight Allocation
+      { path: "product-weight-allocation", element: <ProtectedRoute><ProductWeightAllocation /></ProtectedRoute> },
+      { path: "product-weight-allocation/add", element: <ProtectedRoute><ProductWeightForm /></ProtectedRoute> },
+      { path: "product-weight-allocation/edit/:id", element: <ProtectedRoute><ProductWeightForm /></ProtectedRoute> },
+      { path: "product-weight-allocation/:id", element: <ProtectedRoute><ProductWeightDetails /></ProtectedRoute> },
       // =========================
       // FIELD
       // =========================
       { path: "field-visit-tracker", element: <ProtectedRoute><Placeholder title="Field Visit Tracker" /></ProtectedRoute> },
       { path: "retailer-profiler", element: <ProtectedRoute><RetailerProfiler /></ProtectedRoute> },
       { path: "fabricator", element: <ProtectedRoute><FabricatorTracker /></ProtectedRoute> },
+      // =========================
+      // ACTIVITIES
+      // =========================
+      { path: "visits", element: <ProtectedRoute><Visits /></ProtectedRoute> },
+      { path: "visits/add", element: <ProtectedRoute><Placeholder title="Add Visit" /></ProtectedRoute> },
+      { path: "visits/:id", element: <ProtectedRoute><Placeholder title="Visit Details" /></ProtectedRoute> },
       // =========================
       // PROFILE
       // =========================
@@ -166,6 +184,11 @@ const router = createBrowserRouter([
       { path: "thickness-master/add", element: <ProtectedRoute><ThicknessForm /></ProtectedRoute> },
       { path: "thickness-master/edit/:id", element: <ProtectedRoute><ThicknessForm /></ProtectedRoute> },
       { path: "thickness-master/:id", element: <ProtectedRoute><ThicknessDetails /></ProtectedRoute> },
+      // Metric Master
+      { path: "metric-master", element: <ProtectedRoute><MetricMaster /></ProtectedRoute> },
+      { path: "metric-master/add", element: <ProtectedRoute><MetricForm /></ProtectedRoute> },
+      { path: "metric-master/edit/:id", element: <ProtectedRoute><MetricForm /></ProtectedRoute> },
+      { path: "metric-master/:id", element: <ProtectedRoute><MetricDetails /></ProtectedRoute> },
     ],
   },
 

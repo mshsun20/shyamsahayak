@@ -5,6 +5,10 @@ export const permissionModules = [
   { label: "Privilege", value: "privilege" },
   { label: "Permission", value: "permission" },
   { label: "Api Client", value: "api-client" },
+  { label: "Thickness", value: "thickness" },
+  { label: "Metric", value: "metric" },
+  { label: "Product Weight Allocation", value: "product-weight-allocation" },
+  { label: "Visit", value: "visit" },
 ];
 
 export const permissionActions = ["View", "Add", "Edit", "Delete" ];

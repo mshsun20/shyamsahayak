@@ -17,6 +17,8 @@ import {
   ClipboardList,
   LogOut,
   Settings,
+  Scale,
+  Zap,
 } from "lucide-react";
 import Logo from "./Logo";
 import { logout } from "../redux/slices/authSlice"
@@ -82,9 +84,10 @@ export default function Sidebar() {
     "/universe-master",
     "/retailer-profiler",
     "/fabricator",
+    "/product-weight-allocation",
   ];
   const fieldVisitPaths = ["/retailer-profiler", "/fabricator"];
-  const configurationPaths = ["/privilege-master", "/role-master", "/permission-master", "/thickness-master"];
+  const configurationPaths = ["/privilege-master", "/role-master", "/permission-master", "/thickness-master", "/metric-master"];
 
   const isContentActive =
     location.pathname === "/content" ||
@@ -93,6 +96,9 @@ export default function Sidebar() {
 
   const isConfigurationActive = configurationPaths.some((p) => location.pathname.startsWith(p));
   const [configurationOpen, setConfigurationOpen] = useState(isConfigurationActive);
+  const activitiesPaths = ["/field-visit-tracker", "/visits"];
+  const isActivitiesActive = activitiesPaths.some((p) => location.pathname.startsWith(p));
+  const [activitiesOpen, setActivitiesOpen] = useState(isActivitiesActive);
   const [contentOpen, setContentOpen] = useState(isContentActive);
   const [masterDataOpen, setMasterDataOpen] = useState(isMasterDataActive);
   const [fieldVisitOpen, setFieldVisitOpen] = useState(
@@ -199,6 +205,10 @@ export default function Sidebar() {
                 <ClipboardList size={15} />
                 District Master
               </NavLink>
+              <NavLink to="/product-weight-allocation" className={subLinkClass}>
+                <Scale size={15} />
+                Product Weight Allocation
+              </NavLink>
             </div>
           )}
         </div>
@@ -232,6 +242,35 @@ export default function Sidebar() {
               </NavLink>
               <NavLink to="/thickness-master" className={configLinkClass}>
                 Thickness Master
+              </NavLink>
+              <NavLink to="/metric-master" className={configLinkClass}>
+                Metric Master
+              </NavLink>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <button
+            onClick={() => setActivitiesOpen((v) => !v)}
+            className={`${navItemBase} ${isActivitiesActive ? "text-primary font-semibold hover:bg-gray-100" : navItemInactive} w-full justify-between`}
+          >
+            <span className="flex items-center gap-3">
+              <Zap size={18} />
+              Activities
+            </span>
+            <ChevronDown
+              size={16}
+              className={`transition-transform ${activitiesOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {activitiesOpen && (
+            <div className="mt-1 space-y-1 pl-2">
+              <NavLink to="/field-visit-tracker" className={configLinkClass}>
+                Field Visit Tracker
+              </NavLink>
+              <NavLink to="/visits" className={configLinkClass}>
+                Visit
               </NavLink>
             </div>
           )}
