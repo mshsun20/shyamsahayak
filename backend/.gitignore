@@ -31,3 +31,4 @@ dist-ssr
 
 # static folders
 /documents/*
+/uploads/*

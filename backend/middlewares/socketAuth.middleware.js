@@ -23,7 +23,6 @@ const socketAuth = async (socket, next) => {
         }
 
         const userDtl = await Account.findById(decoded.sessacc)
-        .select(["-password", "-passwordBackup"])
         .populate([
             {
                 path: "role",
@@ -44,7 +43,7 @@ const socketAuth = async (socket, next) => {
                 select: "code name module action status",
             },
         ])
-        .populate({ path: "reportingDetails.reportingManager", select: "-password -passwordBackup" })
+        .populate({ path: "reportingManagers", select: "-password -passwordBackup" })
         .populate({ path: "createdBy", select: "-password -passwordBackup" })
         .populate({ path: "updatedBy", select: "-password -passwordBackup" })
         .lean();
