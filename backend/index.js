@@ -38,7 +38,7 @@ import visitRouter from "./routes/visit.route.js";
 
 
 // environment origins
-const allowedOrigins = [env.adminUrl, env.appUrl]
+const allowedOrigins = [env.adminUrl, env.appUrl, "http://65.2.193.121:8081/admin", "http://65.2.193.121:8081"]
 
 // path resolution
 const __filename = fileURLToPath(import.meta.url);
@@ -122,14 +122,6 @@ if (['quality', 'production'].includes(env.nodeEnv)) {
 app.get("/", (req, res) => {
     res.status(200).json({ message: "Welcome to the Shyam Sahayak API!" });
 });
-
-
-// (async () => {
-//     await connectDB();
-//     app.listen(env.port, () => {
-//         console.log(`Server is running on port ${env.port} in ${env.nodeEnv} mode`);
-//     });
-// })();
 
 
 // HTTP Server
