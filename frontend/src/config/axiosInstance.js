@@ -97,7 +97,7 @@ export const setupInterceptors = (store) => {
             // Refresh only for 400 / 401
             //--------------------------------------------------
             const status = error.response?.status;
-            if ((status !== 400 && status !== 401) || originalRequest._retry) {
+            if (status !== 401 || originalRequest._retry) {
                 return Promise.reject(error);
             }
 

@@ -20,11 +20,12 @@ const login = async (req, res) => {
         // const url = req.get("referer") || null;
         // const client = accountInfo?.client
         // console.log(client);
+        const cookieSecure = req.secure;
 
         Object.assign(accountInfo, { userAgent, ipAddress })
         const verifiedData = await loginUser(accountInfo);
-        res.cookie("access_token", verifiedData.accessToken, accessCookieOptions);
-        res.cookie("refresh_token", verifiedData.refreshToken, refreshCookieOptions);
+        res.cookie("access_token", verifiedData.accessToken, { ...accessCookieOptions, secure: cookieSecure });
+        res.cookie("refresh_token", verifiedData.refreshToken, { ...refreshCookieOptions, secure: cookieSecure });
         res.status(200).json({
             success: true,
             message: 'Login successful',
@@ -47,7 +48,7 @@ const checkAuth = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(400).json({ success: false, message: error.message });
+        res.status(401).json({ success: false, message: error.message || "Not authenticated" });
     }
 };
 
@@ -57,7 +58,7 @@ const regenerateAccessToken = async (req, res) => {
         const newAccessToken = await regenerateToken(refreshToken);
         // console.log(verifiedData);
         
-        res.cookie("access_token", newAccessToken, accessCookieOptions);
+        res.cookie("access_token", newAccessToken, { ...accessCookieOptions, secure: req.secure });
         res.status(200).json({
             success: true,
             message: 'Access Token regenerated successfully',
@@ -65,7 +66,7 @@ const regenerateAccessToken = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(400).json({ success: false, message: error.message });
+        res.status(401).json({ success: false, message: error.message || "Unable to regenerate access token" });
     }
 };
 
@@ -73,8 +74,8 @@ const logout = async (req, res) => {
     try {
         const refreshToken = req.cookies.refresh_token;
         await logoutUser(refreshToken);
-        res.clearCookie("access_token", accessCookieOptions);
-        res.clearCookie("refresh_token", refreshCookieOptions);
+        res.clearCookie("access_token", { ...accessCookieOptions, secure: req.secure });
+        res.clearCookie("refresh_token", { ...refreshCookieOptions, secure: req.secure });
         res.status(200).json({
             success: true,
             message: 'Logout successful'

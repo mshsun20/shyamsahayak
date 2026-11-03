@@ -23,14 +23,14 @@ let accessTokenExpiryTTL = parseInt(env.accessExpiry) * 60 * 1000;
 let refreshTokenExpiryTTL = parseInt(env.refreshExpiry) * 24 * 60 * 60 * 1000;
 export const accessCookieOptions = {
     httpOnly: true,
-    secure: env.nodeEnv === "production",
     sameSite: "Strict",
+    path: "/",
     maxAge: accessTokenExpiryTTL,
 };
 export const refreshCookieOptions = {
     httpOnly: true,
-    secure: env.nodeEnv === "production",
     sameSite: "Strict",
+    path: "/",
     maxAge: refreshTokenExpiryTTL,
 };
 
@@ -147,7 +147,9 @@ export const checkSession = async (accessToken) => {
 
     const decoded = verifyAccessToken(accessToken);
     const session = await Session.findOne({
-        sessacc: decoded.sessacc
+        sessacc: decoded.sessacc,
+        status: "Active",
+        expiresAt: { $gt: new Date() }
     });
     if (!session) throw new Error('Session expired');
     
@@ -163,7 +165,9 @@ export const regenerateToken = async (refreshToken) => {
     const refreshHash = hashGen(refreshToken)
     const session = await Session.findOne({
         sessacc: decoded.sessacc,
-        refreshToken: refreshHash
+        refreshToken: refreshHash,
+        status: "Active",
+        expiresAt: { $gt: new Date() }
     });
     if (!session) throw new Error('Invalid session');
 

@@ -11,8 +11,27 @@ const SocketConnection = () => {
         console.log("Socket disconnected:", reason);
     }, []);
 
-    const handleConnectError = React.useCallback((error) => {
+    // const handleConnectError = React.useCallback((error) => {
+    //     console.error("Socket connection error:", error.message);
+    // }, []);
+    const refreshInProgress = React.useRef(false);
+
+    const handleConnectError = React.useCallback(async (error) => {
         console.error("Socket connection error:", error.message);
+        if (refreshInProgress.current) return;
+
+        if (error.message === "Authentication required" ||
+            error.message === "Invalid or expired access token"
+        ) {
+            refreshInProgress.current = true;
+
+            try {
+                const reconnected = await refreshAndReconnectSocket();
+                if (!reconnected) console.error("Socket authentication recovery failed.");
+            } finally {
+                refreshInProgress.current = false;
+            }
+        }
     }, []);
 
     const handleAuthExpired = React.useCallback(async () => {
