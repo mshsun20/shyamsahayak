@@ -21,7 +21,18 @@ apiClientRouter.patch("/:id/permissions", requirePermission("api-client:update")
 apiClientRouter.delete("/:id/permissions", requirePermission("api-client:update"), ApiClient.removePermission);
 // Revoke
 apiClientRouter.patch("/:id/revoke", requirePermission("api-client:update"), ApiClient.revoke);
+// Regenerate API key
+apiClientRouter.post("/:id/regenerate-key", requirePermission("api-client:update"), ApiClient.regenerateKey);
 // Delete
 apiClientRouter.delete("/:id", requirePermission("api-client:delete"), ApiClient.remove);
+
+// apiClientRouter.post("/", ApiClient.create);
+// apiClientRouter.get("/", ApiClient.read);
+// apiClientRouter.get("/:id", ApiClient.readById);
+// apiClientRouter.patch("/:id", ApiClient.update);
+// apiClientRouter.patch("/:id/permissions", ApiClient.addPermissions);
+// apiClientRouter.delete("/:id/permissions", ApiClient.removePermission);
+// apiClientRouter.patch("/:id/revoke", ApiClient.revoke);
+// apiClientRouter.delete("/:id", ApiClient.remove);
 
 export default apiClientRouter;

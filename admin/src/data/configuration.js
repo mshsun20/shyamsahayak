@@ -11,7 +11,7 @@ export const permissionModules = [
   { label: "Visit", value: "visit" },
 ];
 
-export const permissionActions = ["View", "Add", "Edit", "Delete" ];
+export const permissionActions = ["create", "read", "update", "delete" ];
 
 // Units offered in Configuration > Thickness Master
 export const thicknessUnits = ["mm", "inch", "gm"];

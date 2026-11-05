@@ -7,6 +7,7 @@ import {
     removeApiClientPermission,
     revokeApiClient,
     deleteApiClient,
+    regenerateApiClientKey,
 } from "../services/apiClient.service.js";
 
 const create = async (req, res) => {
@@ -219,6 +220,33 @@ const revoke = async (req, res) => {
     }
 };
 
+const regenerateKey = async (req, res) => {
+    try {
+        const result = await regenerateApiClientKey(req.params.id);
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: "API client not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "API key regenerated successfully. Store the new key securely.",
+            data: {
+                client: result.client,
+                apiKey: result.apiKey,
+            },
+        });
+    } catch (error) {
+        console.error("Regenerate API client key error:", error);
+        return res.status(400).json({
+            success: false,
+            message: error.message || "Failed to regenerate API key",
+        });
+    }
+};
+
 const remove = async (req, res) => {
     try {
         const client = await deleteApiClient(
@@ -246,6 +274,7 @@ const remove = async (req, res) => {
     }
 };
 
+
 const ApiClient = {
     create,
     read,
@@ -254,7 +283,8 @@ const ApiClient = {
     addPermissions,
     removePermission,
     revoke,
-    remove
+    regenerateKey,
+    remove,
 }
 
 export default ApiClient

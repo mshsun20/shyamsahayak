@@ -7,6 +7,7 @@ const ApiClientSchema = new Schema({
     name: { type: String, required: true, trim: true },
     keyPrefix: { type: String, required: true, index: true, trim: true },
     keyHash: { type: String, required: true, unique: true, index: true },
+    apiKey: { type: String, required: true, unique: true, index: true },
     status: { type: String, enum: ["active", "inactive", "revoked"], default: "active", index: true },
     permissions: { type: [String], default: [] },
     description: { type: String, trim: true },

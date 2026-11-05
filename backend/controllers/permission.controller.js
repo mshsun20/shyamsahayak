@@ -10,15 +10,12 @@ const create = async (req, res) => {
     try {
         const payload = req.body;
         const user = req.auth?.userId || null
-        const permission = await createFunction(
-            req.body,
-            req.auth?.userId || null
-        );
+        const data = await createFunction(payload, user);
 
         return res.status(201).json({
             success: true,
             message: "Permission created successfully",
-            data: permission,
+            data: data,
         });
     } catch (error) {
         console.error("Create permission error:", error);
@@ -32,15 +29,13 @@ const create = async (req, res) => {
 
 const read = async (req, res) => {
     try {
-        const permissions = await readFunction();
-
+        const dataSets = await readFunction();
         return res.status(200).json({
             success: true,
-            data: permissions,
+            data: dataSets,
         });
     } catch (error) {
         console.error("Read permissions error:", error);
-
         return res.status(500).json({
             success: false,
             message: "Failed to fetch permissions",
@@ -50,9 +45,9 @@ const read = async (req, res) => {
 
 const readById = async (req, res) => {
     try {
-        const permission = await readFunctionById(req.params.id);
-
-        if (!permission) {
+        const id = req.params.id;
+        const details = await readFunctionById(id);
+        if (!details) {
             return res.status(404).json({
                 success: false,
                 message: "Permission not found",
@@ -61,11 +56,10 @@ const readById = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            data: permission,
+            data: details,
         });
     } catch (error) {
         console.error("Read permission error:", error);
-
         return res.status(500).json({
             success: false,
             message: "Failed to fetch permission",
@@ -75,13 +69,13 @@ const readById = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const permission = await updateFunction(
-            req.params.id,
-            req.body,
-            req.auth?.userId || null
-        );
+        const id = req.params.id;
+        const payload = req.body;
+        const user = req.auth?.userId || null;
 
-        if (!permission) {
+        const updatedDetails = await updateFunction(id, payload, user);
+
+        if (!updatedDetails) {
             return res.status(404).json({
                 success: false,
                 message: "Permission not found",
@@ -91,7 +85,7 @@ const update = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Permission updated successfully",
-            data: permission,
+            data: updatedDetails,
         });
     } catch (error) {
         console.error("Update permission error:", error);
@@ -105,9 +99,10 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
     try {
-        const permission = await deletePermission(req.params.id);
+        const id = req.params.id;
+        const removalDetails = await deleteFunction(id);
 
-        if (!permission) {
+        if (!removalDetails) {
             return res.status(404).json({
                 success: false,
                 message: "Permission not found",

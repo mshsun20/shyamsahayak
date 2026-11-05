@@ -43,31 +43,28 @@ export const createApiClient = async ({
         );
 
         if (missingPermissions.length > 0) {
-            throw new Error(
-                `Invalid or inactive permissions: ${missingPermissions.join(", ")}`
-            );
+            throw new Error(`Invalid or inactive permissions: ${missingPermissions.join(", ")}`);
         }
     }
 
     // ------------------------------------------------------------
     // Generate API key
     // ------------------------------------------------------------
-
     const apiKey = generateApiKey();
-
     const keyHash = hashApiKey(apiKey);
     const keyPrefix = getApiKeyPrefix(apiKey);
-
-    const client = await ApiClient.create({
+    const payload = {
         clientId,
         name,
         keyPrefix,
         keyHash,
+        apiKey, // Store the raw key temporarily for returning to the user
         permissions,
         description,
         expiresAt,
         status: "active",
-    });
+    }
+    const client = await ApiClient.create(payload);
 
     /*
      * IMPORTANT:
@@ -83,16 +80,11 @@ export const createApiClient = async ({
 };
 
 export const getApiClients = async () => {
-    return ApiClient.find()
-        .select("-keyHash")
-        .sort({ createdAt: -1 })
-        .lean();
+    return ApiClient.find().select("-keyHash -apiKey").sort({ createdAt: -1 }).lean();
 };
 
 export const getApiClientById = async (id) => {
-    return ApiClient.findById(id)
-        .select("-keyHash")
-        .lean();
+    return ApiClient.findById(id).select("-keyHash -apiKey").lean();
 };
 
 export const updateApiClient = async (id, payload) => {
@@ -120,9 +112,7 @@ export const updateApiClient = async (id, payload) => {
             returnDocument: "after",
             runValidators: true,
         }
-    )
-        .select("-keyHash")
-        .lean();
+    ).select("-keyHash -apiKey").lean();
 };
 
 export const addApiClientPermissions = async (
@@ -175,9 +165,7 @@ export const addApiClientPermissions = async (
             returnDocument: "after",
             runValidators: true,
         }
-    )
-        .select("-keyHash")
-        .lean();
+    ).select("-keyHash -apiKey").lean();
 };
 
 export const removeApiClientPermission = async (
@@ -194,9 +182,7 @@ export const removeApiClientPermission = async (
         {
             returnDocument: true,
         }
-    )
-        .select("-keyHash")
-        .lean();
+    ).select("-keyHash -apiKey").lean();
 };
 
 export const revokeApiClient = async (id) => {
@@ -210,9 +196,56 @@ export const revokeApiClient = async (id) => {
         {
             returnDocument: "after",
         }
-    )
-        .select("-keyHash")
-        .lean();
+    ).select("-keyHash -apiKey").lean();
+};
+
+export const regenerateApiClientKey = async (id) => {
+    // ------------------------------------------------------------
+    // Find existing API Client
+    // ------------------------------------------------------------
+    const existingClient = await ApiClient.findById(id);
+    if (!existingClient) return null;
+
+    // A revoked client must not be allowed to receive a new key.
+    if (existingClient.status === "revoked") throw new Error("Cannot regenerate API key for a revoked client");
+
+    // ------------------------------------------------------------
+    // Generate new API key
+    // ------------------------------------------------------------
+    const apiKey = generateApiKey();
+    const keyHash = hashApiKey(apiKey);
+    const keyPrefix = getApiKeyPrefix(apiKey);
+
+    // ------------------------------------------------------------
+    // Replace existing API key atomically
+    // ------------------------------------------------------------
+    const client = await ApiClient.findByIdAndUpdate(id,
+    {
+        $set: {
+            keyHash,
+            keyPrefix,
+            apiKey: apiKey, // Store the raw key temporarily for returning to the user
+
+            // Reset usage information for the new key
+            lastUsedAt: null,
+            lastUsedIp: null,
+            lastUserAgent: null,
+        }
+    }, 
+    { returnDocument: "after", runValidators: true }).select("-keyHash -apiKey").lean();
+    
+    if (!client) {
+        throw new Error("API client not found");
+    }
+
+    // ------------------------------------------------------------
+    // Return raw key only once
+    // ------------------------------------------------------------
+
+    return {
+        client,
+        apiKey,
+    };
 };
 
 export const deleteApiClient = async (id) => {
