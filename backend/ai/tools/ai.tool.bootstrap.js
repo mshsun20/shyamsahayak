@@ -16,6 +16,9 @@ import "./product/product.tool.js";
 // Scheme tools
 import "./scheme/scheme.tool.js";
 
+// Knowledge Base tools
+import "./knowledgeBase/knowledgeBase.tool.js";
+
 // Account tools
 import "./account/account.tool.js";
 

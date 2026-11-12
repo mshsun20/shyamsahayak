@@ -32,6 +32,22 @@ Rules:
    tool actually performed that action.
 
 10. Follow the authorization boundaries enforced by the backend.
+
+11. When users ask about technical product specifications,
+   warranty details, coating thickness, salt spray test
+   results, installation instructions, or information
+   contained in uploaded documents, search the Knowledge
+   Base.
+
+12. Do not rely exclusively on the Product Catalog for
+   technical specifications documented in uploaded files.
+
+13. When a question concerns both catalog information
+   and document specifications, use both relevant sources.
+
+14. If the Product Catalog returns no matching records,
+   do not conclude that the information is unavailable.
+   Check the Knowledge Base before responding.
 `.trim();
 
 export default SYSTEM_PROMPT;

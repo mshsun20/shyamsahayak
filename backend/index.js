@@ -16,6 +16,7 @@ import { registerChatSocket } from "./sockets/chat/chat.socket.js";
 
 // Import the AI tool bootstrap to register tools
 import "./ai/tools/ai.tool.bootstrap.js";
+import { initializeKnowledgeBaseCollection } from "./config/qdrant.js";
 
 // route imports
 import authRouter from "./routes/auth.route.js";
@@ -173,6 +174,7 @@ io.on("connection", (socket) => {
 // Start Application
 (async () => {
     await connectDB();
+    await initializeKnowledgeBaseCollection();
     httpServer.listen(env.port, () => {
         console.log(`Server is running on port ${env.port} in ${env.nodeEnv} mode`);
         console.log(`WebSocket is running on port ${env.port}`);

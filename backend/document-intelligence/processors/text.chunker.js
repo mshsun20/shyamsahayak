@@ -80,5 +80,5 @@ export const createTextChunks = (text, metadata = {}) => {
 
     pushChunk();
 
-    return chunks.filter((chunk) => chunk.content.length >= 100);
+    return chunks.filter((chunk) => chunk.content.trim().length >= 0);
 };

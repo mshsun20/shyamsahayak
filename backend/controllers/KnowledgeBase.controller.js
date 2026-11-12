@@ -15,7 +15,7 @@ import { asciiGenerator } from "../utils/asciiGenrator.js";
 // Reusable functions
 const codeGenerator = (text) => {
     const code = String(text || "").trim().toLowerCase();
-    return `KB-${asciiGenerator(code)}}`;
+    return `KB-${asciiGenerator(code)}`;
 }
 
 
