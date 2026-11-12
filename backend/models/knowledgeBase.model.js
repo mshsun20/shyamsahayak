@@ -7,7 +7,7 @@ const KnowledgeBaseSchema = new Schema({
     category: { type: String, required: true, enum:["Products", "Installation", "Warranty", "Videos"], trim: true },
     shortDescription: { type: String, trim: true },
     content: { type: String, trim: true },
-    author: { type: Types.ObjectId, ref: "Account" },
+    author: { type: String, trim: true },
     tags: [{ type: String, trim: true }],
     featured: { type: Boolean, required: true, default: false },
     attachments: [{ type: Types.ObjectId, ref: "File" }],
@@ -16,6 +16,9 @@ const KnowledgeBaseSchema = new Schema({
     visibility: { type: String, required: true, default: "All Users" },
     banner: { type: Types.ObjectId, ref: "File" },
     status: { type: String, required: true, enum: ["Draft", "Published", "Archived"], default: "Draft" },
+    aiEnabled: { type: Boolean, required: true, default: false },
+    indexingStatus: { type: String, enum: ["Not Indexed", "Pending", "Processing", "Indexed", "Partially Indexed", "Failed"], default: "Not Indexed", index: true },
+    indexedAt: { type: Date, default: null },
     createdBy: { type: Types.ObjectId, ref: "Account" },
     updatedBy: { type: Types.ObjectId, ref: "Account" }
 }, { timestamps: true })

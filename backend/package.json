@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",
+    "@qdrant/js-client-rest": "^1.20.0",
     "archiver": "^8.0.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.3.0",
@@ -25,11 +26,16 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "mammoth": "^1.13.0",
     "mongoose": "^9.9.4",
     "multer": "^2.4.0",
-    "socket.io": "^4.8.4"
+    "officeparser": "^8.4.1",
+    "pdfjs-dist": "^6.5.438",
+    "socket.io": "^4.8.4",
+    "uuid": "^14.0.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

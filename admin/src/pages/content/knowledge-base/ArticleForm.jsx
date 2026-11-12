@@ -95,7 +95,7 @@ export default function ArticleForm() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get(`/knowledge-base/${id}`);
+      const response = await axiosInstance.get(`/knowledge-bases/${id}`);
       const article = response?.data?.data;
       if (article) {
         const values = { ...emptyForm };
@@ -138,9 +138,9 @@ export default function ArticleForm() {
 
     try {
       if (isEdit) {
-        await axiosInstance.patch(`/knowledge-base/${id}`, formData);
+        await axiosInstance.patch(`/knowledge-bases/${id}`, formData);
       } else {
-        await axiosInstance.post(`/knowledge-base`, formData);
+        await axiosInstance.post(`/knowledge-bases`, formData);
       }
       dispatch(showSnackbar({ message: isEdit ? "Article updated successfully" : "Article created successfully", type: "success" }));
       navigate("/content/knowledge-base");
