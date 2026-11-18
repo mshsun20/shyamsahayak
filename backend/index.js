@@ -94,6 +94,11 @@ app.use("/api/metrics", metricRouter);
 app.use("/api/product-weight-allocations", productWeightAllocationRouter);
 app.use("/api/visits", visitRouter);
 
+// ping
+app.get("/api", (req, res) => {
+    res.status(200).json({ message: "Welcome to the Shyam Sahayak API!" });
+});
+
 // UI Static Serving
 if (['quality', 'production'].includes(env.nodeEnv)) {    
     // =========================
@@ -118,11 +123,6 @@ if (['quality', 'production'].includes(env.nodeEnv)) {
         res.sendFile(path.join(frontendDistPath, "index.html"));
     });
 }
-
-// ping
-app.get("/", (req, res) => {
-    res.status(200).json({ message: "Welcome to the Shyam Sahayak API!" });
-});
 
 
 // HTTP Server
