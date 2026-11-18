@@ -109,8 +109,12 @@ export const searchKnowledgeBase = async ({
         throw new Error("Knowledge Base AI is currently disabled.");
     }
 
-    if (!kbConfig.voyage.apiKey) {
-        throw new Error("Voyage AI API key is not configured.");
+    // if (!kbConfig.voyage.apiKey) {
+    //     throw new Error("Voyage AI API key is not configured.");
+    // }
+
+    if (!kbConfig.embedding.apiKey) {
+        throw new Error("Gemini API key is not configured.");
     }
 
 
@@ -134,13 +138,17 @@ export const searchKnowledgeBase = async ({
         validated.query
     );
 
-    if (
-        !Array.isArray(queryVector) ||
-        queryVector.length !== kbConfig.voyage.dimensions
-    ) {
-        throw new Error(
-            "Invalid query embedding dimensions. Check VOYAGE_DIMENSIONS and Qdrant configuration."
-        );
+    // if (
+    //     !Array.isArray(queryVector) ||
+    //     queryVector.length !== kbConfig.voyage.dimensions
+    // ) {
+    //     throw new Error(
+    //         "Invalid query embedding dimensions. Check VOYAGE_DIMENSIONS and Qdrant configuration."
+    //     );
+    // }
+
+    if (!Array.isArray(queryVector) || queryVector.length !== kbConfig.embedding.dimensions) {
+        throw new Error("Invalid Gemini query embedding dimensions. Check GEMINI_EMBEDDING_DIMENSIONS and Qdrant configuration.");
     }
 
 
