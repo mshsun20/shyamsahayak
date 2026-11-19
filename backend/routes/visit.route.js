@@ -11,6 +11,7 @@ visitRouter.get("/", requirePermission("visit:read"), Visit.read);
 visitRouter.get("/unique/:key", requirePermission("visit:read"), Visit.readByUniqueKey);
 visitRouter.get("/:id", requirePermission("visit:read"), Visit.readById);
 visitRouter.patch("/:id", requirePermission("visit:update"), Visit.update);
+visitRouter.patch("/unique/:key", requirePermission("visit:update"), Visit.updateByUniqueKey);
 visitRouter.delete("/:id", requirePermission("visit:delete"), Visit.remove);
 
 export default visitRouter;

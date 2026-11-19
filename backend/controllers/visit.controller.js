@@ -153,6 +153,22 @@ const update = async (req, res) => {
     }
 }
 
+const updateByUniqueKey = async (req, res) => {
+    try {
+        const key = String(req.params.key || "").trim();
+        const existing = await readByUniqueKeyFunction(key);
+        if (!existing) return res.status(404).json({ success: false, message: "Visit doesn't exist" });
+
+        const payload = buildPayload(req.body, true); // code is never changed
+        payload.updatedBy = req.user?._id || null;
+        const visit = await updateFunction(existing._id, payload);
+        if (!visit) throw httpError(400, "Visit update failed");
+        return res.status(200).json({ success: true, message: "Visit details updated successfully", data: visit });
+    } catch (error) {
+        return sendError(res, error);
+    }
+}
+
 const remove = async (req, res) => {
     try {
         const id = requireObjectId(req.params.id, "visit id");
@@ -165,5 +181,5 @@ const remove = async (req, res) => {
     }
 }
 
-const Visit = { create, read, readById, readByUniqueKey, update, remove };
+const Visit = { create, read, readById, readByUniqueKey, update, updateByUniqueKey, remove };
 export default Visit;
