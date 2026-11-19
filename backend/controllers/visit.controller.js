@@ -181,5 +181,17 @@ const remove = async (req, res) => {
     }
 }
 
-const Visit = { create, read, readById, readByUniqueKey, update, updateByUniqueKey, remove };
+const removeByUniqueKey = async (req, res) => {
+    try {
+        const key = String(req.params.key || "").trim();
+        const existing = await readByUniqueKeyFunction(key);
+        if (!existing) return res.status(404).json({ success: false, message: "Visit doesn't exist" });
+        const removed = await deleteFunction(existing._id);
+        return res.status(200).json({ success: true, message: "Visit removed successfully", data: removed });
+    } catch (error) {
+        return sendError(res, error);
+    }
+}
+
+const Visit = { create, read, readById, readByUniqueKey, update, updateByUniqueKey, remove, removeByUniqueKey };
 export default Visit;
