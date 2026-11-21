@@ -19,7 +19,7 @@ const claimJob = async () => {
       ],
     },
     { $set: { status: "Processing", lockedAt: now, lockedBy: workerId, startedAt: now, error: null }, $inc: { attempts: 1 } },
-    { sort: { nextRunAt: 1, createdAt: 1 }, new: true }
+    { sort: { nextRunAt: 1, createdAt: 1 }, returnDocument: "after" }
   );
 };
 

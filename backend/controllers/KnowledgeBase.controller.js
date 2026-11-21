@@ -124,7 +124,7 @@ const update = async (req, res) => {
         await uploadFilesFromRequest(req, payload);
         if (payload.category) payload.category = await validateCategory(payload.category);
         for (const key of ["_id", "code", "title", "createdBy"]) delete payload[key];
-        if (payload.aiEnabled !== undefined) payload.aiEnabled = payload.aiEnabled === true || payload.aiEnabled === "true";
+        if (payload.aiEnabled !== undefined) payload.aiEnabled = payload.aiEnabled === true || String(payload.aiEnabled).toLowerCase() === "true";
         payload.updatedBy = req.user?._id || null;
         const updated = await updateFunction(id, payload);
         await syncKnowledgeBaseAssets(id);

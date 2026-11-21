@@ -214,18 +214,10 @@ export const searchKnowledgeBase = async ({
 
     const knowledgeBases = await KnowledgeBase.find({
         _id: { $in: knowledgeBaseIds },
-
         status: "Published",
-
         aiEnabled: true,
-
-        visibility: "All Users",
-    })
-        .select(
-            "_id code title category shortDescription status aiEnabled visibility"
-        )
-        .lean();
-
+        visibility: { $in: ["Visible to all users", "All Users"] },
+    }).select("_id code title category shortDescription status aiEnabled visibility").lean();
 
     const knowledgeBaseMap = new Map(
         knowledgeBases.map((item) => [

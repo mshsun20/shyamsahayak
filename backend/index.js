@@ -18,6 +18,10 @@ import { registerChatSocket } from "./sockets/chat/chat.socket.js";
 import "./ai/tools/ai.tool.bootstrap.js";
 import { initializeKnowledgeBaseCollection } from "./config/qdrant.js";
 
+import { initializeKnowledgeBaseModels } from "./services/knowledgeBaseAI/modelInitializer.service.js";
+import { startKnowledgeBaseWorker } from "./services/knowledgeBaseAI/worker.service.js";
+import { validateKnowledgeBaseAIConfig } from "./config/kbAI.config.js";
+
 // route imports
 import authRouter from "./routes/auth.route.js";
 import permissionRouter from "./routes/permission.route.js";
@@ -171,12 +175,35 @@ io.on("connection", (socket) => {
 });
 
 
-// Start Application
+
+/* --------------------------------------------------------------
+   START APPLICATION
+-------------------------------------------------------------- */
 (async () => {
-    await connectDB();
-    await initializeKnowledgeBaseCollection();
-    httpServer.listen(env.port, () => {
-        console.log(`Server is running on port ${env.port} in ${env.nodeEnv} mode`);
-        console.log(`WebSocket is running on port ${env.port}`);
-    })
+    try {
+        console.log("========== STARTING SHYAM SAHAYAK ==========");
+        // 1. Connect MongoDB
+        await connectDB();
+
+        // 2. Validate Gemini and Knowledge Base settings
+        validateKnowledgeBaseAIConfig();
+        // 3. Initialize Knowledge Base MongoDB models
+        await initializeKnowledgeBaseModels();
+        // 4. Initialize Qdrant collection and indexes
+        await initializeKnowledgeBaseCollection();
+        // 5. Start Knowledge Base background worker
+        startKnowledgeBaseWorker();
+
+        // 6. Start HTTP and Socket.IO server
+        httpServer.listen(env.port, () => {
+            console.log("--------------------------------------------");
+            console.log("Shyam Sahayak API started successfully.");
+            console.log("Port:", env.port);
+            console.log("Environment:", env.nodeEnv);
+            console.log("--------------------------------------------");
+        });
+    } catch (error) {
+        console.error("[APPLICATION STARTUP ERROR]", error);
+        process.exit(1);
+    }
 })();

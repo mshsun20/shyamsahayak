@@ -1,0 +1,935 @@
+{
+  "slideNumber": 9,
+  "slideMetadata": {
+    "slideNumber": 9,
+    "background": "#FFFFFF"
+  },
+  "slideKeys": [
+    "type",
+    "children",
+    "metadata",
+    "notes"
+  ],
+  "records": [
+    {
+      "depth": 0,
+      "type": "slide",
+      "text": "Key Product Features | Key Product | Features | AI + Zn coating | AI + Zn | coating | Chemical coating | Chemical | Primer | Top coat | Guard film | CR | primer | Back coat | Coating | Paint Layer | Paint Microns | Protective Layer | Protective | Layer | Warranty | Salt Spray Test | Salt Spray | Test | AZ 150 | AZ 70 | 4 coating | 32 Micron | 25-27 Micron | Up to 15 years | Up to 7 years | 1200 | hours | 1000 | 10",
+      "bounds": null,
+      "metadata": {
+        "slideNumber": 9,
+        "background": "#FFFFFF"
+      }
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Key Product Features | Key Product | Features",
+      "bounds": {
+        "x": 468,
+        "y": 46.7,
+        "width": 443.29,
+        "height": 52.35
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Key Product",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Features",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "AI + Zn coating | AI + Zn | coating",
+      "bounds": {
+        "x": 370.77,
+        "y": 247.82,
+        "width": 76.41,
+        "height": 30.8
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "AI + Zn",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Chemical coating | Chemical | coating",
+      "bounds": {
+        "x": 370.77,
+        "y": 204.45,
+        "width": 76.41,
+        "height": 30.8
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Chemical",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Primer",
+      "bounds": {
+        "x": 370.77,
+        "y": 161.07,
+        "width": 76.41,
+        "height": 30.8
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Primer",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Top coat",
+      "bounds": {
+        "x": 370.77,
+        "y": 117.7,
+        "width": 76.41,
+        "height": 30.8
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Top coat",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Guard film",
+      "bounds": {
+        "x": 370.77,
+        "y": 74.32,
+        "width": 76.41,
+        "height": 30.8
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Guard film",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "CR",
+      "bounds": {
+        "x": 370.77,
+        "y": 291.2,
+        "width": 76.41,
+        "height": 30.8
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "CR",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "AI + Zn coating | AI + Zn | coating",
+      "bounds": {
+        "x": 370.77,
+        "y": 334.58,
+        "width": 76.41,
+        "height": 30.8
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "AI + Zn",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Chemical coating | Chemical | coating",
+      "bounds": {
+        "x": 370.77,
+        "y": 377.95,
+        "width": 76.41,
+        "height": 30.8
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Chemical",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "primer",
+      "bounds": {
+        "x": 370.77,
+        "y": 421.33,
+        "width": 76.41,
+        "height": 30.8
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "primer",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Back coat",
+      "bounds": {
+        "x": 370.77,
+        "y": 464.7,
+        "width": 76.41,
+        "height": 30.8
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Back coat",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "AI + Zn coating | AI + Zn | coating",
+      "bounds": {
+        "x": 368.7,
+        "y": 245.62,
+        "width": 80.55,
+        "height": 35.2
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "AI + Zn",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Chemical coating | Chemical | coating",
+      "bounds": {
+        "x": 368.7,
+        "y": 202.25,
+        "width": 80.55,
+        "height": 35.2
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Chemical",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Primer",
+      "bounds": {
+        "x": 368.7,
+        "y": 158.87,
+        "width": 80.55,
+        "height": 35.2
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Primer",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Top coat",
+      "bounds": {
+        "x": 368.7,
+        "y": 115.5,
+        "width": 80.55,
+        "height": 35.2
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Top coat",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Guard film",
+      "bounds": {
+        "x": 368.7,
+        "y": 72.12,
+        "width": 80.55,
+        "height": 35.2
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Guard film",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "CR",
+      "bounds": {
+        "x": 368.7,
+        "y": 289,
+        "width": 80.55,
+        "height": 35.2
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "CR",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "AI + Zn coating | AI + Zn | coating",
+      "bounds": {
+        "x": 368.7,
+        "y": 332.38,
+        "width": 80.55,
+        "height": 35.2
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "AI + Zn",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Chemical coating | Chemical | coating",
+      "bounds": {
+        "x": 368.7,
+        "y": 375.75,
+        "width": 80.55,
+        "height": 35.2
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Chemical",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "primer",
+      "bounds": {
+        "x": 368.7,
+        "y": 419.13,
+        "width": 80.55,
+        "height": 35.2
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "primer",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Back coat",
+      "bounds": {
+        "x": 368.7,
+        "y": 462.5,
+        "width": 80.55,
+        "height": 35.2
+      },
+      "metadata": {
+        "alignment": "center"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Back coat",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Coating",
+      "bounds": {
+        "x": 467.21,
+        "y": 179.38,
+        "width": 151.05,
+        "height": 46.05
+      },
+      "metadata": {
+        "alignment": "left"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Paint Layer",
+      "bounds": {
+        "x": 467.21,
+        "y": 279.76,
+        "width": 151.05,
+        "height": 46.05
+      },
+      "metadata": {
+        "alignment": "left"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Paint Layer",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Paint Microns",
+      "bounds": {
+        "x": 467.21,
+        "y": 329.95,
+        "width": 151.05,
+        "height": 46.05
+      },
+      "metadata": {
+        "alignment": "left"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Paint Microns",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Protective Layer | Protective | Layer",
+      "bounds": {
+        "x": 467.21,
+        "y": 229.57,
+        "width": 151.05,
+        "height": 46.05
+      },
+      "metadata": {
+        "alignment": "left"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Protective",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Layer",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Warranty",
+      "bounds": {
+        "x": 467.21,
+        "y": 379.86,
+        "width": 151.05,
+        "height": 46.05
+      },
+      "metadata": {
+        "alignment": "left"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Warranty",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Salt Spray Test | Salt Spray | Test",
+      "bounds": {
+        "x": 467.21,
+        "y": 430.05,
+        "width": 151.05,
+        "height": 46.05
+      },
+      "metadata": {
+        "alignment": "left"
+      }
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Salt Spray",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Test",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "AZ 150",
+      "bounds": {
+        "x": 663.74,
+        "y": 190.29,
+        "width": 90.21,
+        "height": 24.23
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "AZ 150",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "AZ 70",
+      "bounds": {
+        "x": 778.75,
+        "y": 190.29,
+        "width": 96.28,
+        "height": 24.23
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "AZ 70",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "4 coating",
+      "bounds": {
+        "x": 663.74,
+        "y": 290.67,
+        "width": 90.21,
+        "height": 24.23
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "4 coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "4 coating",
+      "bounds": {
+        "x": 778.75,
+        "y": 290.67,
+        "width": 96.28,
+        "height": 24.23
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "4 coating",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "32 Micron",
+      "bounds": {
+        "x": 663.74,
+        "y": 340.86,
+        "width": 90.21,
+        "height": 24.23
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "32 Micron",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "25-27 Micron",
+      "bounds": {
+        "x": 778.75,
+        "y": 340.86,
+        "width": 96.28,
+        "height": 24.23
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "25-27 Micron",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Up to 15 years",
+      "bounds": {
+        "x": 663.74,
+        "y": 382.28,
+        "width": 90.21,
+        "height": 41.2
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Up to 15 years",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "Up to 7 years",
+      "bounds": {
+        "x": 778.75,
+        "y": 390.76,
+        "width": 96.28,
+        "height": 24.23
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "Up to 7 years",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "1200",
+      "bounds": {
+        "x": 663.74,
+        "y": 432.47,
+        "width": 90.21,
+        "height": 41.2
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "1200",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "hours",
+      "bounds": {
+        "x": 663.74,
+        "y": 432.47,
+        "width": 90.21,
+        "height": 41.2
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "hours",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "1000",
+      "bounds": {
+        "x": 778.75,
+        "y": 432.47,
+        "width": 96.28,
+        "height": 41.2
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "1000",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "hours",
+      "bounds": {
+        "x": 778.75,
+        "y": 432.47,
+        "width": 96.28,
+        "height": 41.2
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "hours",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "10",
+      "bounds": {
+        "x": 663.74,
+        "y": 240.48,
+        "width": 90.21,
+        "height": 24.23
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "10",
+      "bounds": null,
+      "metadata": null
+    },
+    {
+      "depth": 1,
+      "type": "paragraph",
+      "text": "10",
+      "bounds": {
+        "x": 778.75,
+        "y": 240.48,
+        "width": 96.28,
+        "height": 24.23
+      },
+      "metadata": {}
+    },
+    {
+      "depth": 2,
+      "type": "text",
+      "text": "10",
+      "bounds": null,
+      "metadata": null
+    }
+  ]
+}

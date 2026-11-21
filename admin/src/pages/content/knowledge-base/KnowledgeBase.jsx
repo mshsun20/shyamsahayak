@@ -36,6 +36,7 @@ const bulkFields = [
   { key: "metaDescription", sample: "Guide to adding a new product" },
   { key: "visibility", sample: "Visible to all users" },
   { key: "status", sample: "Draft" },
+  { key: "aiEnabled", type: "boolean", sample: "true" },
 ];
 
 const filterDefaults = {

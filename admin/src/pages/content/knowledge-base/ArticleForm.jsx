@@ -44,6 +44,7 @@ const emptyForm = {
   metaTitle: "",
   metaDescription: "",
   visibility: "Visible to all users",
+  aiEnabled: false,
 };
 
 function formatFileSize(bytes) {
@@ -285,6 +286,29 @@ export default function ArticleForm() {
               )}
               <p className="text-xs text-gray-400">{shortDescription.length} / 180</p>
             </div>
+          </div>
+          {/* AI Knowledge Base Settings */}
+          <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50/50 p-4">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register("aiEnabled")}
+                className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <span>
+                <span className="block text-sm font-semibold text-gray-800">
+                  Enable AI Knowledge Base Search
+                </span>
+                <span className="block mt-1 text-xs text-gray-600">
+                  Allow Sahayak AI to search this article and its uploaded
+                  attachments when answering relevant business questions.
+                </span>
+                <span className="block mt-1 text-xs text-gray-500">
+                  Only published articles visible to all users will be indexed
+                  by the current public Knowledge Base retrieval workflow.
+                </span>
+              </span>
+            </label>
           </div>
         </div>
 

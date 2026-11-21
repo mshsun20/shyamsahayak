@@ -14,11 +14,15 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "ai:test": "node ai/test/ai.test.js"
+    "ai:test": "node ai/test/ai.test.js",
+    "kb:reindex": "node scripts/reindexKnowledgeBase.js",
+    "kb:verify": "node scripts/verifyKnowledgeBase.js",
+    "kb:search-test": "node scripts/testKnowledgeBaseSearch.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",
     "@qdrant/js-client-rest": "^1.20.0",
+    "@xmldom/xmldom": "^0.8.10",
     "archiver": "^8.0.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.3.0",
@@ -29,6 +33,7 @@
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "jszip": "^3.10.1",
     "mammoth": "^1.13.0",
     "mongoose": "^9.9.4",
     "multer": "^2.4.0",
