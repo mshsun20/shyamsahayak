@@ -45,6 +45,7 @@ const emptyForm = {
   metaDescription: "",
   visibility: "Visible to all users",
   aiEnabled: false,
+  attachments: []
 };
 
 function formatFileSize(bytes) {
@@ -97,6 +98,7 @@ export default function ArticleForm() {
     setIsLoading(true);
     try {
       const response = await axiosInstance.get(`/knowledge-bases/${id}`);
+      // console.log(response)
       const article = response?.data?.data;
       if (article) {
         const values = { ...emptyForm };
@@ -105,6 +107,10 @@ export default function ArticleForm() {
         });
         reset(values);
         setBannerPreview(typeof article.banner === "string" ? article.banner : "");
+        setAttachments(values["attachments"].map((f) => ({
+          id: f._id,
+          ...f
+        })))
       }
     } catch (error) {
       console.error(error.message);
@@ -189,7 +195,8 @@ export default function ArticleForm() {
   };
 
   const removeAttachment = (fileId) => {
-    setAttachments((prev) => prev.filter((f) => f.id !== fileId));
+    console.log(fileId);
+    setAttachments((prev) => prev.filter(f => f.id !== fileId));
   };
 
   const inputClass = (field) =>
@@ -479,6 +486,7 @@ export default function ArticleForm() {
               <span>File Size</span>
               <span className="text-right">Actions</span>
             </div>
+            {/* {"Hello"} {JSON.stringify(attachments)} */}
             {attachments.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-1.5 py-8 text-gray-400">
                 <FileText size={20} />
@@ -489,8 +497,8 @@ export default function ArticleForm() {
               <div className="divide-y divide-gray-100">
                 {attachments.map((f) => (
                   <div key={f.id} className="grid grid-cols-[1fr_120px_100px_80px] items-center px-4 py-2.5 text-sm">
-                    <span className="text-gray-700 truncate pr-2">{f.name}</span>
-                    <span className="text-gray-500">{f.type}</span>
+                    <span className="text-gray-700 truncate pr-2">{f.name || f.filename}</span>
+                    <span className="text-gray-500">{String(f.name || f.filename)?.split(".")[1]}</span>
                     <span className="text-gray-500">{f.size}</span>
                     <span className="flex items-center justify-end gap-1">
                       <button type="button" className="p-1 text-gray-400 hover:text-info">

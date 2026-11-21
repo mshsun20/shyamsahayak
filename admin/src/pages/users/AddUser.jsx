@@ -190,7 +190,7 @@ const AddUser = () => {
     try {
       if (isEdit) {
         await axiosInstance.patch(`/accounts/${id}`, payload);
-        await axiosInstance.put(`/accounts/${id}/permissions`, { permissions: data.permissions || [] });
+        await axiosInstance.patch(`/accounts/${id}/permissions`, { permissions: data.permissions || [] });
       } else {
         await axiosInstance.post(`/accounts`, { ...payload, permissions: data.permissions || [] });
       }
@@ -343,9 +343,6 @@ const AddUser = () => {
                     <option key={m._id} value={m._id}>{m.fullName}</option>
                   ))}
                 </select>
-                <button type="button" title="Add manager" className="shrink-0 w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-400 hover:text-primary hover:border-primary">
-                  <Plus size={15} />
-                </button>
               </div>
             </div>
             <div>
@@ -357,9 +354,6 @@ const AddUser = () => {
                     <option key={t}>{t}</option>
                   ))}
                 </select>
-                <button type="button" title="Add state" className="shrink-0 w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-400 hover:text-primary hover:border-primary">
-                  <Plus size={15} />
-                </button>
               </div>
             </div>
             <div>
@@ -371,9 +365,6 @@ const AddUser = () => {
                     <option key={d}>{d}</option>
                   ))}
                 </select>
-                <button type="button" title="Add district" className="shrink-0 w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-400 hover:text-primary hover:border-primary">
-                  <Plus size={15} />
-                </button>
               </div>
             </div>
           </div>

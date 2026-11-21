@@ -6,7 +6,7 @@ export const createFunction = async (payload) => {
 }
 
 export const readFunction = async () => {
-    return KnowledgeBase.find().populate("attachments banner")
+    return KnowledgeBase.find().sort({ updatedAt: -1 }).populate("attachments banner")
     .populate({ path: "createdBy", select: "-password -passwordBackup" })
     .populate({ path: "updatedBy", select: "-password -passwordBackup" })
     .lean();

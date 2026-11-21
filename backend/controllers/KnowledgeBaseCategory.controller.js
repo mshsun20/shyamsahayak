@@ -15,10 +15,10 @@ const create = async (req, res) => {
     const name = String(req.body?.name || "").trim();
     if (!name) return res.status(400).json({ success: false, message: "Category name is required" });
     const userId = req.user?._id || null;
+    const payload = req.body || {};
     const category = await KnowledgeBaseCategory.create({
-      name, code: String(req.body.code || makeCode(name)).trim().toUpperCase(),
-      description: req.body.description || "", status: req.body.status || "Active",
-      createdBy: userId, updatedBy: userId,
+      code: String(req.body.code || makeCode(name)).trim().toUpperCase(),
+      ...payload, createdBy: userId, updatedBy: userId,
     });
     res.status(201).json({ success: true, data: category });
   } catch (error) { res.status(400).json({ success: false, message: error.code === 11000 ? "Category name or code already exists" : error.message }); }

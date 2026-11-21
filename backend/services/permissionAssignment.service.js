@@ -62,8 +62,13 @@ export const assignAccountPermissions = async (accountId, permissionIds) => {
     // console.log(permissionIds);
     const permissions = await validatePermissions(permissionIds);
     account.permissions = permissions.map((permission) => permission._id);
-    await account.save();
-    return Account.findById(accountId).populate({
+    return Account.findByIdAndUpdate(accountId, {
+        $set: {
+            permissions: account.permissions
+        }
+    }, {
+        returnDocument: "after"
+    }).populate({
         path: "permissions",
         select: "code name description module action status",
     });
