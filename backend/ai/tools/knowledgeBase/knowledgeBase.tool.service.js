@@ -1,5 +1,6 @@
 
 import KnowledgeBase from "../../../models/knowledgeBase.model.js";
+import KnowledgeBaseCategory from "../../../models/knowledgeBaseCategory.model.js";
 
 import kbConfig from "../../../config/kbAI.config.js";
 
@@ -30,6 +31,23 @@ const normalizeText = (value) => {
     return String(value)
         .trim()
         .replace(/\s+/g, " ");
+};
+
+
+/* ------------------------------------------------------------------
+   Resolve a category (name or code, any case) to the name stored in
+   the Knowledge Base Category master. Unknown values pass through.
+------------------------------------------------------------------ */
+
+const resolveCategoryName = async (value) => {
+    const text = normalizeText(value);
+    if (!text) return "";
+    const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const match = await KnowledgeBaseCategory.findOne({
+        status: "Active",
+        $or: [{ name: new RegExp(`^${escaped}$`, "i") }, { code: text.toUpperCase() }],
+    }).select("name").lean();
+    return match?.name || text;
 };
 
 
@@ -127,7 +145,7 @@ export const searchKnowledgeBase = async ({
         limit,
     });
 
-    const normalizedCategory = normalizeText(category);
+    const normalizedCategory = await resolveCategoryName(category);
 
 
     /* --------------------------------------------------------------
@@ -217,7 +235,9 @@ export const searchKnowledgeBase = async ({
         status: "Published",
         aiEnabled: true,
         visibility: { $in: ["Visible to all users", "All Users"] },
-    }).select("_id code title category shortDescription status aiEnabled visibility").lean();
+    }).select("_id code title category shortDescription status aiEnabled visibility")
+      .populate("category", "name")
+      .lean();
 
     const knowledgeBaseMap = new Map(
         knowledgeBases.map((item) => [
@@ -264,7 +284,7 @@ export const searchKnowledgeBase = async ({
 
                 title: knowledgeBase.title,
 
-                category: knowledgeBase.category,
+                category: knowledgeBase.category?.name || "",
 
                 chunkIndex:
                     Number(payload.chunkIndex ?? 0),

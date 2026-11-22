@@ -15,7 +15,6 @@ const filterDefaults = { search: "", status: "All" };
 
 const columns = [
   { key: "name", label: "Category" },
-  { key: "code", label: "Code" },
   { key: "description", label: "Description" },
   { key: "status", label: "Status" },
   { key: "updatedAt", label: "Updated On" },
@@ -44,7 +43,7 @@ export default function KnowledgeBaseCategoryMaster() {
   const [isLoading, setIsLoading] = useState(false);
   const [viewTarget, setViewTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [sort, setSort] = useState({ key: "name", dir: "asc" });
+  const [sort, setSort] = useState({ key: "createdAt", dir: "asc" });
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -195,11 +194,6 @@ export default function KnowledgeBaseCategoryMaster() {
                       <CategoryTile icon={category.icon} iconBg={category.iconBg} />
                       <span className="font-medium text-gray-900">{category.name}</span>
                     </div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className="inline-flex px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs font-mono">
-                      {category.code}
-                    </span>
                   </td>
                   <td className="px-4 py-3.5 text-gray-600 max-w-xs truncate">{category.description || "-"}</td>
                   <td className="px-4 py-3.5">

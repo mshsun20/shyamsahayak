@@ -432,7 +432,6 @@ export const initialSchemes = [
 ];
 
 // ---- Knowledge Base ----
-export const articleCategories = ["Products", "Installation", "Warranty", "Videos"];
 export const articleStatuses = ["Published", "Draft", "Archived"];
 export const articleAuthors = ["Admin User", "Priya Sharma", "Amit Verma", "Neha Patel", "Rohit Kumar"];
 

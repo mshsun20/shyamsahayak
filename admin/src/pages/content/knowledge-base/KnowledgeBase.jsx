@@ -19,14 +19,16 @@ import Modal from "../../../components/Modal";
 import Loader from "../../../components/Loader";
 import axiosInstance from "../../../config/axiosInstance";
 import { showSnackbar } from "../../../redux/slices/snackbarSlice";
-import { articleCategories, articleStatuses, articleAuthors } from "../../../data/content";
+import { articleStatuses, articleAuthors } from "../../../data/content";
+import useKbCategories from "../../../hooks/useKbCategories";
+import { CategoryBadge } from "../../configuration/kb-category/knowledgeBaseCategoryUtils";
 import BulkUploadModal from "../../../components/Bulkuploadmodal";
 
 // columns accepted by POST /knowledge-bases/import
-const bulkFields = [
+const buildBulkFields = (categorySample) => [
   { key: "code", required: true, sample: "KB-001" },
   { key: "title", required: true, sample: "How to Create a New Product" },
-  { key: "category", sample: "Products" },
+  { key: "category", sample: categorySample },
   { key: "shortDescription", sample: "Step-by-step guide to add a new product" },
   { key: "content", sample: "Open Products, click Add Product and fill in the details." },
   { key: "author", sample: "Admin User" },
@@ -44,13 +46,6 @@ const filterDefaults = {
   category: "All Categories",
   status: "All Status",
   author: "All Authors",
-};
-
-const categoryBadge = {
-  Products: "bg-red-50 text-danger",
-  Schemes: "bg-green-50 text-success",
-  "User Management": "bg-blue-50 text-info",
-  Settings: "bg-indigo-50 text-indigo-600",
 };
 
 const statusBadge = {
@@ -98,6 +93,14 @@ export default function KnowledgeBase() {
   const { register, watch, reset } = useForm({ defaultValues: filterDefaults });
   const { search, category, status, author } = watch();
 
+  // Categories come from the Knowledge Category Master (inactive ones included so existing articles can still be filtered).
+  // Articles reference a category by _id; the API returns it populated (name + theme).
+  const { categories } = useKbCategories({ status: "all" });
+  const bulkFields = useMemo(
+    () => buildBulkFields(categories.find((c) => c.status === "Active")?.name || "Category name"),
+    [categories]
+  );
+
   const [sortDir, setSortDir] = useState(null);
   const [viewArticle, setViewArticle] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -126,7 +129,7 @@ export default function KnowledgeBase() {
       const q = search.toLowerCase();
       const matchesSearch =
         a.title?.toLowerCase().includes(q) || a.shortDescription?.toLowerCase().includes(q);
-      const matchesCategory = category === "All Categories" || a.category === category;
+      const matchesCategory = category === "All Categories" || a.category?._id === category;
       const matchesStatus = status === "All Status" || a.status === status;
       const matchesAuthor = author === "All Authors" || a.author === author;
       return matchesSearch && matchesCategory && matchesStatus && matchesAuthor;
@@ -210,8 +213,10 @@ export default function KnowledgeBase() {
             className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             <option>All Categories</option>
-            {articleCategories.map((c) => (
-              <option key={c}>{c}</option>
+            {categories.map((c) => (
+              <option key={c._id} value={c._id}>
+                {c.name}{c.status === "Inactive" ? " (Inactive)" : ""}
+              </option>
             ))}
           </select>
 
@@ -273,9 +278,7 @@ export default function KnowledgeBase() {
                     <p className="text-xs text-gray-400">{article.shortDescription}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${categoryBadge[article.category]}`}>
-                      {article.category}
-                    </span>
+                    <CategoryBadge name={article.category?.name} category={article.category} />
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusBadge[article.status]}`}>
@@ -329,7 +332,7 @@ export default function KnowledgeBase() {
         <Modal title="Article Details" onClose={() => setViewArticle(null)}>
           <div className="space-y-2.5 text-sm">
             <div className="flex justify-between"><span className="text-gray-400">Title</span><span className="text-gray-800 font-medium">{viewArticle.title}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Category</span><span className="text-gray-800">{viewArticle.category}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Category</span><span className="text-gray-800">{viewArticle.category?.name || "—"}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Status</span><span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusBadge[viewArticle.status]}`}>{viewArticle.status}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Author</span><span className="text-gray-800">{viewArticle.author}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Views</span><span className="text-gray-800">{viewArticle.views ?? "—"}</span></div>

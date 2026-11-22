@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, Link } from "react-router-dom";
@@ -30,11 +30,12 @@ import AdminLayout from "../../../layouts/AdminLayout";
 import Loader from "../../../components/Loader";
 import axiosInstance from "../../../config/axiosInstance";
 import { showSnackbar } from "../../../redux/slices/snackbarSlice";
-import { articleCategories, articleAuthors } from "../../../data/content";
+import { articleAuthors } from "../../../data/content";
+import useKbCategories from "../../../hooks/useKbCategories";
 
 const emptyForm = {
   title: "",
-  category: articleCategories[0],
+  category: "",
   status: "Draft",
   shortDescription: "",
   content: "",
@@ -76,6 +77,7 @@ export default function ArticleForm() {
   const [bannerFile, setBannerFile] = useState(null);
   const [bannerPreview, setBannerPreview] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [savedCategory, setSavedCategory] = useState(null); // category of the article being edited ({ _id, name })
 
   const {
     register,
@@ -83,6 +85,7 @@ export default function ArticleForm() {
     watch,
     reset,
     setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm({ defaultValues: emptyForm, mode: "onSubmit" });
 
@@ -93,6 +96,22 @@ export default function ArticleForm() {
   const tags = watch("tags") || [];
   const featured = watch("featured");
   const status = watch("status");
+  const category = watch("category");
+
+  // Category options come from the Knowledge Category Master (active only).
+  const { categories, loaded: categoriesLoaded } = useKbCategories({ status: "Active" });
+  const categoryOptions = useMemo(() => {
+    const options = categories.map((c) => ({ _id: c._id, name: c.name }));
+    // keep an article's current category selectable even if it has since been deactivated
+    return savedCategory && !options.some((o) => o._id === savedCategory._id) ? [...options, savedCategory] : options;
+  }, [categories, savedCategory]);
+
+  // New article: preselect the first active category
+  useEffect(() => {
+    if (!isEdit && categoriesLoaded && !getValues("category") && categories[0]) {
+      setValue("category", categories[0]._id);
+    }
+  }, [isEdit, categoriesLoaded, categories, getValues, setValue]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -105,6 +124,9 @@ export default function ArticleForm() {
         Object.keys(emptyForm).forEach((key) => {
           if (article[key] != null) values[key] = article[key];
         });
+        // category is a populated reference; the form works with its _id
+        values.category = article.category?._id || article.category || "";
+        setSavedCategory(article.category?._id ? { _id: article.category._id, name: article.category.name } : null);
         reset(values);
         setBannerPreview(typeof article.banner === "string" ? article.banner : "");
         setAttachments(values["attachments"].map((f) => ({
@@ -263,10 +285,16 @@ export default function ArticleForm() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Category *</label>
               <select {...register("category", { required: true })} className={inputClass("category")}>
-                {articleCategories.map((c) => (
-                  <option key={c}>{c}</option>
+                <option value="" disabled>Select category</option>
+                {categoryOptions.map((c) => (
+                  <option key={c._id} value={c._id}>{c.name}</option>
                 ))}
               </select>
+              {categoriesLoaded && categories.length === 0 && !category && (
+                <p className="text-xs text-danger mt-1">
+                  No active categories. Add one in Configuration → Knowledge Category Master.
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">Status *</label>

@@ -70,6 +70,26 @@ export function CategoryTile({ icon, iconBg, size = 32 }) {
   );
 }
 
+// Coloured pill for a category name, themed from the category's own master record.
+// `category` is the master record (may be undefined for legacy / unknown names).
+export function CategoryBadge({ name, category }) {
+  const theme = category ? THEMES.find((t) => t.key === matchTheme(category)) : null;
+  const style = theme
+    ? {
+        background: `color-mix(in srgb, ${theme.swatch} 12%, transparent)`,
+        color: `color-mix(in srgb, ${theme.swatch} 75%, black)`,
+      }
+    : undefined;
+  return (
+    <span
+      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${theme ? "" : "bg-gray-100 text-gray-600"}`}
+      style={style}
+    >
+      {name}
+    </span>
+  );
+}
+
 export const userName = (u) => {
   if (!u) return "-";
   if (typeof u === "string") return u;

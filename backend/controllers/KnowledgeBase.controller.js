@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import {
     createFunction,
     readFunction,
@@ -24,12 +25,22 @@ const codeGenerator = (text) => {
     return `KB-${asciiGenerator(code)}`;
 }
 
-const validateCategory = async (categoryName) => {
-    const name = String(categoryName || "").trim();
-    if (!name) throw new Error("Knowledge Base category is required");
-    const exists = await KnowledgeBaseCategory.exists({ name, status: "Active" });
-    if (!exists) throw new Error(`Knowledge Base category '${name}' does not exist or is inactive`);
-    return name;
+// Resolves a category reference to its master record.
+// Accepts the category _id (admin / API), or its name or code (CSV bulk import).
+const resolveCategory = async (value, { requireActive = true } = {}) => {
+    const text = String(value?._id || value || "").trim();
+    if (!text) throw new Error("Knowledge Base category is required");
+    let doc = null;
+    if (mongoose.isValidObjectId(text)) doc = await KnowledgeBaseCategory.findById(text).select("name status").lean();
+    if (!doc) {
+        const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        doc = await KnowledgeBaseCategory.findOne({
+            $or: [{ name: new RegExp(`^${escaped}$`, "i") }, { code: text.toUpperCase() }],
+        }).select("name status").lean();
+    }
+    if (!doc) throw new Error(`Knowledge Base category '${text}' does not exist`);
+    if (requireActive && doc.status !== "Active") throw new Error(`Knowledge Base category '${doc.name}' is inactive`);
+    return doc;
 };
 
 const uploadFilesFromRequest = async (req, payload) => {
@@ -55,8 +66,9 @@ const create = async (req, res) => {
     try {
         const payload = { ...req.body };
         await uploadFilesFromRequest(req, payload);
-        payload.category = await validateCategory(payload.category);
-        payload.code = codeGenerator(`${payload.category}${payload.title}`);
+        const category = await resolveCategory(payload.category);
+        payload.category = category._id;
+        payload.code = codeGenerator(`${category.name}${payload.title}`);
         if (await readByUniqueKeyFunction(payload.code)) return res.status(409).json({ success: false, message: "Knowledge Base entry already exists" });
         payload.status = payload.status || "Draft";
         payload.createdBy = req.user?._id || null;
@@ -75,7 +87,8 @@ const upload = async (req, res) => {
         const results = [];
         for (const row of rows) {
             const payload = { ...row };
-            payload.category = await validateCategory(payload.category);
+            const category = await resolveCategory(payload.category);
+            payload.category = category._id;
             const existing = payload.code ? await readByUniqueKeyFunction(String(payload.code).trim()) : null;
             let saved;
             if (existing) {
@@ -83,7 +96,7 @@ const upload = async (req, res) => {
                 payload.updatedBy = req.user?._id || null;
                 saved = await updateFunction(existing._id, payload);
             } else {
-                payload.code = payload.code || codeGenerator(`${payload.category}${payload.title}`);
+                payload.code = payload.code || codeGenerator(`${category.name}${payload.title}`);
                 payload.createdBy = req.user?._id || null;
                 saved = await createFunction(payload);
             }
@@ -122,7 +135,14 @@ const update = async (req, res) => {
         if (!existing) return res.status(404).json({ success: false, message: "Knowledge Base entry does not exist" });
         const payload = { ...req.body };
         await uploadFilesFromRequest(req, payload);
-        if (payload.category) payload.category = await validateCategory(payload.category);
+        if (payload.category) {
+            // An article may keep a category that has since been deactivated; only a *changed* category must be active.
+            const current = String(existing.category?._id || existing.category || "");
+            const requested = String(payload.category?._id || payload.category).trim();
+            payload.category = requested === current
+                ? (existing.category?._id || existing.category)
+                : (await resolveCategory(requested))._id;
+        }
         for (const key of ["_id", "code", "title", "createdBy"]) delete payload[key];
         if (payload.aiEnabled !== undefined) payload.aiEnabled = payload.aiEnabled === true || String(payload.aiEnabled).toLowerCase() === "true";
         payload.updatedBy = req.user?._id || null;
