@@ -47,6 +47,10 @@ const ThicknessDetails = React.lazy(() => import("../pages/configuration/thickne
 const MetricMaster = React.lazy(() => import("../pages/configuration/metric/MetricMaster"));
 const MetricForm = React.lazy(() => import("../pages/configuration/metric/MetricForm"));
 const MetricDetails = React.lazy(() => import("../pages/configuration/metric/MetricDetails"));
+const KnowledgeBaseCategoryMaster = React.lazy(() => import("../pages/configuration/kb-category/KnowledgeBaseCategoryMaster"));
+const KnowledgeBaseCategoryForm = React.lazy(() => import("../pages/configuration/kb-category/KnowledgeBaseCategoryForm"));
+const ApiClientMaster = React.lazy(() => import("../pages/configuration/api-client/ApiClientMaster"));
+const ApiClientForm = React.lazy(() => import("../pages/configuration/api-client/ApiClientForm"));
 
 
 
@@ -189,6 +193,14 @@ const router = createBrowserRouter([
       { path: "metric-master/add", element: <ProtectedRoute><MetricForm /></ProtectedRoute> },
       { path: "metric-master/edit/:id", element: <ProtectedRoute><MetricForm /></ProtectedRoute> },
       { path: "metric-master/:id", element: <ProtectedRoute><MetricDetails /></ProtectedRoute> },
+      // Knowledge Base Category Master
+      { path: "kb-category-master", element: <ProtectedRoute><KnowledgeBaseCategoryMaster /></ProtectedRoute> },
+      { path: "kb-category-master/add", element: <ProtectedRoute><KnowledgeBaseCategoryForm /></ProtectedRoute> },
+      { path: "kb-category-master/edit/:id", element: <ProtectedRoute><KnowledgeBaseCategoryForm /></ProtectedRoute> },
+      // API Client Master
+      { path: "api-client-master", element: <ProtectedRoute><ApiClientMaster /></ProtectedRoute> },
+      { path: "api-client-master/add", element: <ProtectedRoute><ApiClientForm /></ProtectedRoute> },
+      { path: "api-client-master/edit/:id", element: <ProtectedRoute><ApiClientForm /></ProtectedRoute> },
     ],
   },
 

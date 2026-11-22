@@ -87,7 +87,7 @@ export default function Sidebar() {
     "/product-weight-allocation",
   ];
   const fieldVisitPaths = ["/retailer-profiler", "/fabricator"];
-  const configurationPaths = ["/privilege-master", "/role-master", "/permission-master", "/thickness-master", "/metric-master"];
+  const configurationPaths = ["/privilege-master", "/role-master", "/permission-master", "/thickness-master", "/metric-master", "/kb-category-master", "/api-client-master"];
 
   const isContentActive =
     location.pathname === "/content" ||
@@ -245,6 +245,12 @@ export default function Sidebar() {
               </NavLink>
               <NavLink to="/metric-master" className={configLinkClass}>
                 Metric Master
+              </NavLink>
+              <NavLink to="/kb-category-master" className={configLinkClass}>
+                Knowledge Category Master
+              </NavLink>
+              <NavLink to="/api-client-master" className={configLinkClass}>
+                API Client Master
               </NavLink>
             </div>
           )}
