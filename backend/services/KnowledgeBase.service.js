@@ -15,6 +15,10 @@ export const readFunction = async () => {
     .lean();
 }
 
+export const readIndexedFunction = async () => {
+    return KnowledgeBase.find({ status: "Published", aiEnabled: true }).select("_id").lean();
+}
+
 export const readByIdFunction = async (id) => {
     return KnowledgeBase.findById(id).populate("attachments banner").populate(CATEGORY_POPULATE)
     .populate({ path: "createdBy", select: "-password -passwordBackup" })
@@ -30,7 +34,13 @@ export const readByUniqueKeyFunction = async (uniqueKey) => {
 }
 
 export const updateFunction = async (id, payload) => {
-    const updatedDetails = await KnowledgeBase.findByIdAndUpdate(id, payload, { returnDocument: "after" });
+    const updatedDetails = await KnowledgeBase.findByIdAndUpdate(id, { $set: payload },
+        {
+            returnDocument: "after",
+            runValidators: true,
+            context: "query",
+        }
+    );
     return updatedDetails;
 }
 

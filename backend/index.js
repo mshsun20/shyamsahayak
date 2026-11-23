@@ -31,7 +31,7 @@ import privilegeRouter from "./routes/privilege.route.js";
 import roleRouter from "./routes/role.route.js";
 import productRouter from "./routes/product.route.js";
 import schemeRouter from "./routes/scheme.route.js";
-import knowledgeBaseRouter from "./routes/KnowledgeBase.route.js";
+import knowledgeBaseRouter from "./routes/knowledgeBase.route.js";
 import conversationRouter from "./routes/conversation.route.js";
 import locationRouter from "./routes/mapping/location.route.js";
 import thicknessRouter from "./routes/thickness.route.js";

@@ -1,307 +1,394 @@
-import { useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import {
-  LayoutGrid,
-  Users,
-  FileText,
-  Database,
-  ChevronDown,
-  Store,
-  Globe,
-  Navigation,
-  Store as StoreIcon,
-  Wrench,
-  UserCircle,
-  Shield,
-  ClipboardList,
-  LogOut,
-  Settings,
-  Scale,
-  Zap,
-} from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { ChevronDown, Shield } from "lucide-react";
+
 import Logo from "./Logo";
-import { logout } from "../redux/slices/authSlice"
+import { logout } from "../redux/slices/authSlice";
+
+import {
+  menuItems,
+  getUserPrivilegeHierarchy,
+  filterMenuItems,
+} from "../data/menuItems";
+
+// Update this import path according to your folder structure.
 
 const navItemBase =
   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors";
-const navItemInactive = "text-gray-600 hover:bg-gray-100";
-const navItemActive = "bg-primary-light text-primary";
 
-const subLinkClass = ({ isActive }) =>
-  `flex items-center gap-2 px-2 py-2 rounded-md text-sm ${
-    isActive ? "text-primary font-medium" : "text-gray-500 hover:text-gray-800"
-  }`;
+const navItemInactive =
+  "text-gray-600 hover:bg-gray-100";
 
-const configLinkClass = ({ isActive }) =>
-  `block px-4 py-2 rounded-lg text-sm ${
-    isActive ? "bg-primary-light text-primary font-medium" : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
-  }`;
+const navItemActive =
+  "bg-primary-light text-primary";
 
-function NavItem({ to, icon: Icon, label, end = false }) {
+const subLinkBase =
+  "flex items-center gap-2 px-2 py-2 rounded-md text-sm transition-colors";
+
+const subLinkInactive =
+  "text-gray-500 hover:text-gray-800 hover:bg-gray-50";
+
+const subLinkActive =
+  "text-primary font-medium bg-primary-light";
+
+const configLinkBase =
+  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors";
+
+const configLinkActive =
+  "bg-primary-light text-primary font-medium";
+
+const configLinkInactive =
+  "text-gray-500 hover:text-gray-800 hover:bg-gray-50";
+
+/*
+|--------------------------------------------------------------------------
+| Route Matching
+|--------------------------------------------------------------------------
+*/
+
+const isPathActive = (path, currentPath) => {
+  if (!path) return false;
+
+  return (
+    currentPath === path ||
+    currentPath.startsWith(`${path}/`)
+  );
+};
+
+/*
+|--------------------------------------------------------------------------
+| Recursive Active Menu Detection
+|--------------------------------------------------------------------------
+*/
+
+const isMenuItemActive = (item, currentPath) => {
+  if (item.path && isPathActive(item.path, currentPath)) {
+    return true;
+  }
+
+  if (item.children?.length) {
+    return item.children.some((child) =>
+      isMenuItemActive(child, currentPath)
+    );
+  }
+
+  return false;
+};
+
+/*
+|--------------------------------------------------------------------------
+| Dynamic Menu Item Component
+|--------------------------------------------------------------------------
+*/
+
+function MenuTreeItem({
+  item,
+  level = 0,
+  location,
+  onLogout,
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const hasChildren = Boolean(
+    item.children?.length
+  );
+
+  const isActive = isMenuItemActive(
+    item,
+    location.pathname
+  );
+
+  const Icon = item.icon;
+
+  // Automatically expand parent menus when a child route is active.
+  useEffect(() => {
+    if (isActive && hasChildren) {
+      setIsOpen(true);
+    }
+  }, [isActive, hasChildren]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Logout Menu Item
+  |--------------------------------------------------------------------------
+  */
+
+  if (item.action === "logout") {
+    return (
+      <button
+        type="button"
+        onClick={onLogout}
+        className={`${navItemBase} ${navItemInactive} w-full text-left`}
+      >
+        {Icon && <Icon size={18} />}
+        <span>{item.label}</span>
+      </button>
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Menu Styling Based on Nesting Level
+  |--------------------------------------------------------------------------
+  */
+
+  const menuClass =
+    level === 0
+      ? `${navItemBase} ${
+          isActive ? navItemActive : navItemInactive
+        }`
+      : `${subLinkBase} ${
+          isActive ? subLinkActive : subLinkInactive
+        }`;
+
+  const iconSize =
+    level === 0 ? 18 : level === 1 ? 15 : 14;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Menu With Children
+  |--------------------------------------------------------------------------
+  */
+
+  if (hasChildren) {
+    return (
+      <div>
+        <div className="flex items-center gap-1">
+          {item.path ? (
+            <NavLink
+              to={item.path}
+              className={`${menuClass} flex-1 min-w-0`}
+            >
+              {Icon && <Icon size={iconSize} />}
+              <span className="flex-1 truncate">
+                {item.label}
+              </span>
+            </NavLink>
+          ) : (
+            <button
+              type="button"
+              onClick={() =>
+                setIsOpen((previous) => !previous)
+              }
+              className={`${menuClass} flex-1 w-full justify-between`}
+              aria-expanded={isOpen}
+            >
+              <span className="flex items-center gap-3 min-w-0">
+                {Icon && <Icon size={iconSize} />}
+                <span className="truncate">
+                  {item.label}
+                </span>
+              </span>
+
+              <ChevronDown
+                size={16}
+                className={`shrink-0 transition-transform duration-200 ${
+                  isOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          )}
+
+          {item.path && (
+            <button
+              type="button"
+              onClick={() =>
+                setIsOpen((previous) => !previous)
+              }
+              className={`p-2 rounded-lg transition-colors ${
+                isActive
+                  ? "text-primary hover:bg-primary-light"
+                  : "text-gray-500 hover:bg-gray-100"
+              }`}
+              aria-label={`Toggle ${item.label} submenu`}
+              aria-expanded={isOpen}
+            >
+              <ChevronDown
+                size={16}
+                className={`transition-transform duration-200 ${
+                  isOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          )}
+        </div>
+
+        {isOpen && (
+          <div
+            className={`${
+              level === 0
+                ? "ml-4 mt-1 border-l border-gray-100 pl-3"
+                : "ml-4 mt-1 border-l border-gray-100 pl-3"
+            } space-y-1`}
+          >
+            {item.children.map((child, index) => (
+              <MenuTreeItem
+                key={`${child.path || child.label}-${index}`}
+                item={child}
+                level={level + 1}
+                location={location}
+                onLogout={onLogout}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Normal Menu Item Without Children
+  |--------------------------------------------------------------------------
+  */
+
+  if (!item.path) {
+    return null;
+  }
+
   return (
     <NavLink
-      to={to}
-      end={end}
-      className={({ isActive }) =>
-        `${navItemBase} ${isActive ? navItemActive : navItemInactive}`
-      }
+      to={item.path}
+      end
+      className={({ isActive: routeActive }) => {
+        const active = routeActive || isActive;
+
+        if (level === 0) {
+          return `${navItemBase} ${
+            active ? navItemActive : navItemInactive
+          }`;
+        }
+
+        if (level === 1) {
+          return `${subLinkBase} ${
+            active ? subLinkActive : subLinkInactive
+          }`;
+        }
+
+        return `${configLinkBase} ${
+          active
+            ? configLinkActive
+            : configLinkInactive
+        }`;
+      }}
     >
-      <Icon size={18} />
-      <span>{label}</span>
+      {Icon && <Icon size={iconSize} />}
+      <span className="truncate">{item.label}</span>
     </NavLink>
   );
 }
 
-// Sub-link that shows a small dot marker instead of an icon when active,
-// matching the Content Management sub-menu in the reference screenshots.
-function DotSubLink({ to, label }) {
-  return (
-    <NavLink to={to} className={subLinkClass}>
-      {({ isActive }) => (
-        <>
-          <span
-            className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-              isActive ? "bg-primary" : "bg-transparent"
-            }`}
-          />
-          {label}
-        </>
-      )}
-    </NavLink>
-  );
-}
+/*
+|--------------------------------------------------------------------------
+| Main Sidebar Component
+|--------------------------------------------------------------------------
+*/
 
 export default function Sidebar() {
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const contentPaths = ["/content/products", "/content/schemes", "/content/knowledge-base"];
-  const masterDataPaths = [
-    "/district-master",
-    "/store-type-breakup",
-    "/universe-master",
-    "/retailer-profiler",
-    "/fabricator",
-    "/product-weight-allocation",
-  ];
-  const fieldVisitPaths = ["/retailer-profiler", "/fabricator"];
-  const configurationPaths = ["/privilege-master", "/role-master", "/permission-master", "/thickness-master", "/metric-master", "/kb-category-master", "/api-client-master"];
-
-  const isContentActive =
-    location.pathname === "/content" ||
-    contentPaths.some((p) => location.pathname.startsWith(p));
-  const isMasterDataActive = masterDataPaths.some((p) => location.pathname.startsWith(p));
-
-  const isConfigurationActive = configurationPaths.some((p) => location.pathname.startsWith(p));
-  const [configurationOpen, setConfigurationOpen] = useState(isConfigurationActive);
-  const activitiesPaths = ["/field-visit-tracker", "/visits"];
-  const isActivitiesActive = activitiesPaths.some((p) => location.pathname.startsWith(p));
-  const [activitiesOpen, setActivitiesOpen] = useState(isActivitiesActive);
-  const [contentOpen, setContentOpen] = useState(isContentActive);
-  const [masterDataOpen, setMasterDataOpen] = useState(isMasterDataActive);
-  const [fieldVisitOpen, setFieldVisitOpen] = useState(
-    fieldVisitPaths.includes(location.pathname)
+  /*
+   * Adjust this selector if your authSlice stores the
+   * authenticated user under a different property.
+   */
+  const user = useSelector(
+    (state) =>
+      state.auth?.user ??
+      state.auth?.account ??
+      state.auth?.userDtl ??
+      null
   );
+
+  /*
+  |--------------------------------------------------------------------------
+  | User Privilege
+  |--------------------------------------------------------------------------
+  */
+
+  const userHierarchy = useMemo(
+    () => getUserPrivilegeHierarchy(user),
+    [user]
+  );
+
+  /*
+  |--------------------------------------------------------------------------
+  | Filter Menu Based on Privilege
+  |--------------------------------------------------------------------------
+  */
+
+  const accessibleMenuItems = useMemo(
+    () => filterMenuItems(menuItems, userHierarchy),
+    [userHierarchy]
+  );
+
+  /*
+  |--------------------------------------------------------------------------
+  | Logout
+  |--------------------------------------------------------------------------
+  */
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
+  /*
+  |--------------------------------------------------------------------------
+  | Render
+  |--------------------------------------------------------------------------
+  */
+
   return (
-    <aside className="w-[280px] shrink-0 h-screen sticky top-0 bg-white border-r border-gray-200 flex flex-col">
+    <aside className="w-70 shrink-0 h-screen sticky top-0 bg-white border-r border-gray-200 flex flex-col">
+
+      {/* Logo */}
       <div className="px-4 py-4 border-b border-gray-100">
         <Logo className="h-9 w-auto" />
       </div>
 
+      {/* Dynamic Navigation */}
       <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-1">
-        <NavItem to="/dashboard" icon={LayoutGrid} label="Dashboard" />
-        <NavItem to="/users" icon={Users} label="Users & Mapping" />
 
-        <div>
-          <NavLink
-            to="/content"
-            className={`${navItemBase} ${isContentActive ? navItemActive : navItemInactive} w-full flex items-center justify-between`}
-          >
-            <span className="flex items-center gap-3">
-              <FileText size={18} />
-              Content Management
-            </span>
-            <ChevronDown
-              size={16}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setContentOpen((v) => !v);
-              }}
-              className={`transition-transform ${contentOpen ? "rotate-180" : "-rotate-90"}`}
-            />
-          </NavLink>
-          {contentOpen && (
-            <div className="ml-4 mt-1 space-y-1 border-l border-gray-100 pl-3">
-              <DotSubLink to="/content/products" label="Products" />
-              <DotSubLink to="/content/schemes" label="Schemes" />
-              <DotSubLink to="/content/knowledge-base" label="Knowledge Base" />
-            </div>
-          )}
-        </div>
+        {accessibleMenuItems.map((item, index) => (
+          <MenuTreeItem
+            key={`${item.path || item.label}-${index}`}
+            item={item}
+            level={0}
+            location={location}
+            onLogout={handleLogout}
+          />
+        ))}
 
-        <div>
-          <button
-            onClick={() => setMasterDataOpen((v) => !v)}
-            className={`${navItemBase} ${isMasterDataActive ? navItemActive : navItemInactive} w-full justify-between`}
-          >
-            <span className="flex items-center gap-3">
-              <Database size={18} />
-              Master Data
-            </span>
-            <ChevronDown
-              size={16}
-              className={`transition-transform ${masterDataOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-          {masterDataOpen && (
-            <div className="ml-4 mt-1 space-y-1 border-l border-gray-100 pl-3">
-              <NavLink to="/store-type-breakup" className={subLinkClass}>
-                <Store size={15} />
-                Store Type Breakup
-              </NavLink>
-              <NavLink to="/universe-master" className={subLinkClass}>
-                <Globe size={15} />
-                Universe Master
-              </NavLink>
-
-              <div>
-                <button
-                  onClick={() => setFieldVisitOpen((v) => !v)}
-                  className="flex items-center gap-2 px-2 py-2 rounded-md text-sm text-gray-500 hover:text-gray-800 w-full justify-between"
-                >
-                  <span className="flex items-center gap-2">
-                    <Navigation size={15} />
-                    Field Visit Tracker
-                  </span>
-                  <ChevronDown
-                    size={13}
-                    className={`transition-transform ${fieldVisitOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-                {fieldVisitOpen && (
-                  <div className="ml-4 mt-1 space-y-1 border-l border-gray-100 pl-3">
-                    <NavLink to="/retailer-profiler" className={subLinkClass}>
-                      <StoreIcon size={14} />
-                      Retailer + Profiler
-                    </NavLink>
-                    <NavLink to="/fabricator" className={subLinkClass}>
-                      <Wrench size={14} />
-                      Fabricator
-                    </NavLink>
-                  </div>
-                )}
-              </div>
-
-              <NavLink to="/district-master" className={subLinkClass}>
-                <ClipboardList size={15} />
-                District Master
-              </NavLink>
-              <NavLink to="/product-weight-allocation" className={subLinkClass}>
-                <Scale size={15} />
-                Product Weight Allocation
-              </NavLink>
-            </div>
-          )}
-        </div>
-
-        <NavItem to="/profile" icon={UserCircle} label="Profile" />
-
-        <div>
-          <button
-            onClick={() => setConfigurationOpen((v) => !v)}
-            className={`${navItemBase} ${isConfigurationActive ? "text-primary font-semibold hover:bg-gray-100" : navItemInactive} w-full justify-between`}
-          >
-            <span className="flex items-center gap-3">
-              <Settings size={18} />
-              Configuration
-            </span>
-            <ChevronDown
-              size={16}
-              className={`transition-transform ${configurationOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-          {configurationOpen && (
-            <div className="mt-1 space-y-1 pl-2">
-              <NavLink to="/privilege-master" className={configLinkClass}>
-                Privilege Master
-              </NavLink>
-              <NavLink to="/role-master" className={configLinkClass}>
-                Role Master
-              </NavLink>
-              <NavLink to="/permission-master" className={configLinkClass}>
-                Permission Master
-              </NavLink>
-              <NavLink to="/thickness-master" className={configLinkClass}>
-                Thickness Master
-              </NavLink>
-              <NavLink to="/metric-master" className={configLinkClass}>
-                Metric Master
-              </NavLink>
-              <NavLink to="/kb-category-master" className={configLinkClass}>
-                Knowledge Category Master
-              </NavLink>
-              <NavLink to="/api-client-master" className={configLinkClass}>
-                API Client Master
-              </NavLink>
-            </div>
-          )}
-        </div>
-
-        <div>
-          <button
-            onClick={() => setActivitiesOpen((v) => !v)}
-            className={`${navItemBase} ${isActivitiesActive ? "text-primary font-semibold hover:bg-gray-100" : navItemInactive} w-full justify-between`}
-          >
-            <span className="flex items-center gap-3">
-              <Zap size={18} />
-              Activities
-            </span>
-            <ChevronDown
-              size={16}
-              className={`transition-transform ${activitiesOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-          {activitiesOpen && (
-            <div className="mt-1 space-y-1 pl-2">
-              <NavLink to="/field-visit-tracker" className={configLinkClass}>
-                Field Visit Tracker
-              </NavLink>
-              <NavLink to="/visits" className={configLinkClass}>
-                Visit
-              </NavLink>
-            </div>
-          )}
-        </div>
-
-        <button
-          onClick={handleLogout}
-          className={`${navItemBase} ${navItemInactive} w-full text-left`}
-        >
-          <LogOut size={18} />
-          Logout
-        </button>
       </nav>
 
+      {/* Sidebar Footer */}
       <div className="p-2.5 border-t border-gray-100">
         <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2.5">
+
           <div className="w-7 h-7 rounded-full bg-primary-light flex items-center justify-center">
-            <Shield size={14} className="text-primary" />
+            <Shield
+              size={14}
+              className="text-primary"
+            />
           </div>
+
           <div className="leading-tight">
-            <p className="text-xs font-semibold text-gray-800">Admin Portal</p>
-            <p className="text-[11px] text-gray-400">Version 1.0.0</p>
+            <p className="text-xs font-semibold text-gray-800">
+              Admin Portal
+            </p>
+
+            <p className="text-[11px] text-gray-400">
+              Version 1.0.0
+            </p>
           </div>
+
         </div>
       </div>
+
     </aside>
   );
 }
